@@ -1,0 +1,105 @@
+{
+  "home": "Home",
+  "about": "About",
+  "courses": "Courses",
+  "experts": "Our Experts",
+  "blog": "Blog",
+  "contact": "Contact",
+
+  "analytical": "Mini Solvers (Class 1–2)",
+  "ml": "Young Explorers (Class 3–4)",
+  "olympiad": "Trailblazers (Class 5)",
+  "stats": "Math Builders (Class 6)",
+  "algorithms": "Math Challengers (Class 7)",
+  "vedic": "AMC Jumpers (Class 8)",
+  "animation": "JEE/ISI Starters (Class 9)",
+  "course10": "Board + Math Wiz (Class 10)",
+  "course11": "JEE Intensive (Class 11)",
+  "course12": "Final Sprint (Class 12)",
+
+  "hero": {
+    "title": "<span class='accent'>Unlock  Your <span class='keyword'>Child's  Math Potential",
+    "description": "Engaging, <span class='emphasize'>expert-led  online math programs for kids from <span class='grade'>Grade 1 to Grade 12 .",
+    "registerButton": "Register as Student",
+    "imageAlt": "Happy kid learning math"
+  },
+
+  "features": {
+    "heading": "Why <span class='keyword'>Choose  <br/><span class='titleHighlite'>Math Senseacademy ?",
+    "expertTutors": {
+      "title": "<span class='emphasize'>Expert Tutors ",
+      "description": "All our instructors are <span class='accent'>math experts  with <span class='keyword'>years of experience ."
+    },
+    "interactiveClasses": {
+      "title": "<span class='emphasize'>Interactive Classes ",
+      "description": "Fun, <span class='accent'>engaging sessions  that keep kids <span class='keyword'>excited about learning ."
+    },
+    "flexibleScheduling": {
+      "title": "<span class='emphasize'>Flexible Scheduling ",
+      "description": "<span class='accent'>Weekend  and <span class='accent'>evening classes  available to fit your <span class='keyword'>schedule ."
+    },
+    "personalizedLearning": {
+      "title": "<span class='emphasize'>Personalized Learning ",
+      "description": "Courses designed to meet each student’s <span class='accent'>unique needs  and <span class='keyword'>learning style ."
+    }
+  },
+
+  
+  "programs": {
+    "heading": "Explore <span class='titleHighlite'>Our Programs</span>",
+    "items": [
+      {
+        "title": "<span class='titleHighlite'>Mini Solvers (Class 1–2)</span>",
+        "focusArea": "Foundation in numbers, patterns, logic",
+        "description": "Foundations in addition, subtraction, and number sense."
+      },
+      {
+        "title": "<span class='titleHighlite'>Young Explorers (Class 3–4)</span>",
+        "focusArea": "Word problems, intro to Olympiad",
+        "description": "Explore problem solving through puzzles and early Olympiad topics."
+      },
+      {
+        "title": "<span class='titleHighlite'>Trailblazers (Class 5)</span>",
+        "focusArea": "Deeper logic, NMTC & SOF start",
+        "description": "Strengthen logic and dive into NMTC and SOF preparation."
+      },
+      {
+        "title": "<span class='titleHighlite'>Math Builders (Class 6)</span>",
+        "focusArea": "Olympiad Level 1, NMTC Primary",
+        "description": "Hands-on training for Olympiad Level 1 and NMTC Primary category."
+      },
+      {
+        "title": "<span class='titleHighlite'>Math Challengers (Class 7)</span>",
+        "focusArea": "Olympiad Level 2, AMC 8 prep",
+        "description": "Tackling complex problems, AMC 8 and Olympiad Level 2 topics."
+      },
+      {
+        "title": "<span class='titleHighlite'>AMC Jumpers (Class 8)</span>",
+        "focusArea": "NMTC, AMC 8/10, ISI base",
+        "description": "Advance toward AMC 10 and strengthen NMTC and ISI fundamentals."
+      },
+      {
+        "title": "<span class='titleHighlite'>JEE/ISI Starters (Class 9)</span>",
+        "focusArea": "Strong problem solving, algebra focus",
+        "description": "Develop algebraic problem-solving skills and exam strategies."
+      },
+      {
+        "title": "<span class='titleHighlite'>Board + Math Wiz (Class 10)</span>",
+        "focusArea": "Board + JEE Main + Olympiad/ISI",
+        "description": "Master board math while preparing for JEE Main and Olympiads."
+      },
+      {
+        "title": "<span class='titleHighlite'>JEE Intensive (Class 11)</span>",
+        "focusArea": "JEE Adv, ISI Math + RMO base",
+        "description": "Focus on JEE Advanced, ISI Math and RMO fundamentals."
+      },
+      {
+        "title": "<span class='titleHighlite'>Final Sprint (Class 12)</span>",
+        "focusArea": "JEE + ISI last mile + revision",
+        "description": "Final round of mock tests, concept clarity and exam polish."
+      }
+    ]
+  }
+}
+
+

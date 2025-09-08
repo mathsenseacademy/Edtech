@@ -1,0 +1,553 @@
+/* === THEME VARIABLES === */
+:root {
+  --color-primary: #7380ec;
+  --color-success: #41f1b6;
+  --color-danger: #ff7782;
+  --color-warning: #ffbb55;
+  --color-white: #fff;
+  --color-info: #7d8da1;
+  --color-dark: #363949;
+  --color-dark-varient: #677483;
+  --color-light: rgba(132, 139, 200, 0.18);
+  --box-shadow: 0 2rem 3rem var(--color-light);
+  --card-padding: 1.4rem;
+  --card-border-radius: 1rem;
+  --border-radius-2: 0.8rem;
+}
+
+body.dark-mode {
+  --color-primary: #5d9eff;
+  --color-success: #2ed39f;
+  --color-danger: #ff6b6b;
+  --color-warning: #ffc947;
+  --color-white: #1e1e2f;
+  --color-info: #a0a5b7;
+  --color-dark: #f1f1f1;
+  --color-dark-varient: #c2c4d6;
+  --color-light: rgba(255, 255, 255, 0.05);
+  --box-shadow: 0 2rem 3rem rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .studentDashboardMain header,
+body.dark-mode .studentDashboardMain aside .profile {
+  background-color: var(--color-white) !important;
+  color: var(--color-dark) !important;
+}
+
+body.dark-mode .studentDashboardMain header .material-icons-sharp,
+body.dark-mode .studentDashboardMain aside .profile .top *,
+body.dark-mode .studentDashboardMain aside .profile .about p,
+body.dark-mode .studentDashboardMain aside .profile .about h5,
+body.dark-mode .studentDashboardMain .logo h2,
+body.dark-mode .studentDashboardMain .logo span,
+body.dark-mode .studentDashboardMain .sd_navbar a,
+body.dark-mode .studentDashboardMain .sd_navbar h3 {
+  color: var(--color-dark) !important;
+  fill: var(--color-dark) !important;
+}
+
+body.dark-mode .studentDashboardMain .sd_navbar a.active {
+  background-color: var(--color-primary);
+  color: #fff !important;
+  border-radius: var(--card-border-radius);
+}
+
+body.dark-mode .studentDashboardMain main .subjects > div,
+body.dark-mode .studentDashboardMain main .timetable table,
+body.dark-mode .studentDashboardMain .right .announcements .updates,
+body.dark-mode .studentDashboardMain .right .leaves .teacher {
+  background-color: var(--color-white);
+  color: var(--color-dark);
+}
+
+/* === EXISTING CSS === */
+
+.studentDashboardMain img {
+  display: block;
+  width: 100%;
+}
+
+.studentDashboardMain h1 {
+  font-weight: 800;
+  font-size: 1.8rem;
+}
+
+.studentDashboardMain h2 {
+  font-size: 1.4rem;
+}
+
+.studentDashboardMain h3 {
+  font-size: .87rem;
+}
+
+.studentDashboardMain h4 {
+  font-size: .8rem;
+}
+
+.studentDashboardMain h5 {
+  font-size: .77rem;
+}
+
+.studentDashboardMain small {
+  font-size: .75rem;
+}
+
+.studentDashboardMain .text-muted {
+  color: var(--color-info);
+}
+
+.studentDashboardMain p {
+  color: var(--color-dark-varient);
+}
+
+.studentDashboardMain b {
+  color: var(--color-dark);
+}
+
+.studentDashboardMain .primary {
+  color: var(--color-primary);
+}
+
+.studentDashboardMain .danger {
+  color: var(--color-danger);
+}
+
+.studentDashboardMain .success {
+  color: var(--color-success)
+}
+
+.studentDashboardMain .warning {
+  color: var(--color-warning);
+}
+
+.studentDashboardMain img {
+  display: block;
+  width: 100%;
+}
+
+.studentDashboardMain h1 {
+  font-weight: 800;
+  font-size: 1.8rem;
+}
+
+.studentDashboardMain h2 {
+  font-size: 1.4rem;
+}
+
+.studentDashboardMain h3 {
+  font-size: .87rem;
+}
+
+.studentDashboardMain h4 {
+  font-size: .8rem;
+}
+
+.studentDashboardMain h5 {
+  font-size: .77rem;
+}
+
+.studentDashboardMain small {
+  font-size: .75rem;
+}
+
+.studentDashboardMain .text-muted {
+  color: var(--color-info);
+}
+
+.studentDashboardMain p {
+  color: var(--color-dark-varient);
+}
+
+.studentDashboardMain b {
+  color: var(--color-dark);
+}
+
+.studentDashboardMain .primary {
+  color: var(--color-primary);
+}
+
+.studentDashboardMain .danger {
+  color: var(--color-danger);
+}
+
+.studentDashboardMain .success {
+  color: var(--color-success)
+}
+
+.studentDashboardMain .warning {
+  color: var(--color-warning);
+}
+
+.container-student {
+  position: relative;
+  display: grid;
+  min-width: 93% !important;
+  margin: 0 3rem;
+  gap: 1.8rem;
+  grid-template-columns: 14rem auto 23rem;
+  padding-top: 4rem;
+  background: transparent !important;
+}
+
+.studentDashboardMain aside .profile {
+    margin-top: 2rem;
+    width: 13rem;
+    position: fixed;
+}
+
+.studentDashboardMain aside .profile .top {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid var(--color-light);
+    padding-bottom: 1rem;
+}
+
+.studentDashboardMain aside .profile .top:hover .profile-photo {
+    scale: 1.05;
+}
+
+.studentDashboardMain aside .profile .top .profile-photo {
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 5px solid var(--color-light);
+    transition: all 400ms ease;
+}
+
+.studentDashboardMain aside .profile .about p {
+    padding-bottom: 1rem;
+}
+
+.studentDashboardMain aside .profile .about {
+    margin-top: 1rem;
+}
+
+/* Home Section  */
+.studentDashboardMain main {
+    position: relative;
+    margin-top: 1.4rem;
+}
+
+.studentDashboardMain main .subjects {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.6rem;
+}
+
+.studentDashboardMain main .subjects>div {
+    background-color: var(--color-white);
+    padding: var(--card-padding);
+    border-radius: var(--card-border-radius);
+    margin-top: 1rem;
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+}
+
+.studentDashboardMain main .subjects>div:hover {
+    box-shadow: none;
+}
+
+.studentDashboardMain main .subjects>div span {
+    background-color: var(--color-primary);
+    padding: .5rem;
+    border-radius: 50%;
+    color: var(--color-white);
+    font-size: 1.5rem;
+}
+
+.studentDashboardMain main .subjects>div.mth span,
+.studentDashboardMain main .subjects>div.cg span {
+    background: var(--color-danger);
+}
+
+.studentDashboardMain main .subjects>div.cs span {
+    background: var(--color-success);
+}
+
+.studentDashboardMain main .subjects h3 {
+    margin: 1rem 0 0.6rem;
+    font-size: 1rem;
+}
+
+.studentDashboardMain main .subjects .progress {
+    position: relative;
+    width: 89px;
+    height: 89px;
+    border-radius: 50%;
+    margin: auto;
+}
+
+.studentDashboardMain main .subjects svg circle {
+    fill: none;
+    stroke: var(--color-primary);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transform: translate(5px, 5px);
+    stroke-dasharray: 110;
+    stroke-dashoffset: 92;
+}
+
+.studentDashboardMain main .subjects .eg svg circle {
+    stroke-dashoffset: 25;
+    stroke-dasharray: 210;
+}
+
+.studentDashboardMain main .subjects .mth svg circle {
+    stroke-dashoffset: 7;
+    stroke-dasharray: 210;
+}
+
+.studentDashboardMain main .subjects .cs svg circle {
+    stroke-dashoffset: 35;
+    stroke-dasharray: 210;
+}
+
+.studentDashboardMain main .subjects .cg svg circle {
+    stroke-dashoffset: 0;
+    stroke-dasharray: 210;
+}
+
+.studentDashboardMain main .subjects .net svg circle {
+    stroke-dashoffset: 5;
+    stroke-dasharray: 210;
+}
+
+.studentDashboardMain main .subjects .progress .number {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.studentDashboardMain main .subjects small {
+    margin-top: 1rem;
+    display: block;
+}
+
+.studentDashboardMain main .timetable {
+    margin-top: 2rem;
+}
+
+.studentDashboardMain main .timetable h2 {
+    margin-bottom: .8rem;
+}
+
+.studentDashboardMain main .timetable table {
+    background-color: var(--color-white);
+    width: 100%;
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+}
+
+.studentDashboardMain main .timetable span {
+    display: none;
+}
+
+.studentDashboardMain main .timetable table:hover {
+    box-shadow: none;
+}
+
+.studentDashboardMain main table tbody td {
+    height: 2.8rem;
+    border-bottom: 1px solid var(--color-light);
+    color: var(--color-dark-varient);
+}
+
+.studentDashboardMain main table tbody tr:last-child td {
+    border: none;
+}
+
+.studentDashboardMain main .timetable.active {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.studentDashboardMain main .timetable.active h2 {
+    color: var(--color-dark);
+}
+
+.studentDashboardMain main .timetable.active table {
+    width: 90%;
+    max-width: 1000px;
+    position: relative;
+}
+
+.studentDashboardMain main .timetable.active span {
+    display: block;
+    font-size: 2rem;
+    color: var(--color-dark);
+    cursor: pointer;
+}
+
+.studentDashboardMain .timetable div {
+    position: relative;
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.studentDashboardMain main .timetable.active .closeBtn {
+    position: absolute;
+    top: 5%;
+    right: 5%;
+}
+
+
+/* Right  */
+.studentDashboardMain .right {
+    margin-top: 2.2rem;
+    padding-left: 1.5rem;
+}
+
+.studentDashboardMain .right .announcements h2 {
+    margin-bottom: .8rem;
+}
+
+.studentDashboardMain .right .announcements .updates {
+    background-color: var(--color-white);
+    padding: var(--card-padding);
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+}
+
+.studentDashboardMain .right .announcements .updates:hover {
+    box-shadow: none;
+}
+
+.studentDashboardMain .right .announcements .updates .message {
+    gap: 1rem;
+    line-height: 1.5;
+    padding: .5rem 0;
+}
+
+/* Teachers on leave  */
+.studentDashboardMain .right .leaves {
+    margin-top: 2rem;
+}
+
+.studentDashboardMain .right .leaves h2 {
+    margin-bottom: .8rem;
+}
+
+.studentDashboardMain .right .leaves .teacher {
+    background: var(--color-white);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: .7rem;
+    padding: 1.4rem var(--card-padding);
+    border-radius: var(--border-radius-2);
+    transition: all 300ms ease;
+    box-shadow: var(--box-shadow);
+}
+
+.studentDashboardMain .right .profile-photo {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.studentDashboardMain .right .leaves .teacher:hover {
+    box-shadow: none;
+}
+
+
+
+
+
+/* MEDIA QUERIES  */
+@media screen and (max-width: 1200px) {
+    .studentDashboardMain html {
+        font-size: 12px;
+    }
+
+    .studentDashboardMain .container {
+        grid-template-columns: 13rem auto 20rem;
+    }
+
+    .studentDashboardMain .container {
+        padding-top: 4rem;
+    }
+
+    .studentDashboardMain main .subjects {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1;
+    }
+
+    .studentDashboardMain main .timetable {
+        width: 150%;
+        position: absolute;
+        padding: 4rem 0 0 0;
+    }
+}
+
+
+@media screen and (max-width: 768px) {
+    .studentDashboardMain html {
+        font-size: 10px;
+    }
+
+    .studentDashboardMain .container {
+        width: 100%;
+        grid-template-columns: 1fr;
+        margin: 0;
+    }
+
+    .studentDashboardMain aside {
+        position: absolute;
+        top: 4rem;
+        left: 0;
+        right: 0;
+        background-color: var(--color-white);
+        padding-left: 2rem;
+        transform: translateX(-100%);
+        z-index: 10;
+        width: 18rem;
+        height: 100%;
+        box-shadow: 1rem 3rem 4rem var(--color-light);
+        transition: all 2s ease;
+    }
+
+    .studentDashboardMain aside.active {
+        transform: translateX(0);
+    }
+
+    .studentDashboardMain main {
+        padding: 0 2rem;
+    }
+
+    .studentDashboardMain main .timetable {
+        position: relative;
+        margin: 3rem 0 0 0;
+        width: 100%;
+    }
+
+    .studentDashboardMain main .timetable table {
+        width: 100%;
+        margin: 0;
+    }
+
+    .studentDashboardMain .right {
+        width: 100%;
+        padding: 2rem;
+    }
+}

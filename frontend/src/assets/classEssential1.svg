@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="568" height="672" viewBox="0 0 426 125.257812" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <clipPath id="topShape">
+      <path d="M 370.73 0 L 23.64 0 C 10.59 0 0 10.59 0 23.64 L 0 80.75 C 0 86.57 2.14 92.18 6.02 96.52 L 24.69 117.38 C 29.17 122.39 35.58 125.26 42.31 125.26 L 402.36 125.26 C 408.63 125.26 414.64 122.77 419.07 118.34 C 423.51 113.9 426 107.89 426 101.62 L 426 58.32 C 426 52.43 423.8 46.75 419.83 42.39 L 388.2 7.71 C 383.72 2.8 377.38 0 370.73 0 Z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#topShape)">
+    <rect width="426.18" height="125.26" fill="#d9b8f3"/>
+  </g>
+</svg>
