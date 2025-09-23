@@ -27,7 +27,7 @@ const SdHome = () => {
         }
 
         const response = await axios.get(
-          `http://localhost:5000/api/student/check-registration`,
+          `https://mathsenseacademy.onrender.com/api/student/check-registration`,
           { params: { google_uid: uid } }
         );
 

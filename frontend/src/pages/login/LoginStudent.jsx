@@ -13,7 +13,7 @@ import app from "../../firebase/firebaseconfig"; // make sure firebase is initia
 const auth = getAuth(app);
 
 // API Configuration - make sure this matches your backend URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://mathsenseacademy.onrender.com';
 
 export default function LoginStudent() {
   const [isNewUser, setIsNewUser] = useState(false);
