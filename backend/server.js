@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Enhanced CORS configuration
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:3000"], // Add your frontend URLs
+    origin: ["http://localhost:5173", "https://mathsenseacademy.com", "https://www.mathsenseacademy.com"], 
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
