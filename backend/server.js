@@ -1,35 +1,120 @@
 import express from "express";
-import { db } from "./firebase/firebaseConfig.js";
-import coursesRoutes from "./routes/courses.js";
-import curriculumRoutes from "./routes/curriculums.js";
-import classroomEssentialsRoutes from "./routes/classroomEssentials.js";
-import classLevelsRoutes from "./routes/classLevels.js";
-import categoryLevelsRoutes from "./routes/categoryLevels.js";
+import dotenv from "dotenv";
+import cors from "cors";
+
+// Load environment variables before anything else
+dotenv.config();
+
+import { db } from "./firebase/firebaseAdmin.js";
+import studentRoutes from "./routes/StudentRoutes.js";
 
 const app = express();
-app.use(express.json());
 
-// Test route: get all students
+// Middleware
+app.use(express.json({ limit: '10mb' })); // Increased limit for image uploads
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Enhanced CORS configuration
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:3000"], // Add your frontend URLs
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+  })
+);
+
+// Request logging middleware (helpful for debugging)
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`, req.query);
+  next();
+});
+
+// Health check route
+app.get("/health", (req, res) => {
+  res.json({ 
+    status: "healthy", 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Test route: get all students (for debugging)
 app.get("/test", async (req, res) => {
-  const snapshot = await db.collection("students").get();
-  const students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  res.json(students);
+  try {
+    const snapshot = await db.collection("students").limit(5).get(); // Limit for testing
+    const students = snapshot.docs.map(doc => ({ 
+      id: doc.id, 
+      ...doc.data(),
+      // Hide sensitive data in test route
+      google_uid: doc.data().google_uid ? '***hidden***' : null
+    }));
+    res.json({ 
+      message: "Test successful", 
+      count: students.length,
+      students 
+    });
+  } catch (err) {
+    console.error("Test route error:", err);
+    res.status(500).json({ 
+      error: err.message,
+      message: "Test failed - check Firestore connection"
+    });
+  }
 });
 
-app.use("/api/courses", coursesRoutes);
+// API Routes
+app.use("/api/student", studentRoutes); // Prefix with /api for better organization
+app.use("/student", studentRoutes); // Keep existing route for backward compatibility
 
-app.use("/api/curriculums", curriculumRoutes);
+// Future routes (uncomment when ready)
+// app.use("/api/courses", coursesRoutes);
+// app.use("/api/curriculums", curriculumRoutes);
 
-app.use("/api/classroom-essentials", classroomEssentialsRoutes);
-
-app.use("/api/class-levels", classLevelsRoutes);
-
-app.use("/api/category-levels", categoryLevelsRoutes);
-
-
+// Root route
 app.get("/", (req, res) => {
-  res.send("Backend is working 🚀");
+  res.json({
+    message: "EdTech Backend API is running",
+    version: "1.0.0",
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: "/health",
+      test: "/test",
+      students: "/api/student",
+      legacy_students: "/student"
+    }
+  });
+});
+
+// 404 handler (must be last, no '*' pattern needed)
+app.use((req, res) => {
+  res.status(404).json({
+    error: "Route not found",
+    message: `${req.method} ${req.originalUrl} does not exist`,
+    availableRoutes: ["/", "/health", "/test", "/api/student", "/student"]
+  });
 });
 
 
-app.listen(5000, () => console.log("Server running on http://localhost:5000"));
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Global error:", err);
+  res.status(500).json({
+    error: "Internal server error",
+    message: process.env.NODE_ENV === 'development' ? err.message : "Something went wrong"
+  });
+});
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🧪 Test endpoint: http://localhost:${PORT}/test`);
+  console.log(`👥 Students API: http://localhost:${PORT}/api/student`);
+  
+  // Test Firestore connection on startup
+  db.collection("students").limit(1).get()
+    .then(() => console.log("✅ Firestore connected successfully"))
+    .catch(err => console.error("❌ Firestore connection failed:", err.message));
+});

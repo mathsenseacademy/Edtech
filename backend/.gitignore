@@ -1,0 +1,29 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Firebase service account (don’t ever commit!)
+firebase/serviceAccountKey.json
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Logs
+logs
+*.log
+logs/*.log
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

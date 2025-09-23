@@ -1,9 +1,49 @@
 // src/components/StudentRegister/StudentRegister.jsx
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
 
-export default function StudentRegister({ onClose }) {
+export default function StudentRegister({ onClose, googleAuthData = null }) {
+  const navigate = useNavigate();
+  
+  // Get Google auth data from sessionStorage if not passed as prop (memoized)
+  const authData = useMemo(() => {
+    if (googleAuthData) return googleAuthData;
+    
+    const storedData = sessionStorage.getItem("googleAuthData");
+    if (storedData) {
+      try {
+        return JSON.parse(storedData);
+      } catch (error) {
+        console.error("Error parsing Google auth data:", error);
+        return null;
+      }
+    }
+    return null;
+  }, [googleAuthData]); // Only recalculate when googleAuthData prop changes
+
+  // Check if user is authenticated and redirect if not
+  useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
+    const userType = localStorage.getItem("userType");
+    const studentUid = localStorage.getItem("studentUid");
+
+    // If not authenticated or not a student, redirect to login
+    if (!accessToken || userType !== "student" || !studentUid) {
+      console.log("User not authenticated, redirecting to login...");
+      navigate("/student/login");
+      return;
+    }
+
+    // If authenticated but no Google auth data, it means they accessed directly
+    // Still allow registration but show a warning
+    const storedData = sessionStorage.getItem("googleAuthData");
+    if (!storedData) {
+      console.log("User authenticated but no Google data found");
+      // Optional: You can redirect to login here too if you want to force the Google flow
+      // navigate("/student/login");
+    }
+  }, [navigate]); // Remove authData from dependencies
 
   const steps = [
     {
@@ -126,8 +166,20 @@ export default function StudentRegister({ onClose }) {
 
   const allFields = steps.flatMap((s) => s.fields);
 
-  const [formData, setFormData] = useState(
-    allFields.reduce(
+  // Helper function to parse Google display name into first and last name
+  const parseGoogleName = (displayName) => {
+    if (!displayName) return { firstName: "", lastName: "" };
+    
+    const nameParts = displayName.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+    
+    return { firstName, lastName };
+  };
+
+  const [formData, setFormData] = useState(() => {
+    // Initialize form data with Google auth data if available
+    const initialData = allFields.reduce(
       (acc, f) => {
         acc[f.name] = f.type === "checkbox" ? false : "";
         return acc;
@@ -136,17 +188,29 @@ export default function StudentRegister({ onClose }) {
         country_code_1: "",
         country_code_2: "",
       }
-    )
-  );
+    );
+
+    // Auto-fill Google data if available
+    if (authData) {
+      const { firstName, lastName } = parseGoogleName(authData.displayName);
+      
+      initialData.email = authData.email || "";
+      initialData.first_name = firstName;
+      initialData.last_name = lastName;
+    }
+
+    return initialData;
+  });
+
   const [currentStep, setCurrentStep] = useState(0);
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otp, setOtp] = useState("");
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const [showConfirmExit, setShowConfirmExit] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [countryCodes, setCountryCodes] = useState([]);
   const [codesLoading, setCodesLoading] = useState(true);
   const [courses, setCourses] = useState([]);
   const [coursesLoading, setCoursesLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -157,11 +221,22 @@ export default function StudentRegister({ onClose }) {
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const list = await res.json();
-        const codes = list
-          .map((c) => ({
-            code: c.dial_code,
-            label: `${c.name} (${c.dial_code})`,
-          }))
+        
+        // Remove duplicates and create unique keys
+        const uniqueCodes = new Map();
+        list.forEach((country, index) => {
+          const key = `${country.dial_code}-${country.code}`;
+          if (!uniqueCodes.has(key)) {
+            uniqueCodes.set(key, {
+              code: country.dial_code,
+              label: `${country.name} (${country.dial_code})`,
+              uniqueKey: key,
+              index: index
+            });
+          }
+        });
+        
+        const codes = Array.from(uniqueCodes.values())
           .sort((a, b) => a.code.localeCompare(b.code));
 
         setCountryCodes(codes);
@@ -201,6 +276,13 @@ export default function StudentRegister({ onClose }) {
       }
     })();
   }, []);
+
+  // Show toast notification about auto-filled data (only once)
+  useEffect(() => {
+    if (authData) {
+      showToast("Email and name auto-filled from Google account", "success");
+    }
+  }, []); // Empty dependency array to run only once on mount
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
@@ -272,6 +354,7 @@ export default function StudentRegister({ onClose }) {
   const handleBack = () => setCurrentStep((s) => Math.max(0, s - 1));
 
   const handleRegisterSubmit = async () => {
+    // Validate all required fields
     for (const f of allFields) {
       const val = formData[f.name];
       if (f.required && (val === "" || val === false)) {
@@ -279,12 +362,17 @@ export default function StudentRegister({ onClose }) {
       }
     }
 
+    setIsSubmitting(true);
+
     const payload = {
       ...formData,
       contact_number_1: `${formData.country_code_1}${formData.contact_number_1}`,
       contact_number_2: formData.contact_number_2
         ? `${formData.country_code_2}${formData.contact_number_2}`
         : "",
+      // Include Google auth data if available
+      google_uid: authData?.uid || null,
+      google_photo_url: authData?.photoURL || null,
     };
 
     delete payload.country_code_1;
@@ -292,37 +380,36 @@ export default function StudentRegister({ onClose }) {
 
     try {
       await api.post("student/register/", payload);
-      showToast("Registered successfully! Please enter OTP.", "success");
-      setShowOtpModal(true);
+      showToast("Registration successful! 🎉", "success");
+      setShowSuccessModal(true);
     } catch (err) {
       console.error(err);
       showToast(
-        err.response?.data?.error || "Registration failed.",
+        err.response?.data?.error || "Registration failed. Please try again.",
         "danger"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleOtpSubmit = async () => {
-    if (!otp.trim()) return showToast("OTP is required.", "danger");
-    try {
-      await api.post("student/otpverify/", { email: formData.email, otp });
-      showToast("OTP Verified! 🎉", "success");
-      setShowOtpModal(false);
-      onClose();
-    } catch (err) {
-      console.error(err);
-      showToast(
-        err.response?.data?.student_username?.[0] || "OTP verification failed.",
-        "danger"
-      );
-    }
+  const handleSuccessModalClose = () => {
+    // Clear Google auth data from session storage
+    sessionStorage.removeItem("googleAuthData");
+    setShowSuccessModal(false);
+    
+    // Navigate to dashboard instead of calling onClose
+    navigate("/student/dashboard");
   };
 
   const promptExit = () => setShowConfirmExit(true);
   const confirmExit = (yes) => {
     setShowConfirmExit(false);
-    if (yes) onClose();
+    if (yes) {
+      // Clear session data and redirect to login
+      sessionStorage.removeItem("googleAuthData");
+      navigate("/login/student");
+    }
   };
 
   const { title, description, fields } = steps[currentStep];
@@ -336,7 +423,14 @@ export default function StudentRegister({ onClose }) {
       <div className="fixed top-1/2 left-1/2 w-[90%] max-w-md xl:max-w-lg 2xl:max-w-xl transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg overflow-hidden z-[1001] shadow-xl">
         {/* Header */}
         <div className="flex justify-between items-center bg-cyan-700 px-4 py-3 text-white">
-          <h5 className="text-lg font-semibold">Student Registration</h5>
+          <h5 className="text-lg font-semibold">
+            Student Registration
+            {authData && (
+              <span className="ml-2 text-xs bg-green-500 px-2 py-1 rounded">
+                Google Account
+              </span>
+            )}
+          </h5>
           <button className="bg-transparent border-none text-2xl text-white cursor-pointer hover:opacity-80" onClick={promptExit}>
             ×
           </button>
@@ -344,6 +438,29 @@ export default function StudentRegister({ onClose }) {
 
         {/* Body */}
         <div className="p-4">
+          {/* Warning message if no Google auth data */}
+          {!authData && (
+            <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-yellow-400 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                </svg>
+                <div className="flex-1">
+                  <h4 className="text-sm font-medium text-yellow-800 mb-1">Manual Registration</h4>
+                  <p className="text-xs text-yellow-700 mb-2">
+                    You're registering manually. For a better experience with auto-filled information, please use Google login from the login page.
+                  </p>
+                  <button
+                    onClick={() => navigate("/student/login")}
+                    className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2 py-1 rounded transition-colors"
+                  >
+                    Go to Login Page
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <h6 className="mb-2 text-amber-700 text-base font-medium">{title}</h6>
           {description && (
             <p
@@ -378,7 +495,7 @@ export default function StudentRegister({ onClose }) {
                             required={f.required}
                           >
                             {countryCodes.map((c) => (
-                              <option key={c.code} value={c.code}>
+                              <option key={c.uniqueKey} value={c.code}>
                                 {c.label}
                               </option>
                             ))}
@@ -400,29 +517,36 @@ export default function StudentRegister({ onClose }) {
 
                 // Student class dropdown
                 if (f.name === "student_class") {
+                  const classes = [
+                    { value: "1", label: "Class 1" },
+                    { value: "2", label: "Class 2" },
+                    { value: "3", label: "Class 3" },
+                    { value: "4", label: "Class 4" },
+                    { value: "5", label: "Class 5" },
+                    { value: "6", label: "Class 6" },
+                    { value: "7", label: "Class 7" },
+                    { value: "8", label: "Class 8" },
+                    { value: "9", label: "Class 9" },
+                    { value: "10", label: "Class 10" },
+                  ];
+
                   return (
                     <div key={f.name} className="w-full sm:w-[48%] lg:w-[30%]">
                       <label className="block mb-1 text-cyan-700 font-medium text-sm">{f.label}</label>
-                      {coursesLoading ? (
-                        <select disabled className="w-full p-2 border border-gray-300 rounded text-sm">
-                          <option>Loading…</option>
-                        </select>
-                      ) : (
-                        <select
-                          name="student_class"
-                          value={formData.student_class}
-                          onChange={handleChange}
-                          required={f.required}
-                          className="w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                        >
-                          <option value="">Select a course</option>
-                          {courses.map((course) => (
-                            <option key={course.ID} value={course.ID}>
-                              {`${course.msa_class_level} (${course.course_name})`}
-                            </option>
-                          ))}
-                        </select>
-                      )}
+                      <select
+                        name="student_class"
+                        value={formData.student_class}
+                        onChange={handleChange}
+                        required={f.required}
+                        className="w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      >
+                        <option value="">Select a class</option>
+                        {classes.map((cls) => (
+                          <option key={cls.value} value={cls.value}>
+                            {cls.label}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   );
                 }
@@ -445,7 +569,12 @@ export default function StudentRegister({ onClose }) {
                       </label>
                     ) : (
                       <>
-                        <label className="block mb-1 text-cyan-700 font-medium text-sm">{f.label}</label>
+                        <label className="block mb-1 text-cyan-700 font-medium text-sm">
+                          {f.label}
+                          {authData && (f.name === "email" || f.name === "first_name" || f.name === "last_name") && (
+                            <span className="ml-1 text-xs text-green-600">(Auto-filled)</span>
+                          )}
+                        </label>
 
                         {f.type === "textarea" ? (
                           <textarea
@@ -479,7 +608,12 @@ export default function StudentRegister({ onClose }) {
                             value={formData[f.name]}
                             onChange={handleChange}
                             required={f.required}
-                            className="w-full p-2 mb-3 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            className={`w-full p-2 mb-3 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                              authData && (f.name === "email" || f.name === "first_name" || f.name === "last_name") 
+                                ? "bg-green-50" 
+                                : ""
+                            }`}
+                            readOnly={f.name === "email" && authData}
                           />
                         )}
                       </>
@@ -506,6 +640,7 @@ export default function StudentRegister({ onClose }) {
             <button 
               className="border-none rounded px-4 py-2 text-sm cursor-pointer bg-amber-700 text-white hover:bg-amber-800 transition-colors"
               onClick={handleBack}
+              disabled={isSubmitting}
             >
               Back
             </button>
@@ -514,15 +649,21 @@ export default function StudentRegister({ onClose }) {
             <button 
               className="border-none rounded px-4 py-2 text-sm cursor-pointer bg-cyan-700 text-white hover:bg-cyan-800 transition-colors"
               onClick={handleNext}
+              disabled={isSubmitting}
             >
               Next
             </button>
           ) : (
             <button 
-              className="border-none rounded px-4 py-2 text-sm cursor-pointer bg-yellow-400 text-black hover:bg-yellow-500 transition-colors"
+              className={`border-none rounded px-4 py-2 text-sm cursor-pointer transition-colors ${
+                isSubmitting 
+                  ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
+                  : 'bg-yellow-400 text-black hover:bg-yellow-500'
+              }`}
               onClick={handleRegisterSubmit}
+              disabled={isSubmitting}
             >
-              Submit
+              {isSubmitting ? 'Submitting...' : 'Submit'}
             </button>
           )}
         </div>
@@ -537,41 +678,38 @@ export default function StudentRegister({ onClose }) {
         </div>
       )}
 
-      {/* OTP Modal */}
-      {showOtpModal && (
+      {/* Success Modal */}
+      {showSuccessModal && (
         <>
           <div className="fixed inset-0 bg-black bg-opacity-50 z-[1000]" />
           <div className="fixed top-1/2 left-1/2 w-[90%] max-w-md transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg overflow-hidden z-[1001] shadow-xl">
-            <div className="flex justify-between items-center bg-cyan-700 px-4 py-3 text-white">
-              <h5 className="text-lg font-semibold">Enter OTP</h5>
-              <button
-                className="bg-transparent border-none text-2xl text-white cursor-pointer hover:opacity-80"
-                onClick={() => setShowOtpModal(false)}
-              >
-                ×
-              </button>
+            <div className="flex justify-between items-center bg-green-600 px-4 py-3 text-white">
+              <h5 className="text-lg font-semibold">Registration Successful! 🎉</h5>
             </div>
-            <div className="p-4">
-              <input
-                type="text"
-                placeholder="OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-              />
+            <div className="p-6 text-center">
+              <div className="mb-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
+                <h6 className="text-lg font-semibold text-gray-900 mb-2">Welcome to our institute!</h6>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Your registration has been completed successfully. Your Google account has been linked and you can now access your student dashboard.
+                </p>
+              </div>
+              <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                <p className="text-blue-800 text-xs">
+                  <strong>Account Linked:</strong> You can now login anytime using your Google account to access your student portal and course materials.
+                </p>
+              </div>
             </div>
-            <div className="flex justify-end gap-2 px-4 py-2 bg-gray-50">
-              <button
-                className="border-none rounded px-4 py-2 text-sm cursor-pointer bg-amber-700 text-white hover:bg-amber-800 transition-colors"
-                onClick={() => setShowOtpModal(false)}
-              >
-                Cancel
-              </button>
+            <div className="flex justify-center px-4 py-3 bg-gray-50">
               <button 
-                className="border-none rounded px-4 py-2 text-sm cursor-pointer bg-cyan-700 text-white hover:bg-cyan-800 transition-colors"
-                onClick={handleOtpSubmit}
+                className="border-none rounded px-6 py-2 text-sm cursor-pointer bg-cyan-700 text-white hover:bg-cyan-800 transition-colors"
+                onClick={handleSuccessModalClose}
               >
-                Verify
+                Go to Dashboard
               </button>
             </div>
           </div>
