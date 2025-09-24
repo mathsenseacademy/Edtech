@@ -12,35 +12,28 @@ import {
   FaWhatsapp,
 } from "react-icons/fa";
 import { Phone, Mail, Menu, X, ChevronDown } from "lucide-react";
-import { getActiveCourses } from "../api/courseApi";
 import logo from "../assets/logoWith_Name.svg";
 import StudentRegister from "../pages/StudentRegister";
 
 const Header = () => {
-  const [coursesOpen, setCoursesOpen] = useState(false);
-  const [courses, setCourses] = useState([]);
-  const [coursesLoading, setCoursesLoading] = useState(true);
   const [adminUser, setAdminUser] = useState(null);
   const [showStickyRegister, setShowStickyRegister] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileCourseOpen, setMobileCourseOpen] = useState(false);
+  const [classDropdownOpen, setClassDropdownOpen] = useState(false);
+  const [courseDropdownOpen, setCourseDropdownOpen] = useState(false);
+
   const coursesRef = useRef(null);
+  const classRef = useRef(null);
   const mobileMenuRef = useRef(null);
+
+  const classes = Array.from({ length: 12 }, (_, i) => `Class ${i + 1}`);
+  const courses = ["JEE", "UGC", "NET", "UPSC", "WBSC", "Other Exams"];
 
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  /* ── load active courses ── */
-  useEffect(() => {
-    setCoursesLoading(true);
-    getActiveCourses()
-      .then((res) => setCourses(res))
-      .catch(() => setCourses([]))
-      .finally(() => setCoursesLoading(false));
-  }, []);
-
-  /* ── decode token ── */
+  // Decode JWT token
   useEffect(() => {
     const tok = localStorage.getItem("accessToken");
     if (!tok) return;
@@ -51,7 +44,7 @@ const Header = () => {
     }
   }, []);
 
-  /* ── sticky register btn ── */
+  // Sticky register button
   useEffect(() => {
     const hero = document.querySelector("#hero");
     if (!hero) return;
@@ -63,22 +56,24 @@ const Header = () => {
     return () => ob.disconnect();
   }, []);
 
-  /* ── close dropdowns on outside click ── */
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
+      if (classRef.current && !classRef.current.contains(e.target)) {
+        setClassDropdownOpen(false);
+      }
       if (coursesRef.current && !coursesRef.current.contains(e.target)) {
-        setCoursesOpen(false);
+        setCourseDropdownOpen(false);
       }
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
         setMobileMenuOpen(false);
-        setMobileCourseOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  /* ── prevent body scroll when mobile menu open ── */
+  // Prevent body scroll when mobile menu open
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "unset";
     return () => {
@@ -149,85 +144,154 @@ const Header = () => {
 
         {/* Main Navigation */}
         <nav className="bg-gradient-to-r from-stone-900 to-gray-700 border-t border-white/10">
-          <div className="max-w-7xl mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-              {/* Logo */}
-              <motion.div
-                layoutId="shared-logo"
-                transition={{ type: "spring", stiffness: 60, damping: 15 }}
-                className="flex items-center"
-              >
-                <img
-                  src={logo}
-                  alt="Math Sense Academy"
-                  className="h-10 sm:h-12 cursor-pointer hover:scale-105 transition-transform duration-300"
-                  onClick={() => {
-                    navigate("/");
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                    setMobileMenuOpen(false);
-                  }}
-                />
-              </motion.div>
+          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            {/* Logo */}
+            <motion.div
+              layoutId="shared-logo"
+              transition={{ type: "spring", stiffness: 60, damping: 15 }}
+              className="flex items-center gap-6"
+            >
+              <img
+                src={logo}
+                alt="Math Sense Academy"
+                className="h-10 sm:h-12 cursor-pointer hover:scale-105 transition-transform duration-300"
+                onClick={() => {
+                  navigate("/");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  setMobileMenuOpen(false);
+                }}
+              />
 
-              {/* Desktop Navigation */}
-              <div className="hidden lg:flex items-center gap-8">
-                <ul className="flex items-center gap-6">
-                  {navItems.map((item) => (
-                    <li key={item.label}>
-                      {item.type === "link" ? (
-                        <Link
-                          to={item.to}
-                          className="text-white hover:text-yellow-300 transition-colors duration-200 font-medium"
-                        >
-                          {item.label}
-                        </Link>
-                      ) : (
-                        <a
-                          href={`#${item.to}`}
-                          className="text-white hover:text-yellow-300 transition-colors duration-200 font-medium"
-                        >
-                          {item.label}
-                        </a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+              {/* Desktop Dropdowns */}
+              <div className="hidden lg:flex items-center gap-4">
+                {/* Class Dropdown */}
+                <div ref={classRef} className="relative">
+                  <button
+                    className="flex items-center gap-1 px-3 py-1 hover:text-yellow-300 font-medium transition"
+                    onClick={() => setClassDropdownOpen(!classDropdownOpen)}
+                  >
+                    {t("Class")}
+                    <ChevronDown size={16} />
+                  </button>
+                  <AnimatePresence>
+                    {classDropdownOpen && (
+                      <motion.ul
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute mt-2 bg-white text-gray-900 rounded shadow-lg overflow-hidden w-40 z-50"
+                      >
+                        {classes.map((cls) => (
+                          <li
+                            key={cls}
+                            className="px-4 py-2 hover:bg-gray-300 cursor-pointer"
+                            onClick={() => {
+                              console.log("Selected class:", cls);
+                              setClassDropdownOpen(false);
+                            }}
+                          >
+                            {cls}
+                          </li>
+                        ))}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
+                </div>
 
-                {/* Desktop Auth Button */}
-                {adminUser ? (
-  <button
-    className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
-    disabled
-  >
-    Admin Panel
-  </button>
-) : (
-  <button
-    className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
-    disabled
-  >
-    {t("login")}
-  </button>
-)}
+                {/* Courses Dropdown */}
+                <div ref={coursesRef} className="relative">
+                  <button
+                    className="flex items-center gap-1 px-3 py-1 hover:text-yellow-300 font-medium transition"
+                    onClick={() => setCourseDropdownOpen(!courseDropdownOpen)}
+                  >
+                    {t("Courses")}
+                    <ChevronDown size={16} />
+                  </button>
+                  <AnimatePresence>
+                    {courseDropdownOpen && (
+                      <motion.ul
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute mt-2 bg-white text-gray-900 rounded shadow-lg overflow-hidden w-48 z-50"
+                      >
+                        {courses.map((course) => (
+                          <li
+                            key={course}
+                            className="px-4 py-2 hover:bg-gray-300 cursor-pointer"
+                            onClick={() => {
+                              console.log("Selected course:", course);
+                              setCourseDropdownOpen(false);
+                            }}
+                          >
+                            {course}
+                          </li>
+                        ))}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
+            </motion.div>
 
-              {/* Mobile Hamburger Button */}
-              <button
-                className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle mobile menu"
-              >
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
+            {/* Desktop Navigation Links */}
+            <div className="hidden lg:flex items-center gap-8">
+              <ul className="flex items-center gap-6">
+                {navItems.map((item) => (
+                  <li key={item.label}>
+                    {item.type === "link" ? (
+                      <Link
+                        to={item.to}
+                        className="text-white hover:text-yellow-300 transition-colors duration-200 font-medium"
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={`#${item.to}`}
+                        className="text-white hover:text-yellow-300 transition-colors duration-200 font-medium"
+                      >
+                        {item.label}
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+
+              {/* Desktop Auth Button */}
+              {adminUser ? (
+                <button
+                  className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
+                  disabled
+                >
+                  Admin Panel
+                </button>
+              ) : (
+                <button
+                  className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
+                  disabled
+                >
+                  {t("login")}
+                </button>
+              )}
             </div>
+
+            {/* Mobile Hamburger */}
+            <button
+              className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle mobile menu"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </nav>
       </motion.header>
 
-      {/* Spacer div to prevent content being hidden */}
+      {/* Spacer div */}
       <div className="h-[120px] lg:h-[150px]" />
 
-      {/* ── Sticky Register Btn ── */}
+      {/* Sticky Register Button */}
       {showStickyRegister && (
         <motion.button
           initial={{ opacity: 0, y: -10 }}
@@ -240,7 +304,7 @@ const Header = () => {
         </motion.button>
       )}
 
-      {/* ── Student Register Modal ── */}
+      {/* Student Register Modal */}
       {showRegisterModal && (
         <StudentRegister onClose={() => setShowRegisterModal(false)} />
       )}
