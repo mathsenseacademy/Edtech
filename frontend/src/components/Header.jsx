@@ -9,6 +9,7 @@ import {
   FaTwitter,
   FaYoutube,
   FaInstagram,
+  FaWhatsapp,
 } from "react-icons/fa";
 import { Phone, Mail, Menu, X, ChevronDown } from "lucide-react";
 import { getActiveCourses } from "../api/courseApi";
@@ -93,6 +94,7 @@ const Header = () => {
   ];
 
   const socialLinks = [
+    { href: "https://wa.me/7003416272", icon: FaWhatsapp, label: "Whatsapp" },
     { href: "https://www.facebook.com/shomesirmath/", icon: FaFacebookF, label: "Facebook" },
     { href: "https://x.com/ShomeSuvad79678", icon: FaTwitter, label: "Twitter" },
     { href: "https://www.instagram.com/maths_ense", icon: FaInstagram, label: "Instagram" },
@@ -120,10 +122,10 @@ const Header = () => {
                   <Phone size={14} /> +91 70034 16272
                 </a>
                 <a
-                  href="mailto:info@mathsenseacademy.com"
+                  href="mailto:mathsenseacademy@gmail.com"
                   className="flex items-center gap-2 hover:text-yellow-300 transition"
                 >
-                  <Mail size={14} /> info@mathsenseacademy.com
+                  <Mail size={14} /> mathsenseacademy@gmail.com
                 </a>
               </div>
               <div className="flex items-center gap-4">
@@ -231,10 +233,10 @@ const Header = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="fixed bottom-6 right-6 px-5 py-3 font-semibold text-gray-900 bg-yellow-500 rounded-full shadow-lg hover:scale-105 hover:bg-yellow-400 transition z-40"
+          className="fixed bottom-6 right-6 px-5 py-3 font-semibold text-gray-900 bg-yellow-500 rounded-full shadow-lg hover:scale-105 hover:bg-green-500 transition z-40"
           onClick={() => setShowRegisterModal(true)}
         >
-          {t("hero.registerButton")}
+          {t("Student Register")}
         </motion.button>
       )}
 
