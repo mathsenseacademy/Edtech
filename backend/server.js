@@ -68,7 +68,7 @@ app.use("/api/student", studentRoutes); // Prefix with /api for better organizat
 app.use("/student", studentRoutes); // Keep existing route for backward compatibility
 
 // Future routes (uncomment when ready)
-app.use("/api/courses", coursesRoutes);
+// app.use("/api/courses", coursesRoutes);
 // app.use("/api/curriculums", curriculumRoutes);
 
 // Root route
