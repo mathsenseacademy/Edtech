@@ -6,24 +6,34 @@ import { useNavigate } from "react-router-dom";
 const Roles = () => {
   const navigate = useNavigate();
 
+  const handleRoleClick = (role) => {
+    if (role.label === "Guardian") {
+      alert("👨‍👩‍👦 Guardian login/dashboard coming soon. For now, please login as Student.");
+    } else if (role.label === "Teacher") {
+      alert("It is only for teachers. If you interested to join as a teacher, please contact us at phone, mail or Whatsapp from the header.");
+    } else if (role.label === "Student") {
+      navigate(role.path);
+    }
+  };
+
   const roles = [
     {
       label: "Guardian",
-      description: "Parents and Guardians",
+      description: "Parents",
       path: "/login/guardian",
       color: "bg-blue-500 hover:bg-blue-700",
       image: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
     },
     {
       label: "Student",
-      description: "Students and Learners",
+      description: "Students",
       path: "/login/student",
       color: "bg-green-500 hover:bg-green-700",
       image: "https://cdn-icons-png.flaticon.com/512/201/201818.png",
     },
     {
       label: "Teacher",
-      description: "Teachers and Mentors",
+      description: "Teachers",
       path: "/login/teacher",
       color: "bg-purple-500 hover:bg-purple-700",
       image: "https://cdn-icons-png.flaticon.com/512/3135/3135755.png",
@@ -60,7 +70,7 @@ const Roles = () => {
             </h2>
 
             <button
-              onClick={() => navigate(role.path)}
+              onClick={() => handleRoleClick(role)}
               className={`${role.color} text-white px-4 py-2 rounded-lg mt-auto w-full md:w-auto transition`}
             >
               Continue as {role.label}

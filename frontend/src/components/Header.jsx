@@ -94,7 +94,7 @@ const Header = () => {
   ];
 
   const socialLinks = [
-    { href: "https://wa.me/7003416272", icon: FaWhatsapp, label: "Whatsapp" },
+    { href: "https://wa.me/9062428472", icon: FaWhatsapp, label: "Whatsapp" },
     { href: "https://www.facebook.com/shomesirmath/", icon: FaFacebookF, label: "Facebook" },
     { href: "https://x.com/ShomeSuvad79678", icon: FaTwitter, label: "Twitter" },
     { href: "https://www.instagram.com/maths_ense", icon: FaInstagram, label: "Instagram" },
@@ -195,20 +195,20 @@ const Header = () => {
 
                 {/* Desktop Auth Button */}
                 {adminUser ? (
-                  <button
-                    className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg hover:bg-yellow-400 transition-colors font-semibold"
-                    onClick={() => navigate("/admin")}
-                  >
-                    Admin Panel
-                  </button>
-                ) : (
-                  <button
-                    className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg hover:bg-yellow-400 transition-colors font-semibold"
-                    onClick={() => navigate("/Login")}
-                  >
-                    {t("login")}
-                  </button>
-                )}
+  <button
+    className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
+    disabled
+  >
+    Admin Panel
+  </button>
+) : (
+  <button
+    className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
+    disabled
+  >
+    {t("login")}
+  </button>
+)}
               </div>
 
               {/* Mobile Hamburger Button */}
