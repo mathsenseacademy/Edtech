@@ -10,10 +10,7 @@ const programs = [
     subtitle: "Strong basics, strong future",
     level: "Class 8",
     image: "https://via.placeholder.com/150",
-    schedule: [
-      { day: "Monday", time: "5:00 PM - 6:30 PM" },
-      { day: "Thursday", time: "5:00 PM - 6:30 PM" },
-    ],
+    schedule: ["Coming Soon"],
     notes: ["Algebra basics", "Geometry introduction", "Weekly assignments"],
     batches: ["Batch A", "Batch B"],
   },
@@ -23,11 +20,8 @@ const programs = [
     subtitle: "Hands-on science learning",
     level: "Class 9",
     image: "https://via.placeholder.com/150",
-    schedule: [
-      { day: "Tuesday", time: "6:00 PM - 7:30 PM" },
-      { day: "Friday", time: "6:00 PM - 7:30 PM" },
-    ],
-    notes: ["Physics lab demos", "Chemistry experiments", "MCQ practice"],
+    schedule: ["Coming Soon"],
+    notes: ["Live Classes", "Career Discussion", "MCQ practice"],
     batches: ["Batch X", "Batch Y"],
   },
   {
@@ -36,10 +30,7 @@ const programs = [
     subtitle: "Focus on exams",
     level: "Class 10",
     image: "https://via.placeholder.com/150",
-    schedule: [
-      { day: "Wednesday", time: "5:30 PM - 7:00 PM" },
-      { day: "Saturday", time: "10:00 AM - 12:00 PM" },
-    ],
+    schedule: ["Coming Soon"],
     notes: ["Mock tests", "Exam strategy sessions", "Doubt solving"],
     batches: ["Morning Batch", "Evening Batch"],
   },
@@ -105,9 +96,7 @@ export default function ProgramsSection() {
                 </h4>
                 <ul className="text-sm text-gray-700 list-disc ml-5">
                   {p.schedule.map((s, idx) => (
-                    <li key={idx}>
-                      {s.day} – {s.time}
-                    </li>
+                    <li key={idx}>{s}</li>
                   ))}
                 </ul>
               </div>

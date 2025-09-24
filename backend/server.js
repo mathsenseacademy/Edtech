@@ -17,7 +17,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Enhanced CORS configuration
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://mathsenseacademy.com", "https://https://mathsenseacademy-55f13.web.app"], 
+    origin: [
+    "http://localhost:5173", 
+    "www.mathsenseacademy.com",
+    "https://mathsenseacademy-55f13.web.app",
+    "https://mathsenseacademy-55f13.firebaseapp.com",
+    "https://mathsenseacademy.com"
+  ], 
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
