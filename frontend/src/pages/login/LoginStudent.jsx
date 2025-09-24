@@ -265,15 +265,6 @@ export default function LoginStudent() {
             </div>
           </div>
         </div>
-
-        {/* Debug info for development - remove in production */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <p className="text-xs text-yellow-700">
-              Debug Mode: API Base URL - {API_BASE_URL}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

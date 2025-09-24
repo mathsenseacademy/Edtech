@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Enhanced CORS configuration
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://mathsenseacademy.com", "https://www.mathsenseacademy.com"], 
+    origin: ["http://localhost:5173", "https://mathsenseacademy.com", "https://https://mathsenseacademy-55f13.web.app"], 
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
@@ -68,7 +68,7 @@ app.use("/api/student", studentRoutes); // Prefix with /api for better organizat
 app.use("/student", studentRoutes); // Keep existing route for backward compatibility
 
 // Future routes (uncomment when ready)
-// app.use("/api/courses", coursesRoutes);
+app.use("/api/courses", coursesRoutes);
 // app.use("/api/curriculums", curriculumRoutes);
 
 // Root route
