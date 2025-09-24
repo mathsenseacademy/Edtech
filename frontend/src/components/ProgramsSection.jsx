@@ -1,6 +1,9 @@
 // src/components/ProgramsSection.jsx
 import React from "react";
 import heroImage from "../assets/our-programs-hero.png";
+import img8 from "../assets/img8.png";
+import img9 from "../assets/img9.png";
+import img10 from "../assets/img10.png";
 
 // Example static data
 const programs = [
@@ -9,7 +12,7 @@ const programs = [
     name: "Mathematics Foundation",
     subtitle: "Strong basics, strong future",
     level: "Class 8",
-    image: "https://via.placeholder.com/150",
+    image: img8,
     schedule: ["Coming Soon"],
     notes: ["Algebra basics", "Geometry introduction", "Weekly assignments"],
     batches: ["Batch A", "Batch B"],
@@ -19,7 +22,7 @@ const programs = [
     name: "Science Explorer",
     subtitle: "Hands-on science learning",
     level: "Class 9",
-    image: "https://via.placeholder.com/150",
+    image: img9,
     schedule: ["Coming Soon"],
     notes: ["Live Classes", "Career Discussion", "MCQ practice"],
     batches: ["Batch X", "Batch Y"],
@@ -29,7 +32,7 @@ const programs = [
     name: "Competitive Prep",
     subtitle: "Focus on exams",
     level: "Class 10",
-    image: "https://via.placeholder.com/150",
+    image: img10,
     schedule: ["Coming Soon"],
     notes: ["Mock tests", "Exam strategy sessions", "Doubt solving"],
     batches: ["Morning Batch", "Evening Batch"],
