@@ -10,6 +10,7 @@ import {
   FaYoutube,
   FaInstagram,
   FaWhatsapp,
+  FaLinkedinIn
 } from "react-icons/fa";
 import { Phone, Mail, Menu, X, ChevronDown } from "lucide-react";
 import logo from "../assets/logoWith_Name.svg";
@@ -86,6 +87,7 @@ const Header = () => {
     { type: "anchor", to: "programs", label: t("OurProgram") },
     { type: "anchor", to: "testimonials", label: t("Testimonials") },
     { type: "anchor", to: "about", label: t("About") },
+    { type: "anchor", to: "blog", label: t("Blog") },
   ];
 
   const socialLinks = [
@@ -94,6 +96,7 @@ const Header = () => {
     { href: "https://x.com/ShomeSuvad79678", icon: FaTwitter, label: "Twitter" },
     { href: "https://www.instagram.com/maths_ense", icon: FaInstagram, label: "Instagram" },
     { href: "https://www.youtube.com/@mathsenseacademy", icon: FaYoutube, label: "YouTube" },
+    { href: "https://www.youtube.com/@mathsenseacademy", icon: FaLinkedinIn, label: "LinkedinIn" },
   ];
 
   return (
@@ -111,10 +114,10 @@ const Header = () => {
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-6">
                 <a
-                  href="tel:+917003416272"
+                  href="tel:+919147718572"
                   className="flex items-center gap-2 hover:text-yellow-300 transition"
                 >
-                  <Phone size={14} /> +91 70034 16272
+                  <Phone size={14} /> +91 9147718572
                 </a>
                 <a
                   href="mailto:mathsenseacademy@gmail.com"
@@ -286,6 +289,120 @@ const Header = () => {
             </button>
           </div>
         </nav>
+
+        {/* 📱 Mobile Menu Panel */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              ref={mobileMenuRef}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="lg:hidden fixed inset-x-0 top-[120px] bg-gradient-to-r from-stone-900 to-gray-700 text-white shadow-lg z-40"
+            >
+              <ul className="flex flex-col p-4 gap-4">
+                {/* Classes Dropdown */}
+                <li>
+                  <button
+                    className="w-full flex items-center justify-between px-3 py-2 hover:text-yellow-300"
+                    onClick={() => setClassDropdownOpen(!classDropdownOpen)}
+                  >
+                    {t("Class")}
+                    <ChevronDown size={16} />
+                  </button>
+                  {classDropdownOpen && (
+                    <ul className="pl-6 mt-2 space-y-2">
+                      {classes.map((cls) => (
+                        <li
+                          key={cls}
+                          className="cursor-pointer hover:text-yellow-300"
+                          onClick={() => {
+                            console.log("Selected class:", cls);
+                            setClassDropdownOpen(false);
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          {cls}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+
+                {/* Courses Dropdown */}
+                <li>
+                  <button
+                    className="w-full flex items-center justify-between px-3 py-2 hover:text-yellow-300"
+                    onClick={() => setCourseDropdownOpen(!courseDropdownOpen)}
+                  >
+                    {t("Courses")}
+                    <ChevronDown size={16} />
+                  </button>
+                  {courseDropdownOpen && (
+                    <ul className="pl-6 mt-2 space-y-2">
+                      {courses.map((course) => (
+                        <li
+                          key={course}
+                          className="cursor-pointer hover:text-yellow-300"
+                          onClick={() => {
+                            console.log("Selected course:", course);
+                            setCourseDropdownOpen(false);
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          {course}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+
+                {/* Navigation Links */}
+                {navItems.map((item) => (
+                  <li key={item.label}>
+                    {item.type === "link" ? (
+                      <Link
+                        to={item.to}
+                        className="block px-3 py-2 hover:text-yellow-300"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={`#${item.to}`}
+                        className="block px-3 py-2 hover:text-yellow-300"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.label}
+                      </a>
+                    )}
+                  </li>
+                ))}
+
+                {/* Auth Button */}
+                <li className="px-3 py-2">
+                  {adminUser ? (
+                    <button
+                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold"
+                      disabled
+                    >
+                      Admin Panel
+                    </button>
+                  ) : (
+                    <button
+                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold"
+                      disabled
+                    >
+                      {t("login")}
+                    </button>
+                  )}
+                </li>
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.header>
 
       {/* Spacer div */}
