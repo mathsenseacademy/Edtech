@@ -23,13 +23,27 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [classDropdownOpen, setClassDropdownOpen] = useState(false);
   const [courseDropdownOpen, setCourseDropdownOpen] = useState(false);
+  
 
   const coursesRef = useRef(null);
   const classRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
-  const classes = Array.from({ length: 12 }, (_, i) => `Class ${i + 1}`);
-  const courses = ["JEE", "UGC", "NET", "UPSC", "WBSC", "Other Exams"];
+  // Class data with routes
+  const classes = Array.from({ length: 10 }, (_, i) => ({
+    name: `Class ${i + 1}`,
+    route: `/class${i + 1}`
+  }));
+
+  // Course data with routes
+  const courses = [
+    { name: "JEE", route: "/jee" },
+    { name: "UGC", route: "/ugc" },
+    { name: "NET", route: "/net" },
+    { name: "UPSC", route: "/upsc" },
+    { name: "WBSC", route: "/wbsc" },
+    { name: "Other Exams", route: "/other-exams" }
+  ];
 
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -171,10 +185,15 @@ const Header = () => {
                 <div ref={classRef} className="relative">
                   <button
                     className="flex items-center gap-1 px-3 py-1 hover:text-yellow-300 font-medium transition"
-                    onClick={() => setClassDropdownOpen(!classDropdownOpen)}
+                    onClick={() => setClassDropdownOpen((prev) => !prev)}
                   >
                     {t("Class")}
-                    <ChevronDown size={16} />
+                    <ChevronDown 
+                      size={16}
+                      className={`transform transition-transform ${
+                        classDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
                   <AnimatePresence>
                     {classDropdownOpen && (
@@ -186,14 +205,14 @@ const Header = () => {
                       >
                         {classes.map((cls) => (
                           <li
-                            key={cls}
-                            className="px-4 py-2 hover:bg-gray-300 cursor-pointer"
+                            key={cls.route}
+                            className="px-4 py-2 hover:bg-gray-300 cursor-pointer transition"
                             onClick={() => {
-                              console.log("Selected class:", cls);
+                              navigate(cls.route);
                               setClassDropdownOpen(false);
                             }}
                           >
-                            {cls}
+                            {cls.name}
                           </li>
                         ))}
                       </motion.ul>
@@ -208,7 +227,12 @@ const Header = () => {
                     onClick={() => setCourseDropdownOpen(!courseDropdownOpen)}
                   >
                     {t("Courses")}
-                    <ChevronDown size={16} />
+                    <ChevronDown 
+                      size={16}
+                      className={`transform transition-transform ${
+                        courseDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
                   <AnimatePresence>
                     {courseDropdownOpen && (
@@ -220,14 +244,14 @@ const Header = () => {
                       >
                         {courses.map((course) => (
                           <li
-                            key={course}
-                            className="px-4 py-2 hover:bg-gray-300 cursor-pointer"
+                            key={course.route}
+                            className="px-4 py-2 hover:bg-gray-300 cursor-pointer transition"
                             onClick={() => {
-                              console.log("Selected course:", course);
+                              navigate(course.route);
                               setCourseDropdownOpen(false);
                             }}
                           >
-                            {course}
+                            {course.name}
                           </li>
                         ))}
                       </motion.ul>
@@ -299,63 +323,89 @@ const Header = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="lg:hidden fixed inset-x-0 top-[120px] bg-gradient-to-r from-stone-900 to-gray-700 text-white shadow-lg z-40"
+              className="lg:hidden fixed inset-x-0 top-[120px] bg-gradient-to-r from-stone-900 to-gray-700 text-white shadow-lg z-40 max-h-[calc(100vh-120px)] overflow-y-auto"
             >
               <ul className="flex flex-col p-4 gap-4">
                 {/* Classes Dropdown */}
                 <li>
                   <button
-                    className="w-full flex items-center justify-between px-3 py-2 hover:text-yellow-300"
-                    onClick={() => setClassDropdownOpen(!classDropdownOpen)}
+                    className="w-full flex items-center justify-between px-3 py-2 hover:text-yellow-300 transition"
+                    onClick={() => setClassDropdownOpen((prev) => !prev)}
                   >
                     {t("Class")}
-                    <ChevronDown size={16} />
+                    <ChevronDown
+                      size={16}
+                      className={`transform transition-transform ${
+                        classDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
-                  {classDropdownOpen && (
-                    <ul className="pl-6 mt-2 space-y-2">
-                      {classes.map((cls) => (
-                        <li
-                          key={cls}
-                          className="cursor-pointer hover:text-yellow-300"
-                          onClick={() => {
-                            console.log("Selected class:", cls);
-                            setClassDropdownOpen(false);
-                            setMobileMenuOpen(false);
-                          }}
-                        >
-                          {cls}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <AnimatePresence>
+                    {classDropdownOpen && (
+                      <motion.ul
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="pl-6 mt-2 space-y-2 overflow-hidden"
+                      >
+                        {classes.map((cls) => (
+                          <li
+                            key={cls.route}
+                            className="cursor-pointer hover:text-yellow-300 transition py-1"
+                            onClick={() => {
+                              navigate(cls.route);
+                              setClassDropdownOpen(false);
+                              setMobileMenuOpen(false);
+                            }}
+                          >
+                            {cls.name}
+                          </li>
+                        ))}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
                 </li>
 
                 {/* Courses Dropdown */}
                 <li>
                   <button
-                    className="w-full flex items-center justify-between px-3 py-2 hover:text-yellow-300"
-                    onClick={() => setCourseDropdownOpen(!courseDropdownOpen)}
+                    className="w-full flex items-center justify-between px-3 py-2 hover:text-yellow-300 transition"
+                    onClick={() => setCourseDropdownOpen((prev) => !prev)}
                   >
                     {t("Courses")}
-                    <ChevronDown size={16} />
+                    <ChevronDown
+                      size={16}
+                      className={`transform transition-transform ${
+                        courseDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
-                  {courseDropdownOpen && (
-                    <ul className="pl-6 mt-2 space-y-2">
-                      {courses.map((course) => (
-                        <li
-                          key={course}
-                          className="cursor-pointer hover:text-yellow-300"
-                          onClick={() => {
-                            console.log("Selected course:", course);
-                            setCourseDropdownOpen(false);
-                            setMobileMenuOpen(false);
-                          }}
-                        >
-                          {course}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <AnimatePresence>
+                    {courseDropdownOpen && (
+                      <motion.ul
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="pl-6 mt-2 space-y-2 overflow-hidden"
+                      >
+                        {courses.map((course) => (
+                          <li
+                            key={course.route}
+                            className="cursor-pointer hover:text-yellow-300 transition py-1"
+                            onClick={() => {
+                              navigate(course.route);
+                              setCourseDropdownOpen(false);
+                              setMobileMenuOpen(false);
+                            }}
+                          >
+                            {course.name}
+                          </li>
+                        ))}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
                 </li>
 
                 {/* Navigation Links */}
@@ -364,7 +414,7 @@ const Header = () => {
                     {item.type === "link" ? (
                       <Link
                         to={item.to}
-                        className="block px-3 py-2 hover:text-yellow-300"
+                        className="block px-3 py-2 hover:text-yellow-300 transition"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {item.label}
@@ -372,7 +422,7 @@ const Header = () => {
                     ) : (
                       <a
                         href={`#${item.to}`}
-                        className="block px-3 py-2 hover:text-yellow-300"
+                        className="block px-3 py-2 hover:text-yellow-300 transition"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {item.label}
@@ -385,14 +435,14 @@ const Header = () => {
                 <li className="px-3 py-2">
                   {adminUser ? (
                     <button
-                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold"
+                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
                       disabled
                     >
                       Admin Panel
                     </button>
                   ) : (
                     <button
-                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold"
+                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
                       disabled
                     >
                       {t("login")}
