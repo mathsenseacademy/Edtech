@@ -6,7 +6,7 @@ import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDgxavViNHgPeDJbBpQhK5gqEpWg0qx6WU",
-  authDomain: "mathsenseacademy-55f13.firebaseapp.com",
+  authDomain: "mathsenseacademy.com",
   projectId: "mathsenseacademy-55f13",
   storageBucket: "mathsenseacademy-55f13.firebasestorage.app",
   messagingSenderId: "381785601078",
