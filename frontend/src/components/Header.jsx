@@ -288,21 +288,14 @@ const Header = () => {
               </ul>
 
               {/* Desktop Auth Button */}
-              {adminUser ? (
-                <button
-                onClick={() => navigate("/admin-dashboard")}
-                  className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700"
-                >
-                  Admin Panel
-                </button>
-              ) : (
-                <button
-                onClick={() => navigate("/login")}
-                  className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700"
-                >
-                  {t("login")}
-                </button>
-              )}
+             {/* Desktop Auth Button */}
+<button
+  onClick={() => navigate("/login/student")}
+  className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700"
+>
+ Admin Login
+</button>
+
             </div>
 
             {/* Mobile Hamburger */}
@@ -435,21 +428,15 @@ const Header = () => {
 
                 {/* Auth Button */}
                 <li className="px-3 py-2">
-                  {adminUser ? (
-                    <button
-                    onClick={() => navigate("/admin-dashboard")}
-                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold"
-                    >
-                      Admin Panel
-                    </button>
-                  ) : (
-                    <button
-                    onClick={() => navigate("/login")}
-                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold"
-                    >
-                      {t("login")}
-                    </button>
-                  )}
+                  {/* Auth Button */}
+<li className="px-3 py-2">
+  <button
+    onClick={() => navigate("/login/student")}
+    className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700 w-full"
+  >
+    Admin Login
+  </button>
+</li>
                 </li>
               </ul>
             </motion.div>
