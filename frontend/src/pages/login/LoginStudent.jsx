@@ -138,6 +138,17 @@ export default function LoginStudent() {
       const user = result.user;
       const token = await user.getIdToken();
 
+      // 🔒 Check for admin email
+    const adminEmails = ["mathsenseacademy@gmail.com"]; // ✅ add more if needed
+    if (adminEmails.includes(user.email)) {
+      console.log("🧑‍🏫 Admin detected, redirecting to admin dashboard...");
+      localStorage.setItem("accessToken", "admin-access-token");
+      localStorage.setItem("userType", "admin");
+      localStorage.setItem("adminEmail", user.email);
+      navigate("/admin-dashboard");
+      return;
+    }
+
       localStorage.setItem("accessToken", token);
       localStorage.setItem("userType", "student");
       localStorage.setItem("studentUid", user.uid);

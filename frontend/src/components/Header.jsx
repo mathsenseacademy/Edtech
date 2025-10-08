@@ -71,6 +71,8 @@ const Header = () => {
     return () => ob.disconnect();
   }, []);
 
+  
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
@@ -110,7 +112,7 @@ const Header = () => {
     { href: "https://x.com/ShomeSuvad79678", icon: FaTwitter, label: "Twitter" },
     { href: "https://www.instagram.com/maths_ense", icon: FaInstagram, label: "Instagram" },
     { href: "https://www.youtube.com/@mathsenseacademy", icon: FaYoutube, label: "YouTube" },
-    { href: "https://www.youtube.com/@mathsenseacademy", icon: FaLinkedinIn, label: "LinkedinIn" },
+    { href: "https://www.linkedin.com/in/suvadip-shome-1817ba289/", icon: FaLinkedinIn, label: "LinkedinIn" },
   ];
 
   return (
@@ -288,15 +290,15 @@ const Header = () => {
               {/* Desktop Auth Button */}
               {adminUser ? (
                 <button
-                  className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
-                  disabled
+                onClick={() => navigate("/admin-dashboard")}
+                  className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700"
                 >
                   Admin Panel
                 </button>
               ) : (
                 <button
-                  className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
-                  disabled
+                onClick={() => navigate("/login")}
+                  className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700"
                 >
                   {t("login")}
                 </button>
@@ -435,15 +437,15 @@ const Header = () => {
                 <li className="px-3 py-2">
                   {adminUser ? (
                     <button
-                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
-                      disabled
+                    onClick={() => navigate("/admin-dashboard")}
+                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold"
                     >
                       Admin Panel
                     </button>
                   ) : (
                     <button
-                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold opacity-50 cursor-not-allowed"
-                      disabled
+                    onClick={() => navigate("/login")}
+                      className="w-full px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold"
                     >
                       {t("login")}
                     </button>

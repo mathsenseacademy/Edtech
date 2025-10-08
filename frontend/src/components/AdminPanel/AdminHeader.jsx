@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUsers, FaFileAlt, FaUserCircle } from "react-icons/fa";
-import { jwtDecode } from "jwt-decode";
 import logo from "../../assets/logo.png";
 import ProfileModal from "../ProfileModal";
 
@@ -14,18 +13,17 @@ const AdminHeader = () => {
   const [adminUser, setAdminUser] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  /* when token present or after login */
+  // ✅ Load admin info (from localStorage or any other state)
   useEffect(() => {
-    const tok = localStorage.getItem("accessToken");
-    if (!tok) return;
-    try {
-      setAdminUser(jwtDecode(tok)); // token should include username / email
-    } catch {
-      console.error("invalid token");
+    const storedAdmin = localStorage.getItem("adminUser");
+    if (storedAdmin) {
+      setAdminUser(JSON.parse(storedAdmin));
+    } else {
+      setAdminUser({ name: "Admin", email: "admin@mathsenseacademy.com" });
     }
   }, []);
 
-  /* shadow when scrolling */
+  // ✅ Add shadow when scrolling
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
@@ -34,12 +32,13 @@ const AdminHeader = () => {
 
   const openProfile = () => {
     const rect = profileBtnRef.current.getBoundingClientRect();
-    setAnchor({ top: rect.bottom + 8, left: rect.right }); // 8px gap
+    setAnchor({ top: rect.bottom + 8, left: rect.right });
     setShowProfile(true);
   };
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("adminUser");
     navigate("/");
   };
 
@@ -47,9 +46,7 @@ const AdminHeader = () => {
     <>
       <nav
         className={`fixed top-0 w-full z-[1050] transition-all duration-300 ${
-          isScrolled
-            ? "bg-blue-500/60 shadow-md"
-            : "bg-blue-500/25"
+          isScrolled ? "bg-blue-500/60 shadow-md" : "bg-blue-500/25"
         } backdrop-blur-md`}
       >
         <div className="flex items-center justify-between px-6 py-3">
@@ -120,7 +117,7 @@ const AdminHeader = () => {
         user={{
           name: adminUser?.name || "Admin",
           email: adminUser?.email || "no-email@example.com",
-          username: adminUser?.username || adminUser?.admin_id,
+          username: adminUser?.username || "mathsense-admin",
           avatar: adminUser?.avatar || "https://i.pravatar.cc/150",
         }}
       />

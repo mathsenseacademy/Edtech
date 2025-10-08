@@ -1,5 +1,6 @@
+// src/App.jsx
 import React, { useEffect, useRef, useState } from "react";
-import { Routes, Route, useLocation, Outlet } from "react-router-dom";
+import { Routes, Route, useLocation, Outlet, Navigate } from "react-router-dom";
 import { LayoutGroup } from "framer-motion";
 
 import Header from "./components/Header";
@@ -8,6 +9,7 @@ import Footer from "./components/Footer";
 
 import Home from "./pages/Home";
 import StudentRegister from "./pages/StudentRegister";
+import AdminDashboard from "./pages/AdminDashboard";
 import SdHome from "./pages/Dashboard/SdHome";
 import AdminPanel from "./components/AdminPanel/AdminPanel";
 import Roles from "./components/Roles";
@@ -15,20 +17,21 @@ import LoginStudent from "./pages/login/LoginStudent";
 
 import useLocoScroll from "./hooks/useLocoScroll";
 
-// Optional: ProtectedRoute if needed
-// import ProtectedRoute from "./components/ProtectedRoute";
-
-// ── Student layout to wrap all student dashboard routes
 function StudentLayout() {
   return (
     <>
-      <Header showDashboardBtn={false} /> {/* Or use StudentHeader component */}
+      <Header showDashboardBtn={false} />
       <div className="pt-header">
         <Outlet />
       </div>
       <Footer />
     </>
   );
+}
+
+function ProtectedAdminRoute({ children }) {
+  const userType = localStorage.getItem("userType");
+  return userType === "admin" ? children : <Navigate to="/" />;
 }
 
 function App() {
@@ -38,22 +41,16 @@ function App() {
   const { scrollRef } = useLocoScroll(!loading);
   const sentinelRef = useRef(null);
 
-  // Loading spinner
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(t);
   }, []);
 
-  // Scroll to top on route change
   useEffect(() => {
-    if (scrollRef.current?.scrollTo) {
-      scrollRef.current.scrollTo(0, 0);
-    } else {
-      window.scrollTo(0, 0);
-    }
+    if (scrollRef.current?.scrollTo) scrollRef.current.scrollTo(0, 0);
+    else window.scrollTo(0, 0);
   }, [location.pathname, scrollRef]);
 
-  // Pick header
   const isAdminRoute = path.startsWith("/admin");
   const isStudentRoute = path.startsWith("/student/");
   const userType = localStorage.getItem("userType");
@@ -64,12 +61,19 @@ function App() {
     HeaderComponent = (
       <Header
         showDashboardBtn={!!userType}
-        dashboardTarget={userType === "admin" ? "/admin" : "/student/dashboard"}
+        dashboardTarget={
+          userType === "admin" ? "/admin-dashboard" : "/student/dashboard"
+        }
       />
     );
   }
 
-  if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-screen text-gray-600">
+        Loading...
+      </div>
+    );
 
   return (
     <LayoutGroup>
@@ -79,7 +83,10 @@ function App() {
         <div data-scroll-section className="pt-header">
           <Routes>
             {/* Home */}
-            <Route path="/" element={<Home sentinelRef={sentinelRef} redirectToLogin={true} />} />
+            <Route
+              path="/"
+              element={<Home sentinelRef={sentinelRef} redirectToLogin={true} />}
+            />
 
             {/* Roles */}
             <Route path="/roles" element={<Roles />} />
@@ -91,17 +98,24 @@ function App() {
             {/* Student registration */}
             <Route path="/student/register" element={<StudentRegister />} />
 
-            {/* ── Student Dashboard Routes ── */}
+            {/* ── Student Dashboard Layout ── */}
             <Route path="/student" element={<StudentLayout />}>
               <Route path="dashboard" element={<SdHome />} />
-              {/* future nested routes can go here */}
-              {/* <Route path="time-table" element={<SdTimeTable />} /> */}
-              {/* <Route path="examination" element={<SdExamination />} /> */}
-              {/* <Route path="change-password" element={<SdChangePassword />} /> */}
             </Route>
 
-            {/* Admin routes */}
+            {/* ── Admin routes ── */}
+            <Route
+              path="/admin-dashboard"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminDashboard />
+                </ProtectedAdminRoute>
+              }
+            />
             <Route path="/admin/*" element={<AdminPanel />} />
+
+            {/* Catch-all route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </div>
