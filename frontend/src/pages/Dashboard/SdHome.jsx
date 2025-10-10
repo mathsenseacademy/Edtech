@@ -3,156 +3,251 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+const API_BASE = "https://mathsenseacademy.onrender.com/api/student";
+
 const SdHome = () => {
   const [student, setStudent] = useState(null);
+  const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState("");
 
+  // ==============================
+  // Load full student profile
+  // ==============================
   useEffect(() => {
-    const loadStudentData = async () => {
+    const loadStudentProfile = async () => {
       try {
-        // Load from localStorage first
-        const storedStudent = localStorage.getItem("studentData");
-        if (storedStudent) {
-          const parsed = JSON.parse(storedStudent);
-          console.log("Loaded student from localStorage:", parsed);
-          setStudent(parsed);
-          setLoading(false);
-          return;
-        }
-
-        // Fetch from API if missing
+        setLoading(true);
         const uid = localStorage.getItem("studentUid");
         if (!uid) {
-          console.warn("No student UID found in localStorage");
+          console.warn("⚠️ No UID found, student not logged in");
           setLoading(false);
           return;
         }
 
-        const response = await axios.get(
-          "https://mathsenseacademy.onrender.com/api/student/check-registration",
-          { params: { google_uid: uid } }
-        );
-
-        console.log("API response:", response.data);
-
-        const studentData = response.data?.student_data;
-        if (!studentData) {
-          console.warn("Student data missing from API response");
+        const cached = localStorage.getItem("studentData");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setStudent(parsed);
+          setFormData(parsed);
           setLoading(false);
           return;
         }
 
-        // Normalize fields with defaults
-        const normalizedStudent = {
-          first_name: studentData.first_name || "-",
-          middle_name: studentData.middle_name || "",
-          last_name: studentData.last_name || "-",
-          date_of_birth: studentData.date_of_birth || "-",
-          contact_number_1: studentData.contact_number_1 || "-",
-          contact_number_2: studentData.contact_number_2 || "-",
-          student_class: studentData.student_class || "-",
-          school_or_college_name: studentData.school_or_college_name || "-",
-          board_or_university_name: studentData.board_or_university_name || "-",
-          address: studentData.address || "-",
-          city: studentData.city || "-",
-          district: studentData.district || "-",
-          state: studentData.state || "-",
-          pin: studentData.pin || "-",
-          notes: studentData.notes || "",
-          email: studentData.email || "-",
-          google_uid: studentData.google_uid || "-",
-          google_photo_url: studentData.google_photo_url || "",
-          student_photo_path: studentData.student_photo_path || "",
-          student_id: studentData.student_id || "-",
-          registered_at: studentData.registered_at || null,
-        };
+        const res = await axios.get(`${API_BASE}/profile/${uid}`);
+        if (!res.data) {
+          setError("No student record found.");
+          return;
+        }
 
-        console.log("Normalized student data:", normalizedStudent);
-
-        localStorage.setItem("studentData", JSON.stringify(normalizedStudent));
-        setStudent(normalizedStudent);
+        localStorage.setItem("studentData", JSON.stringify(res.data));
+        setStudent(res.data);
+        setFormData(res.data);
+        setError("");
       } catch (err) {
-        console.error("Error loading student data:", err);
+        console.error("Error loading student profile:", err);
+        setError("Failed to fetch student data. Please retry.");
       } finally {
         setLoading(false);
       }
     };
 
-    loadStudentData();
+    loadStudentProfile();
   }, []);
 
-  if (loading) {
+  // ==============================
+  // Handle form changes
+  // ==============================
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // ==============================
+  // Save updates to backend
+  // ==============================
+  const handleSave = async () => {
+    if (!student?.uid) {
+      alert("Student UID missing. Please re-login.");
+      return;
+    }
+
+    try {
+      setUpdating(true);
+      const res = await axios.put(`${API_BASE}/profile/${student.uid}`, formData);
+
+      if (res.data?.student) {
+        localStorage.setItem("studentData", JSON.stringify(res.data.student));
+        setStudent(res.data.student);
+        setFormData(res.data.student);
+        setEditing(false);
+        alert("✅ Profile updated successfully!");
+      } else {
+        alert("⚠️ Unexpected response from server.");
+      }
+    } catch (err) {
+      console.error("Error updating student:", err);
+      alert("❌ Failed to update profile. Please try again later.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // ==============================
+  // Loading / Error states
+  // ==============================
+  if (loading)
     return (
       <div className="flex items-center justify-center h-[60vh] text-gray-500">
-        Loading dashboard...
+        Loading your dashboard...
       </div>
     );
-  }
 
-  if (!student) {
+  if (error)
     return (
       <div className="flex items-center justify-center h-[60vh] text-red-500">
-        Student data not found. Please login again.
+        {error}
       </div>
     );
-  }
 
-  // Safe date formatting
+  if (!student)
+    return (
+      <div className="flex items-center justify-center h-[60vh] text-red-500">
+        Student not found. Please login again.
+      </div>
+    );
+
   const formattedDate = student.registered_at
     ? new Date(student.registered_at).toLocaleString()
     : "-";
 
+  // ==============================
+  // Render UI
+  // ==============================
   return (
     <div className="p-6">
-      {/* Profile Section */}
+      {/* Profile Header */}
       <section className="mb-10 bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row items-center gap-6">
         <img
           src={student.google_photo_url || student.student_photo_path || "/placeholder.png"}
           alt="Student"
           className="w-32 h-32 rounded-full border shadow object-cover"
+          onError={(e) => (e.target.src = "/placeholder.png")}
         />
+
         <div>
           <h1 className="text-3xl font-bold text-gray-800">
-            {student.first_name} {student.middle_name} {student.last_name}
+            {student.first_name} {student.middle_name || ""} {student.last_name || ""}
           </h1>
           <p className="text-gray-600 mt-2">
-            <strong>Student ID:</strong> {student.student_id}
+            <strong>Student ID:</strong> {student.student_id || "-"}
           </p>
           <p className="text-gray-600">
-            <strong>Class:</strong> {student.student_class}
+            <strong>Class:</strong> {student.student_class || "-"}
           </p>
           <p className="text-gray-600">
-            <strong>Email:</strong> {student.email}
+            <strong>Email:</strong> {student.email || "-"}
           </p>
+          <p
+            className={`mt-2 font-semibold ${
+              student.fees_status === "Yes" ? "text-green-600" : "text-red-500"
+            }`}
+          >
+            💰 Fees Status: {student.fees_status || "No"}
+          </p>
+
+          <button
+            onClick={() => setEditing((prev) => !prev)}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
+            {editing ? "Cancel" : "Edit Profile"}
+          </button>
         </div>
       </section>
 
-      {/* Details Grid */}
-      <section className="mb-10">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Your Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            { label: "Date of Birth", value: student.date_of_birth },
-            { label: "Contact Number 1", value: student.contact_number_1 },
-            { label: "Contact Number 2", value: student.contact_number_2 },
-            { label: "Address", value: student.address },
-            { label: "City", value: student.city },
-            { label: "District", value: student.district },
-            { label: "State", value: student.state },
-            { label: "PIN", value: student.pin },
-            { label: "School/College", value: student.school_or_college_name },
-            { label: "Board/University", value: student.board_or_university_name },
-            { label: "Registered At", value: formattedDate },
-          ].map((item, idx) => (
-            <div key={idx} className="p-4 border rounded-lg bg-gray-50 shadow-sm">
-              <p className="text-sm text-gray-500">{item.label}</p>
-              <p className="text-lg font-medium text-gray-800">{item.value || "-"}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Edit Mode */}
+      {editing && (
+        <section className="mb-10 bg-gray-50 p-6 rounded-lg shadow-inner">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            Update Your Details
+          </h2>
 
-      {/* Coming Soon Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              "first_name",
+              "middle_name",
+              "last_name",
+              "date_of_birth",
+              "contact_number_1",
+              "contact_number_2",
+              "address",
+              "city",
+              "district",
+              "state",
+              "pin",
+              "school_or_college_name",
+              "board_or_university_name",
+              "notes",
+            ].map((field) => (
+              <div key={field}>
+                <label className="block text-sm text-gray-600 capitalize mb-1">
+                  {field.replaceAll("_", " ")}
+                </label>
+                <input
+                  type="text"
+                  name={field}
+                  value={formData[field] || ""}
+                  onChange={handleChange}
+                  className="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"
+                />
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={updating}
+            className="mt-6 bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
+          >
+            {updating ? "Saving..." : "Save Changes"}
+          </button>
+        </section>
+      )}
+
+      {/* View Mode */}
+      {!editing && (
+        <section className="mb-10">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Your Details</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { label: "First Name", value: student.first_name },
+              { label: "Middle Name", value: student.middle_name },
+              { label: "Last Name", value: student.last_name },
+              { label: "Date of Birth", value: student.date_of_birth },
+              { label: "Contact Number 1", value: student.contact_number_1 },
+              { label: "Contact Number 2", value: student.contact_number_2 },
+              { label: "Address", value: student.address },
+              { label: "City", value: student.city },
+              { label: "District", value: student.district },
+              { label: "State", value: student.state },
+              { label: "PIN", value: student.pin },
+              { label: "School/College", value: student.school_or_college_name },
+              { label: "Board/University", value: student.board_or_university_name },
+              { label: "Notes", value: student.notes },
+              { label: "Registered At", value: formattedDate },
+            ].map((item, idx) => (
+              <div key={idx} className="p-4 border rounded-lg bg-gray-50 shadow-sm">
+                <p className="text-sm text-gray-500">{item.label}</p>
+                <p className="text-lg font-medium text-gray-800">{item.value || "-"}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Coming Soon */}
       <section>
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">Coming Soon Sections</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
