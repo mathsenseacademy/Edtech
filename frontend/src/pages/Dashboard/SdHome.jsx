@@ -13,9 +13,6 @@ const SdHome = () => {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
 
-  // ==============================
-  // Load full student profile
-  // ==============================
   useEffect(() => {
     const loadStudentProfile = async () => {
       try {
@@ -27,24 +24,16 @@ const SdHome = () => {
           return;
         }
 
-        const cached = localStorage.getItem("studentData");
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          setStudent(parsed);
-          setFormData(parsed);
-          setLoading(false);
-          return;
-        }
-
         const res = await axios.get(`${API_BASE}/profile/${uid}`);
         if (!res.data) {
           setError("No student record found.");
           return;
         }
 
-        localStorage.setItem("studentData", JSON.stringify(res.data));
-        setStudent(res.data);
-        setFormData(res.data);
+        const studentData = res.data;
+        localStorage.setItem("studentData", JSON.stringify(studentData));
+        setStudent(studentData);
+        setFormData(studentData);
         setError("");
       } catch (err) {
         console.error("Error loading student profile:", err);
@@ -57,17 +46,11 @@ const SdHome = () => {
     loadStudentProfile();
   }, []);
 
-  // ==============================
-  // Handle form changes
-  // ==============================
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ==============================
-  // Save updates to backend
-  // ==============================
   const handleSave = async () => {
     if (!student?.uid) {
       alert("Student UID missing. Please re-login.");
@@ -76,7 +59,9 @@ const SdHome = () => {
 
     try {
       setUpdating(true);
-      const res = await axios.put(`${API_BASE}/profile/${student.uid}`, formData);
+
+      // ✅ Match backend route
+      const res = await axios.put(`${API_BASE}/${student.uid}`, formData);
 
       if (res.data?.student) {
         localStorage.setItem("studentData", JSON.stringify(res.data.student));
@@ -95,37 +80,19 @@ const SdHome = () => {
     }
   };
 
-  // ==============================
-  // Loading / Error states
-  // ==============================
   if (loading)
-    return (
-      <div className="flex items-center justify-center h-[60vh] text-gray-500">
-        Loading your dashboard...
-      </div>
-    );
+    return <div className="flex items-center justify-center h-[60vh] text-gray-500">Loading your dashboard...</div>;
 
   if (error)
-    return (
-      <div className="flex items-center justify-center h-[60vh] text-red-500">
-        {error}
-      </div>
-    );
+    return <div className="flex items-center justify-center h-[60vh] text-red-500">{error}</div>;
 
   if (!student)
-    return (
-      <div className="flex items-center justify-center h-[60vh] text-red-500">
-        Student not found. Please login again.
-      </div>
-    );
+    return <div className="flex items-center justify-center h-[60vh] text-red-500">Student not found. Please login again.</div>;
 
   const formattedDate = student.registered_at
     ? new Date(student.registered_at).toLocaleString()
     : "-";
 
-  // ==============================
-  // Render UI
-  // ==============================
   return (
     <div className="p-6">
       {/* Profile Header */}
@@ -139,23 +106,17 @@ const SdHome = () => {
 
         <div>
           <h1 className="text-3xl font-bold text-gray-800">
-            {student.first_name} {student.middle_name || ""} {student.last_name || ""}
+            {student.first_name || ""} {student.middle_name || ""} {student.last_name || ""}
           </h1>
-          <p className="text-gray-600 mt-2">
-            <strong>Student ID:</strong> {student.student_id || "-"}
-          </p>
-          <p className="text-gray-600">
-            <strong>Class:</strong> {student.student_class || "-"}
-          </p>
-          <p className="text-gray-600">
-            <strong>Email:</strong> {student.email || "-"}
-          </p>
+          <p className="text-gray-600 mt-2"><strong>Student ID:</strong> {student.student_id || "-"}</p>
+          <p className="text-gray-600"><strong>Class:</strong> {student.student_class || "-"}</p>
+          <p className="text-gray-600"><strong>Email:</strong> {student.email || "-"}</p>
           <p
             className={`mt-2 font-semibold ${
-              student.fees_status === "Yes" ? "text-green-600" : "text-red-500"
+              student.feesPaid || student.fees_status === "Yes" ? "text-green-600" : "text-red-500"
             }`}
           >
-            💰 Fees Status: {student.fees_status || "No"}
+            💰 Fees Status: {student.fees_status || (student.feesPaid ? "Yes" : "No")}
           </p>
 
           <button
@@ -167,12 +128,9 @@ const SdHome = () => {
         </div>
       </section>
 
-      {/* Edit Mode */}
-      {editing && (
+      {editing ? (
         <section className="mb-10 bg-gray-50 p-6 rounded-lg shadow-inner">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Update Your Details
-          </h2>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Update Your Details</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
@@ -214,10 +172,7 @@ const SdHome = () => {
             {updating ? "Saving..." : "Save Changes"}
           </button>
         </section>
-      )}
-
-      {/* View Mode */}
-      {!editing && (
+      ) : (
         <section className="mb-10">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">Your Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -246,26 +201,6 @@ const SdHome = () => {
           </div>
         </section>
       )}
-
-      {/* Coming Soon */}
-      <section>
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Coming Soon Sections</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { title: "Schedule", icon: "📅" },
-            { title: "Classes", icon: "📖" },
-            { title: "Notes", icon: "📝" },
-          ].map((item, idx) => (
-            <div
-              key={idx}
-              className="p-6 rounded-xl shadow-md bg-white flex flex-col items-center justify-center hover:shadow-xl transition-shadow"
-            >
-              <span className="text-4xl mb-4">{item.icon}</span>
-              <h3 className="text-xl font-medium">{item.title}</h3>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:5000/api/student";
+const API_BASE = "https://mathsenseacademy.onrender.com/api/student";
 
 const AdminDashboard = () => {
   const [students, setStudents] = useState([]);
