@@ -1,4 +1,4 @@
-// BACKEND: Firestore StudentModel.js (Clean Firestore Style)
+// BACKEND: Firestore StudentModel.js
 // =========================================================
 
 import { db } from "../firebase/firebaseAdmin.js";
@@ -10,7 +10,12 @@ export const StudentModel = {
   async create(studentData) {
     try {
       const docRef = studentsCollection.doc(studentData.uid);
-      await docRef.set(studentData);
+      await docRef.set({
+        ...studentData,
+        fees_status: "No", // Default when registered
+        last_fee_update: new Date().toISOString(),
+        active: true, // Soft delete flag
+      });
       const createdDoc = await docRef.get();
       return { id: createdDoc.id, ...createdDoc.data() };
     } catch (error) {
@@ -59,7 +64,10 @@ export const StudentModel = {
   // Update student
   async update(id, updateData) {
     try {
-      await studentsCollection.doc(id).update(updateData);
+      await studentsCollection.doc(id).update({
+        ...updateData,
+        updated_at: new Date().toISOString(),
+      });
       const updatedDoc = await studentsCollection.doc(id).get();
       return { id, ...updatedDoc.data() };
     } catch (error) {
@@ -68,7 +76,41 @@ export const StudentModel = {
     }
   },
 
-  // Firestore-style "findOne" (no Mongo-style $or)
+  // Update fees status
+  async updateFeesStatus(uid, status) {
+    try {
+      await studentsCollection.doc(uid).update({
+        fees_status: status,
+        last_fee_update: new Date().toISOString(),
+      });
+      const updatedDoc = await studentsCollection.doc(uid).get();
+      return { id: updatedDoc.id, ...updatedDoc.data() };
+    } catch (error) {
+      console.error("🔥 Error updating fees status:", error);
+      throw error;
+    }
+  },
+
+  // Reset all fees
+  async resetAllFees() {
+    try {
+      const snapshot = await studentsCollection.get();
+      const batch = db.batch();
+
+      snapshot.forEach(doc => {
+        const ref = studentsCollection.doc(doc.id);
+        batch.update(ref, { fees_status: "No", last_fee_update: new Date().toISOString() });
+      });
+
+      await batch.commit();
+      console.log("✅ All fees reset to 'No'");
+    } catch (error) {
+      console.error("🔥 Error resetting all fees:", error);
+      throw error;
+    }
+  },
+
+  // Firestore-style "findOne"
   async findOne(criteria) {
     try {
       console.log("🔍 Firestore findOne with criteria:", criteria);
@@ -120,7 +162,7 @@ export const StudentModel = {
     try {
       await studentsCollection.doc(id).update({
         active: false,
-        deleted_at: new Date().toISOString()
+        deleted_at: new Date().toISOString(),
       });
       return true;
     } catch (error) {
@@ -178,5 +220,5 @@ export const StudentModel = {
       console.error("🔥 Error getting stats:", error);
       throw error;
     }
-  }
+  },
 };

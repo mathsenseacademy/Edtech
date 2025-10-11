@@ -1,6 +1,5 @@
 // =============================================
-// BACKEND: Final StudentController.js
-// Ready for Node + Firebase Admin + Firestore
+// BACKEND: StudentController.js (Final Version)
 // =============================================
 
 import { StudentModel } from "../models/StudentModel.js";
@@ -33,7 +32,6 @@ export const StudentController = {
         student_photo_path,
       } = req.body;
 
-      // Validate required fields
       if (!first_name || !last_name || !email || !student_class) {
         return res.status(400).json({
           error: "Missing required fields: first_name, last_name, email, student_class",
@@ -42,19 +40,12 @@ export const StudentController = {
 
       const uid = google_uid || email;
       const now = new Date();
-
-      // Generate unique student_id
       const timestamp = now.getTime().toString().slice(-6);
       const student_id = `MSA_${now.getMonth() + 1}${now.getFullYear()}_${timestamp}`;
 
-      // Check for existing student (search by google_uid or email)
-      let existingStudent = null;
-      if (google_uid) {
-        existingStudent = await StudentModel.findOne({ google_uid });
-      }
-      if (!existingStudent) {
-        existingStudent = await StudentModel.findOne({ email: email.toLowerCase() });
-      }
+      let existingStudent =
+        (google_uid && (await StudentModel.findOne({ google_uid }))) ||
+        (await StudentModel.findOne({ email: email.toLowerCase() }));
 
       if (existingStudent) {
         return res.status(409).json({
@@ -69,7 +60,7 @@ export const StudentController = {
         first_name: first_name.trim(),
         middle_name: middle_name?.trim() || "",
         last_name: last_name.trim(),
-        date_of_birth,
+        date_of_birth: date_of_birth || null,
         contact_number_1,
         contact_number_2: contact_number_2 || "",
         student_class,
@@ -86,14 +77,15 @@ export const StudentController = {
         google_photo_url: google_photo_url || null,
         student_photo_path: student_photo_path || null,
         is_verified: false,
-        is_registered: true, // ✅ Mark registration complete
+        is_registered: true,
+        fees_status: "No",
         registered_at: now.toISOString(),
         updated_at: now.toISOString(),
       };
 
       const createdStudent = await StudentModel.create(studentData);
 
-      res.status(201).json({
+      return res.status(201).json({
         message: "Student registered successfully",
         student_id,
         student: {
@@ -105,9 +97,8 @@ export const StudentController = {
         },
       });
     } catch (err) {
-      console.error("Error registering student:", err);
-
-      res.status(500).json({ error: "Registration failed. Please try again." });
+      console.error("❌ Error registering student:", err);
+      return res.status(500).json({ error: "Registration failed. Please try again." });
     }
   },
 
@@ -117,44 +108,42 @@ export const StudentController = {
   async getAll(req, res) {
     try {
       const students = await StudentModel.getAll();
-      res.json(students);
+      return res.json(students);
     } catch (err) {
-      console.error("Error getting students:", err);
-      res.status(500).json({ error: err.message });
+      console.error("❌ Error getting students:", err);
+      return res.status(500).json({ error: err.message });
     }
   },
 
   // =============================================
-  // Get all verified students
+  // Get verified students
   // =============================================
   async getVerified(req, res) {
     try {
       const students = await StudentModel.getVerified();
-      res.json(students);
+      return res.json(students);
     } catch (err) {
-      console.error("Error getting verified students:", err);
-      res.status(500).json({ error: err.message });
+      console.error("❌ Error getting verified students:", err);
+      return res.status(500).json({ error: err.message });
     }
   },
 
   // =============================================
-  // Get student by UID
+  // Get student by ID
   // =============================================
   async getById(req, res) {
     try {
       const student = await StudentModel.getById(req.params.id);
-      if (!student) {
-        return res.status(404).json({ error: "Student not found" });
-      }
-      res.json(student);
+      if (!student) return res.status(404).json({ error: "Student not found" });
+      return res.json(student);
     } catch (err) {
-      console.error("Error getting student by ID:", err);
-      res.status(500).json({ error: err.message });
+      console.error("❌ Error getting student by ID:", err);
+      return res.status(500).json({ error: err.message });
     }
   },
 
   // =============================================
-  // Update student by UID
+  // Update student details
   // =============================================
   async update(req, res) {
     try {
@@ -164,36 +153,31 @@ export const StudentController = {
       };
 
       const updated = await StudentModel.update(req.params.id, updateData);
-      res.json({ message: "Student updated successfully", student: updated });
+      if (!updated) return res.status(404).json({ error: "Student not found" });
+
+      return res.json({
+        message: "Student updated successfully",
+        student: updated,
+      });
     } catch (err) {
-      console.error("Error updating student:", err);
-      res.status(500).json({ error: err.message });
+      console.error("❌ Error updating student:", err);
+      return res.status(500).json({ error: err.message });
     }
   },
 
   // =============================================
-  // Check if student exists and registration complete
+  // Check registration status
   // =============================================
   async checkRegistration(req, res) {
     try {
       const { google_uid, email } = req.query;
-
-      console.log("🔍 Checking student registration:", { google_uid, email });
-
       if (!google_uid && !email) {
-        return res.status(400).json({
-          error: "Either google_uid or email parameter is required",
-        });
+        return res.status(400).json({ error: "Either google_uid or email is required" });
       }
 
-      // Look up student
-      let student = null;
-      if (google_uid) {
-        student = await StudentModel.findOne({ google_uid });
-      }
-      if (!student && email) {
-        student = await StudentModel.findOne({ email: email.toLowerCase() });
-      }
+      let student =
+        (google_uid && (await StudentModel.findOne({ google_uid }))) ||
+        (await StudentModel.findOne({ email: email.toLowerCase() }));
 
       if (!student) {
         return res.json({
@@ -203,17 +187,8 @@ export const StudentController = {
         });
       }
 
-      // ✅ Compute registration status
-      const isRegistrationComplete = !!(
-        student.first_name &&
-        student.last_name &&
-        student.email &&
-        student.student_class
-      );
-
-      const is_registered = student.is_registered ?? isRegistrationComplete;
-
-      console.log("📋 Registration complete:", is_registered);
+      const is_registered =
+        student.is_registered ?? !!(student.first_name && student.email && student.student_class);
 
       return res.json({
         exists: true,
@@ -233,84 +208,66 @@ export const StudentController = {
           : "Student exists but registration incomplete",
       });
     } catch (err) {
-      console.error("🚨 Error checking student registration:", err);
-      res.status(500).json({
-        error: "Server error while checking registration status",
-      });
+      console.error("❌ Error checking registration:", err);
+      return res.status(500).json({ error: "Server error while checking registration" });
     }
   },
 
   // =============================================
-  // Legacy checkExists
-  // =============================================
-  async checkExists(req, res) {
-    try {
-      const { google_uid, email } = req.query;
-      if (!google_uid && !email) {
-        return res.status(400).json({ error: "google_uid or email required" });
-      }
-
-      let student = null;
-      if (google_uid) student = await StudentModel.findOne({ google_uid });
-      if (!student && email) student = await StudentModel.findOne({ email: email.toLowerCase() });
-
-      res.json({ exists: !!student, studentId: student?.student_id });
-    } catch (err) {
-      console.error("Error checking student existence:", err);
-      res.status(500).json({ error: "Server error" });
-    }
-  },
-
-  // =============================================
-  // Get student profile (dashboard)
+  // Get student profile
   // =============================================
   async getProfile(req, res) {
     try {
       const { uid } = req.params;
       const student = await StudentModel.getById(uid);
+      if (!student) return res.status(404).json({ error: "Profile not found" });
 
-      if (!student) {
-        return res.status(404).json({ error: "Student profile not found" });
-      }
-
-      // Remove sensitive data
       const profile = { ...student };
       delete profile.google_uid;
 
-      res.json(profile);
+      return res.json(profile);
     } catch (err) {
-      console.error("Error getting student profile:", err);
-      res.status(500).json({ error: err.message });
+      console.error("❌ Error getting profile:", err);
+      return res.status(500).json({ error: err.message });
     }
   },
 
   // =============================================
-  // Debug endpoint (dev only)
+  // Admin: Toggle Fees (Yes / No)
   // =============================================
-  async debugStudent(req, res) {
+  async toggleFees(req, res) {
     try {
-      const { google_uid, email } = req.query;
-      const allStudents = await StudentModel.getAll();
+      const { uid } = req.params;
+      const { status } = req.body; // "Yes" or "No"
 
-      const matchingByUid = allStudents.filter((s) => s.google_uid === google_uid);
-      const matchingByEmail = allStudents.filter((s) => s.email === email);
+      if (!["Yes", "No"].includes(status)) {
+        return res.status(400).json({ message: "Invalid fees status. Use 'Yes' or 'No'." });
+      }
 
-      res.json({
-        total_students: allStudents.length,
-        matching_by_uid: matchingByUid.length,
-        matching_by_email: matchingByEmail.length,
-        sample_student_keys: allStudents.length > 0 ? Object.keys(allStudents[0]) : [],
-        matching_student: matchingByUid[0] || matchingByEmail[0] || null,
-        first_few_students: allStudents.slice(0, 3).map((s) => ({
-          uid: s.uid,
-          google_uid: s.google_uid,
-          email: s.email,
-          student_id: s.student_id,
-        })),
+      const updatedStudent = await StudentModel.updateFeesStatus(uid, status);
+      if (!updatedStudent)
+        return res.status(404).json({ message: "Student not found while updating fees." });
+
+      return res.status(200).json({
+        message: `Fees marked as '${status}' for ${uid}`,
+        student: updatedStudent,
       });
-    } catch (err) {
-      console.error("🐛 Debug error:", err);
-      res.status(500).json({ error: err.message });
+    } catch (error) {
+      console.error("🔥 Error toggling fees:", error);
+      return res.status(500).json({ message: "Server error while updating fees." });
+    }
+  },
+
+  // =============================================
+  // Reset all fees (Admin)
+  // =============================================
+  async resetMonthlyFees(req, res) {
+    try {
+      await StudentModel.resetAllFees();
+      return res.status(200).json({ message: "✅ All students' fees reset to 'No'" });
+    } catch (error) {
+      console.error("🔥 Error resetting fees:", error);
+      return res.status(500).json({ message: "Server error while resetting fees." });
     }
   },
 };
