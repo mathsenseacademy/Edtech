@@ -12,7 +12,7 @@ const router = express.Router();
 // =============================================
 router.post("/register", StudentController.register);
 router.get("/check-registration", StudentController.checkRegistration); // Modern endpoint
-router.get("/check-exists", StudentController.checkExists); // Legacy support
+// router.get("/check-exists", StudentController.checkExists); 
 
 // =============================================
 // Student data routes
