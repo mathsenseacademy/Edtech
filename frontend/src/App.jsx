@@ -14,6 +14,10 @@ import SdHome from "./pages/Dashboard/SdHome";
 import AdminPanel from "./components/AdminPanel/AdminPanel";
 import Roles from "./components/Roles";
 import LoginStudent from "./pages/login/LoginStudent";
+import AdminClasses from "./pages/AdminClasses";
+
+import ProgramsSection from "./components/ProgramsSection";
+import ClassDetails from "./components/ClassDetails";
 
 import useLocoScroll from "./hooks/useLocoScroll";
 
@@ -82,28 +86,35 @@ function App() {
       <div data-scroll-container ref={scrollRef}>
         <div data-scroll-section className="pt-header">
           <Routes>
-            {/* Home */}
+            {/* 🏠 Home */}
             <Route
               path="/"
               element={<Home sentinelRef={sentinelRef} redirectToLogin={true} />}
             />
 
-            {/* Roles */}
+            {/* 👥 Roles */}
             <Route path="/roles" element={<Roles />} />
 
-            {/* Logins */}
+            {/* 🔐 Logins */}
             <Route path="/login/student" element={<LoginStudent />} />
             <Route path="/student/login" element={<LoginStudent />} />
 
-            {/* Student registration */}
+            {/* 🧾 Student registration */}
             <Route path="/student/register" element={<StudentRegister />} />
 
-            {/* ── Student Dashboard Layout ── */}
+            {/* 🎓 Student Dashboard Layout */}
             <Route path="/student" element={<StudentLayout />}>
               <Route path="dashboard" element={<SdHome />} />
             </Route>
 
-            {/* ── Admin routes ── */}
+            {/* 🧠 Programs / Classes */}
+            <Route path="/programs" element={<ProgramsSection />} />
+            <Route
+              path="/programs/class/:classNumber"
+              element={<ClassDetails />}
+            />
+
+            {/* 🧑‍💼 Admin routes */}
             <Route
               path="/admin-dashboard"
               element={
@@ -113,10 +124,13 @@ function App() {
               }
             />
             <Route path="/admin/*" element={<AdminPanel />} />
+            <Route path="/admin/courses" element={<AdminClasses />} />
 
-            {/* Catch-all route */}
+            {/* 🔁 Catch-all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+
+          {!isAdminRoute && <Footer />}
         </div>
       </div>
     </LayoutGroup>

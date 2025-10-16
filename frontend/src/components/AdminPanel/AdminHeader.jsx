@@ -64,7 +64,7 @@ const AdminHeader = () => {
           <ul className="flex items-center gap-6 font-semibold text-white">
             <li>
               <Link
-                to="/admin/students"
+                to="/admin-dashboard"
                 className="flex items-center gap-2 hover:-translate-y-0.5 transition"
               >
                 <FaUsers /> <span>Students</span>
@@ -88,21 +88,11 @@ const AdminHeader = () => {
             </li>
             <li>
               <Link
-                to="/admin/set-paper"
+                to="/admin/blog"
                 className="flex items-center gap-2 hover:-translate-y-0.5 transition"
               >
-                <FaFileAlt /> <span>Set Paper</span>
+                <FaFileAlt /> <span>Blogs</span>
               </Link>
-            </li>
-            <li>
-              <button
-                ref={profileBtnRef}
-                onClick={openProfile}
-                title="Profile & settings"
-                className="flex items-center gap-2 bg-transparent text-white font-semibold hover:-translate-y-0.5 transition"
-              >
-                <FaUserCircle /> <span>Profile</span>
-              </button>
             </li>
           </ul>
         </div>

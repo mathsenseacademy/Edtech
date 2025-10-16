@@ -9,6 +9,7 @@ dotenv.config();
 
 import { db } from "./firebase/firebaseAdmin.js";
 import studentRoutes from "./routes/StudentRoutes.js";
+import classRoutes from "./routes/ClassRoutes.js";
 
 const app = express();
 
@@ -28,7 +29,7 @@ cron.schedule("1 0 1 * *", async () => {
 
 
 // Middleware
-app.use(express.json({ limit: '10mb' })); // Increased limit for image uploads
+app.use(express.json({ limit: '10mb' })); 
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Enhanced CORS configuration
@@ -91,6 +92,7 @@ app.get("/test", async (req, res) => {
 // API Routes
 app.use("/api/student", studentRoutes);
 app.use("/student", studentRoutes); 
+app.use("/api/classes", classRoutes);
 
 // Root route
 app.get("/", (req, res) => {
