@@ -277,10 +277,6 @@ router.put("/:uid/fees", StudentController.toggleFees);
  */
 router.post("/reset-fees", StudentController.resetMonthlyFees);
 
-// =============================================
-// BACKEND: Final StudentRoutes.js
-// =============================================
-
 
 
 

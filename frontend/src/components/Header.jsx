@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaFacebookF,
@@ -23,43 +22,42 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [classDropdownOpen, setClassDropdownOpen] = useState(false);
   const [courseDropdownOpen, setCourseDropdownOpen] = useState(false);
-  
 
   const coursesRef = useRef(null);
   const classRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
   // Class data with routes
-  const classes = Array.from({ length: 10 }, (_, i) => ({
+  const classes = Array.from({ length: 12 }, (_, i) => ({
     name: `Class ${i + 1}`,
-    route: `/class${i + 1}`
+    number: i + 1
   }));
 
-  // Course data with routes
+  // Course data with routes (all go to coming-soon)
   const courses = [
-    { name: "JEE", route: "/jee" },
-    { name: "UGC", route: "/ugc" },
-    { name: "NET", route: "/net" },
-    { name: "UPSC", route: "/upsc" },
-    { name: "WBSC", route: "/wbsc" },
-    { name: "Other Exams", route: "/other-exams" }
+    { name: "JEE" },
+    { name: "UGC" },
+    { name: "NET" },
+    { name: "UPSC" },
+    { name: "WBSC" },
+    { name: "Other Exams" }
   ];
 
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // Decode JWT token
+  // Decode JWT token (safe try/catch)
   useEffect(() => {
     const tok = localStorage.getItem("accessToken");
     if (!tok) return;
     try {
       setAdminUser(jwtDecode(tok));
-    } catch {
-      /* ignore invalid token */
+    } catch (err) {
+      // invalid token -> ignore
     }
   }, []);
 
-  // Sticky register button
+  // Sticky register button observer
   useEffect(() => {
     const hero = document.querySelector("#hero");
     if (!hero) return;
@@ -71,8 +69,6 @@ const Header = () => {
     return () => ob.disconnect();
   }, []);
 
-  
-
   // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
@@ -82,15 +78,12 @@ const Header = () => {
       if (coursesRef.current && !coursesRef.current.contains(e.target)) {
         setCourseDropdownOpen(false);
       }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
-        setMobileMenuOpen(false);
-      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Prevent body scroll when mobile menu open
+  // Prevent body scroll when mobile drawer open
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "unset";
     return () => {
@@ -103,7 +96,7 @@ const Header = () => {
     { type: "anchor", to: "programs", label: t("OurProgram") },
     { type: "anchor", to: "testimonials", label: t("Testimonials") },
     { type: "anchor", to: "about", label: t("About") },
-    { type: "anchor", to: "blog", label: t("Blog") },
+    { type: "anchor", to: "blog", label: t("Blog") }
   ];
 
   const socialLinks = [
@@ -112,7 +105,7 @@ const Header = () => {
     { href: "https://x.com/ShomeSuvad79678", icon: FaTwitter, label: "Twitter" },
     { href: "https://www.instagram.com/maths_ense", icon: FaInstagram, label: "Instagram" },
     { href: "https://www.youtube.com/@mathsenseacademy", icon: FaYoutube, label: "YouTube" },
-    { href: "https://www.linkedin.com/in/suvadip-shome-1817ba289/", icon: FaLinkedinIn, label: "LinkedinIn" },
+    { href: "https://www.linkedin.com/in/suvadip-shome-1817ba289/", icon: FaLinkedinIn, label: "LinkedinIn" }
   ];
 
   return (
@@ -126,7 +119,7 @@ const Header = () => {
       >
         {/* Top Info Bar - Desktop Only */}
         <div className="hidden lg:block bg-gradient-to-r from-gray-800 to-stone-800">
-          <div className="max-w-7xl mx-auto px-4 py-2">
+          <div className="max-w-7xl mx-auto px-4 py-1">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-6">
                 <a
@@ -163,7 +156,7 @@ const Header = () => {
 
         {/* Main Navigation */}
         <nav className="bg-gradient-to-r from-stone-900 to-gray-700 border-t border-white/10">
-          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 py-1 flex items-center justify-between">
             {/* Logo */}
             <motion.div
               layoutId="shared-logo"
@@ -190,7 +183,7 @@ const Header = () => {
                     onClick={() => setClassDropdownOpen((prev) => !prev)}
                   >
                     {t("Class")}
-                    <ChevronDown 
+                    <ChevronDown
                       size={16}
                       className={`transform transition-transform ${
                         classDropdownOpen ? "rotate-180" : ""
@@ -207,10 +200,10 @@ const Header = () => {
                       >
                         {classes.map((cls) => (
                           <li
-                            key={cls.route}
+                            key={cls.number}
                             className="px-4 py-2 hover:bg-gray-300 cursor-pointer transition"
                             onClick={() => {
-                              navigate(cls.route);
+                              navigate(`/programs/class/${cls.number}`);
                               setClassDropdownOpen(false);
                             }}
                           >
@@ -229,7 +222,7 @@ const Header = () => {
                     onClick={() => setCourseDropdownOpen(!courseDropdownOpen)}
                   >
                     {t("Courses")}
-                    <ChevronDown 
+                    <ChevronDown
                       size={16}
                       className={`transform transition-transform ${
                         courseDropdownOpen ? "rotate-180" : ""
@@ -246,10 +239,10 @@ const Header = () => {
                       >
                         {courses.map((course) => (
                           <li
-                            key={course.route}
+                            key={course.name}
                             className="px-4 py-2 hover:bg-gray-300 cursor-pointer transition"
                             onClick={() => {
-                              navigate(course.route);
+                              navigate("/coming-soon");
                               setCourseDropdownOpen(false);
                             }}
                           >
@@ -288,182 +281,229 @@ const Header = () => {
               </ul>
 
               {/* Desktop Auth Button */}
-             {/* Desktop Auth Button */}
-<button
-  onClick={() => navigate("/login/student")}
-  className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700"
->
- Login
-</button>
+              <button
+                onClick={() => navigate("/login/student")}
+                className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700"
+              >
+                Login
+              </button>
 
             </div>
 
             {/* Mobile Hamburger */}
             <button
               className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle mobile menu"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open mobile menu"
             >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              <Menu size={24} />
             </button>
           </div>
         </nav>
 
-        {/* 📱 Mobile Menu Panel */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              ref={mobileMenuRef}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="lg:hidden fixed inset-x-0 top-[120px] bg-gradient-to-r from-stone-900 to-gray-700 text-white shadow-lg z-40 max-h-[calc(100vh-120px)] overflow-y-auto"
-            >
-              <ul className="flex flex-col p-4 gap-4">
-                {/* Classes Dropdown */}
-                <li>
-                  <button
-                    className="w-full flex items-center justify-between px-3 py-2 hover:text-yellow-300 transition"
-                    onClick={() => setClassDropdownOpen((prev) => !prev)}
-                  >
-                    {t("Class")}
-                    <ChevronDown
-                      size={16}
-                      className={`transform transition-transform ${
-                        classDropdownOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  <AnimatePresence>
-                    {classDropdownOpen && (
-                      <motion.ul
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="pl-6 mt-2 space-y-2 overflow-hidden"
-                      >
-                        {classes.map((cls) => (
-                          <li
-                            key={cls.route}
-                            className="cursor-pointer hover:text-yellow-300 transition py-1"
-                            onClick={() => {
-                              navigate(cls.route);
-                              setClassDropdownOpen(false);
-                              setMobileMenuOpen(false);
-                            }}
-                          >
-                            {cls.name}
-                          </li>
-                        ))}
-                      </motion.ul>
-                    )}
-                  </AnimatePresence>
-                </li>
+        {/* Spacer div */}
+        <div className="h-[20px] lg:h-[20px]" />
 
-                {/* Courses Dropdown */}
-                <li>
-                  <button
-                    className="w-full flex items-center justify-between px-3 py-2 hover:text-yellow-300 transition"
-                    onClick={() => setCourseDropdownOpen((prev) => !prev)}
-                  >
-                    {t("Courses")}
-                    <ChevronDown
-                      size={16}
-                      className={`transform transition-transform ${
-                        courseDropdownOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  <AnimatePresence>
-                    {courseDropdownOpen && (
-                      <motion.ul
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="pl-6 mt-2 space-y-2 overflow-hidden"
-                      >
-                        {courses.map((course) => (
-                          <li
-                            key={course.route}
-                            className="cursor-pointer hover:text-yellow-300 transition py-1"
-                            onClick={() => {
-                              navigate(course.route);
-                              setCourseDropdownOpen(false);
-                              setMobileMenuOpen(false);
-                            }}
-                          >
-                            {course.name}
-                          </li>
-                        ))}
-                      </motion.ul>
-                    )}
-                  </AnimatePresence>
-                </li>
+        {/* Sticky Register Button */}
+        {showStickyRegister && (
+          <motion.button
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="fixed bottom-6 right-6 px-5 py-3 font-semibold text-gray-900 bg-yellow-500 rounded-full shadow-lg hover:scale-105 hover:bg-green-500 transition z-40"
+            onClick={() => setShowRegisterModal(true)}
+          >
+            {t("Student Register")}
+          </motion.button>
+        )}
 
-                {/* Navigation Links */}
-                {navItems.map((item) => (
-                  <li key={item.label}>
-                    {item.type === "link" ? (
-                      <Link
-                        to={item.to}
-                        className="block px-3 py-2 hover:text-yellow-300 transition"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {item.label}
-                      </Link>
-                    ) : (
-                      <a
-                        href={`#${item.to}`}
-                        className="block px-3 py-2 hover:text-yellow-300 transition"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {item.label}
-                      </a>
-                    )}
-                  </li>
-                ))}
-
-                {/* Auth Button */}
-                <li className="px-3 py-2">
-                  {/* Auth Button */}
-<li className="px-3 py-2">
-  <button
-    onClick={() => navigate("/login/student")}
-    className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700 w-full"
-  >
-    Login
-  </button>
-</li>
-                </li>
-              </ul>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Student Register Modal */}
+        {showRegisterModal && (
+          <StudentRegister onClose={() => setShowRegisterModal(false)} />
+        )}
       </motion.header>
 
-      {/* Spacer div */}
-      <div className="h-[120px] lg:h-[150px]" />
+      {/* Mobile Right-side Drawer (80% width) */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          // Overlay + Drawer container
+          <motion.div
+            className="fixed inset-0 z-50 flex"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            {/* Dimmed overlay (left 20%) - clickable */}
+            <div className="w-1/5" />
 
-      {/* Sticky Register Button */}
-      {showStickyRegister && (
-        <motion.button
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="fixed bottom-6 right-6 px-5 py-3 font-semibold text-gray-900 bg-yellow-500 rounded-full shadow-lg hover:scale-105 hover:bg-green-500 transition z-40"
-          onClick={() => setShowRegisterModal(true)}
-        >
-          {t("Student Register")}
-        </motion.button>
-      )}
+            {/* Drawer (right 80%) */}
+            <motion.aside
+              ref={mobileMenuRef}
+              className="w-4/5 h-full overflow-y-auto shadow-2xl"
+              initial={{ x: 300 }}
+              animate={{ x: 0 }}
+              exit={{ x: 300 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside drawer
+            >
+              <div className="h-full bg-gradient-to-b from-white to-gray-100 text-gray-800 p-6 flex flex-col">
+                <div className="flex items-center justify-between">
+                  <img
+                    src={logo}
+                    alt="Math Sense Academy"
+                    className="h-10 cursor-pointer"
+                    onClick={() => {
+                      navigate("/");
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                      setMobileMenuOpen(false);
+                    }}
+                  />
 
-      {/* Student Register Modal */}
-      {showRegisterModal && (
-        <StudentRegister onClose={() => setShowRegisterModal(false)} />
-      )}
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    aria-label="Close menu"
+                    className="p-2 rounded-md hover:bg-gray-200"
+                  >
+                    <X size={22} />
+                  </button>
+                </div>
+
+                {/* Contact block */}
+                <div className="mt-6 border rounded-lg p-4 bg-white shadow-sm">
+                  <a href="tel:+919147718572" className="flex items-center gap-3 text-sm font-medium">
+                    <Phone size={16} />
+                    <span>+91 9147718572</span>
+                  </a>
+                  <a href="mailto:mathsenseacademy@gmail.com" className="flex items-center gap-3 text-sm font-medium mt-2">
+                    <Mail size={16} />
+                    <span>mathsenseacademy@gmail.com</span>
+                  </a>
+
+                  <div className="flex items-center gap-3 mt-3">
+                    {socialLinks.map(({ href, icon: Icon, label }) => (
+                      <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="p-1 rounded-md hover:bg-gray-200">
+                        <Icon />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                <nav className="mt-6 flex-1 overflow-y-auto">
+                  {/* Classes accordion */}
+                  <div className="mt-2">
+                    <button
+                      onClick={() => setClassDropdownOpen((p) => !p)}
+                      className="w-full flex items-center justify-between py-3 px-2 font-medium"
+                    >
+                      <span> {t("Class")} </span>
+                      <ChevronDown size={18} className={`${classDropdownOpen ? 'rotate-180' : ''} transform transition`} />
+                    </button>
+
+                    <AnimatePresence>
+                      {classDropdownOpen && (
+                        <motion.ul
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.18 }}
+                          className="pl-4 space-y-2 overflow-hidden"
+                        >
+                          {classes.map((cls) => (
+                            <li key={cls.number}>
+                              <button
+                                className="w-full text-left py-2"
+                                onClick={() => {
+                                  navigate(`/programs/class/${cls.number}`);
+                                  setClassDropdownOpen(false);
+                                  setMobileMenuOpen(false);
+                                }}
+                              >
+                                {cls.name}
+                              </button>
+                            </li>
+                          ))}
+                        </motion.ul>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Courses accordion */}
+                  <div className="mt-2">
+                    <button
+                      onClick={() => setCourseDropdownOpen((p) => !p)}
+                      className="w-full flex items-center justify-between py-3 px-2 font-medium"
+                    >
+                      <span> {t("Courses")} </span>
+                      <ChevronDown size={18} className={`${courseDropdownOpen ? 'rotate-180' : ''} transform transition`} />
+                    </button>
+
+                    <AnimatePresence>
+                      {courseDropdownOpen && (
+                        <motion.ul
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.18 }}
+                          className="pl-4 space-y-2 overflow-hidden"
+                        >
+                          {courses.map((course) => (
+                            <li key={course.name}>
+                              <button
+                                className="w-full text-left py-2"
+                                onClick={() => {
+                                  navigate('/coming-soon');
+                                  setCourseDropdownOpen(false);
+                                  setMobileMenuOpen(false);
+                                }}
+                              >
+                                {course.name}
+                              </button>
+                            </li>
+                          ))}
+                        </motion.ul>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Main nav links */}
+                  <ul className="mt-4 space-y-2">
+                    {navItems.map((item) => (
+                      <li key={item.label}>
+                        {item.type === 'link' ? (
+                          <Link to={item.to} onClick={() => setMobileMenuOpen(false)} className="block py-3 font-medium">
+                            {item.label}
+                          </Link>
+                        ) : (
+                          <a href={`#${item.to}`} onClick={() => setMobileMenuOpen(false)} className="block py-3 font-medium">
+                            {item.label}
+                          </a>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+
+                <div className="mt-4">
+                  <button
+                    onClick={() => {
+                      navigate('/login/student');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700"
+                  >
+                    Login
+                  </button>
+                </div>
+
+                <div className="mt-4 text-xs text-gray-500">
+                  © {new Date().getFullYear()} Math Sense Academy
+                </div>
+              </div>
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

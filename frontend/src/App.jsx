@@ -15,6 +15,8 @@ import AdminPanel from "./components/AdminPanel/AdminPanel";
 import Roles from "./components/Roles";
 import LoginStudent from "./pages/login/LoginStudent";
 import AdminClasses from "./pages/AdminClasses";
+import AdminBatches from "./pages/AdminBatches";
+import ComingSoonCourses from "./pages/ComingSoonCourses";
 
 import ProgramsSection from "./components/ProgramsSection";
 import ClassDetails from "./components/ClassDetails";
@@ -125,6 +127,8 @@ function App() {
             />
             <Route path="/admin/*" element={<AdminPanel />} />
             <Route path="/admin/courses" element={<AdminClasses />} />
+            <Route path="/admin/batches" element={<AdminBatches />} />  
+            <Route path="/coming-soon" element={<ComingSoonCourses />} />
 
             {/* 🔁 Catch-all route */}
             <Route path="*" element={<Navigate to="/" replace />} />

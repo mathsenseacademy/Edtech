@@ -166,15 +166,4 @@ router.put("/:id", ClassController.update);
 router.delete("/:id", ClassController.delete);
 
 
-
-// router.get("/", ClassController.getAll);
-
-// router.post("/", ClassController.create);
-
-// router.get("/:id", ClassController.getById);
-
-// router.put("/:id", ClassController.update);
-
-// router.delete("/:id", ClassController.delete);
-
 export default router;
