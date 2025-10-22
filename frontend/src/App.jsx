@@ -16,6 +16,7 @@ import Roles from "./components/Roles";
 import LoginStudent from "./pages/login/LoginStudent";
 import AdminClasses from "./pages/AdminClasses";
 import AdminBatches from "./pages/AdminBatches";
+import AdminStudentProfile from "./pages/AdminStudentProfile";
 import ComingSoonCourses from "./pages/ComingSoonCourses";
 
 import ProgramsSection from "./components/ProgramsSection";
@@ -125,7 +126,8 @@ function App() {
                 </ProtectedAdminRoute>
               }
             />
-            <Route path="/admin/*" element={<AdminPanel />} />
+            <Route path="/admin/*" element={<AdminPanel />} />    
+<Route path="/admin/student/:uid" element={<AdminStudentProfile />} />
             <Route path="/admin/courses" element={<AdminClasses />} />
             <Route path="/admin/batches" element={<AdminBatches />} />  
             <Route path="/coming-soon" element={<ComingSoonCourses />} />

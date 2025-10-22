@@ -155,7 +155,7 @@ const Header = () => {
         </div>
 
         {/* Main Navigation */}
-        <nav className="bg-gradient-to-r from-stone-900 to-gray-700 border-t border-white/10">
+        <nav className="bg-gradient-to-r from-gray-300 to-stone-900 border-t border-white/10">
           <div className="max-w-7xl mx-auto px-4 py-1 flex items-center justify-between">
             {/* Logo */}
             <motion.div
@@ -302,7 +302,7 @@ const Header = () => {
         </nav>
 
         {/* Spacer div */}
-        <div className="h-[20px] lg:h-[20px]" />
+        <div className="h-[4px] lg:h-[4px]" />
 
         {/* Sticky Register Button */}
         {showStickyRegister && (

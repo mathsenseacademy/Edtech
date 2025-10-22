@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = "https://mathsenseacademy.onrender.com/api/student";
 
@@ -8,6 +9,8 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState(false);
+
+  const navigate = useNavigate();
 
   // ==============================
   // Fetch all students
@@ -44,7 +47,7 @@ const AdminDashboard = () => {
       const newStatus = currentStatus === "Yes" ? "No" : "Yes";
 
       await axios.put(`${API_BASE}/${studentId}/fees`, {
-        status: newStatus, // backend now accepts both `status` and `fees_status`
+        status: newStatus,
       });
 
       setStudents((prev) =>
@@ -79,55 +82,65 @@ const AdminDashboard = () => {
     }
   };
 
-  // Fetch students on mount
   useEffect(() => {
     fetchStudents();
   }, []);
+
+  const goToStudentProfile = (studentUid) => {
+    navigate(`/admin/student/${studentUid}`);
+  };
 
   // ==============================
   // UI Render
   // ==============================
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-semibold mb-4">Admin Dashboard</h1>
+    <div className="p-6 bg-gradient-to-b from-[#fdf8ee] to-[#fff] min-h-screen">
+      <h1 className="text-3xl font-bold mb-6 text-[#4b2e05]">🎓 Admin Dashboard</h1>
 
-      <button
-        onClick={resetAllFees}
-        disabled={updating}
-        className={`mb-4 px-4 py-2 rounded text-white ${
-          updating ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
-        }`}
-      >
-        {updating ? "Processing..." : "Reset All Fees"}
-      </button>
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={resetAllFees}
+          disabled={updating}
+          className={`px-4 py-2 rounded-md text-white transition ${
+            updating
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-red-600 hover:bg-red-700"
+          }`}
+        >
+          {updating ? "Processing..." : "Reset All Fees"}
+        </button>
 
-      {loading && <p>Loading students...</p>}
+        <p className="text-gray-600 text-sm">
+          Total Students: <span className="font-semibold">{students.length}</span>
+        </p>
+      </div>
+
+      {loading && (
+        <div className="text-center py-20 text-lg text-gray-500 animate-pulse">
+          Loading student records...
+        </div>
+      )}
       {error && <p className="text-red-500">{error}</p>}
 
-      {!loading && !error && students.length === 0 && (
-        <p>No students found.</p>
-      )}
-
       {!loading && !error && students.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead className="bg-gray-100">
+        <div className="overflow-x-auto shadow-lg rounded-xl border border-gray-200 bg-white">
+          <table className="w-full text-sm md:text-base">
+            <thead className="bg-[#f6e7c1] text-[#4b2e05]">
               <tr>
-                <th className="border p-2">Photo</th>
-                <th className="border p-2">Name</th>
-                <th className="border p-2">Email</th>
-                <th className="border p-2">Class</th>
-                <th className="border p-2">Fees Status</th>
-                <th className="border p-2">Action</th>
+                <th className="border p-3">Photo</th>
+                <th className="border p-3">Name</th>
+                <th className="border p-3">Class</th>
+                <th className="border p-3">Fees Status</th>
+                <th className="border p-3">Action</th>
               </tr>
             </thead>
             <tbody>
               {students.map((student) => {
                 const {
+                  uid,
                   id,
                   first_name,
                   last_name,
-                  email,
                   student_class,
                   fees_status,
                   student_photo_path,
@@ -140,32 +153,53 @@ const AdminDashboard = () => {
                   "https://via.placeholder.com/80";
 
                 return (
-                  <tr key={id}>
-                    <td className="border p-2 text-center">
+                  <tr
+                    key={id}
+                    className="hover:bg-[#fff8e1] transition cursor-pointer"
+                  >
+                    <td
+                      onClick={() => goToStudentProfile(uid)}
+                      className="border p-3 text-center"
+                    >
                       <img
                         src={photo}
                         alt={`${first_name || "Student"}'s photo`}
-                        className="w-16 h-16 object-cover rounded-full mx-auto"
-                        onError={(e) => (e.target.src = "https://via.placeholder.com/80")}
+                        className="w-14 h-14 object-cover rounded-full mx-auto border-2 border-[#e4c17d] hover:scale-105 transition-transform"
+                        onError={(e) =>
+                          (e.target.src = "https://via.placeholder.com/80")
+                        }
                       />
                     </td>
-                    <td className="border p-2 capitalize">
+
+                    <td
+                      onClick={() => goToStudentProfile(uid)}
+                      className="border p-3 capitalize hover:text-[#875714] font-medium"
+                    >
                       {first_name || ""} {last_name || ""}
                     </td>
-                    <td className="border p-2">{email || "N/A"}</td>
-                    <td className="border p-2 text-center">{student_class || "-"}</td>
+
                     <td
-                      className={`border p-2 text-center font-semibold ${
-                        fees_status === "Yes" ? "text-green-600" : "text-red-600"
+                      onClick={() => goToStudentProfile(uid)}
+                      className="border p-3 text-center text-gray-700"
+                    >
+                      {student_class || "-"}
+                    </td>
+
+                    <td
+                      className={`border p-3 text-center font-semibold ${
+                        fees_status === "Yes"
+                          ? "text-green-600"
+                          : "text-red-600"
                       }`}
                     >
                       {fees_status || "No"}
                     </td>
-                    <td className="border p-2 text-center">
+
+                    <td className="border p-3 text-center">
                       <button
                         disabled={updating}
                         onClick={() => toggleFees(id, fees_status)}
-                        className={`px-3 py-1 rounded text-white ${
+                        className={`px-3 py-1 rounded-md text-white transition ${
                           updating
                             ? "bg-gray-400 cursor-not-allowed"
                             : fees_status === "Yes"
