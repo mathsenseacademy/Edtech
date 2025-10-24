@@ -1,4 +1,4 @@
-// src/components/Header/Header.jsx
+// src/components/Header.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -16,7 +16,6 @@ import logo from "../assets/logoWith_Name.svg";
 import StudentRegister from "../pages/StudentRegister";
 
 const Header = () => {
-  const [adminUser, setAdminUser] = useState(null);
   const [showStickyRegister, setShowStickyRegister] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -45,17 +44,6 @@ const Header = () => {
 
   const { t } = useTranslation();
   const navigate = useNavigate();
-
-  // Decode JWT token (safe try/catch)
-  useEffect(() => {
-    const tok = localStorage.getItem("accessToken");
-    if (!tok) return;
-    try {
-      setAdminUser(jwtDecode(tok));
-    } catch (err) {
-      // invalid token -> ignore
-    }
-  }, []);
 
   // Sticky register button observer
   useEffect(() => {
@@ -96,7 +84,7 @@ const Header = () => {
     { type: "anchor", to: "programs", label: t("OurProgram") },
     { type: "anchor", to: "testimonials", label: t("Testimonials") },
     { type: "anchor", to: "about", label: t("About") },
-    { type: "anchor", to: "blog", label: t("Blog") }
+    { type: "link", to: "/blogs", label: t("Blog") },
   ];
 
   const socialLinks = [

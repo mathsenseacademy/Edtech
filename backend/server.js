@@ -12,6 +12,7 @@ import { db } from "./firebase/firebaseAdmin.js";
 import studentRoutes from "./routes/StudentRoutes.js";
 import classRoutes from "./routes/ClassRoutes.js";
 import batchRoutes from "./routes/BatchRoutes.js";
+import BlogRoutes from "./routes/blogRoutes.js";
 
 // ✅ Import Swagger
 import swaggerJsDoc from "swagger-jsdoc";
@@ -171,6 +172,7 @@ app.use("/api/student", studentRoutes);
 app.use("/student", studentRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/batches", batchRoutes);
+app.use("/api/blogs", BlogRoutes);
 
 /* -----------------------------------------
  ✅ ROOT ROUTE

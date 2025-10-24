@@ -22,15 +22,19 @@ import ComingSoonCourses from "./pages/ComingSoonCourses";
 import ProgramsSection from "./components/ProgramsSection";
 import ClassDetails from "./components/ClassDetails";
 
+import BlogList from "./pages/BlogList";
+import BlogPost from "./pages/BlogPost";
+import BlogEditor from "./pages/BlogEditor";
+
 import useLocoScroll from "./hooks/useLocoScroll";
 
 function StudentLayout() {
   return (
     <>
       <Header showDashboardBtn={false} />
-      <div className="pt-header">
+      <main className="min-h-[80vh] pt-[80px]"> {/* space for header */}
         <Outlet />
-      </div>
+      </main>
       <Footer />
     </>
   );
@@ -44,12 +48,11 @@ function ProtectedAdminRoute({ children }) {
 function App() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const path = location.pathname;
   const { scrollRef } = useLocoScroll(!loading);
   const sentinelRef = useRef(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 1000);
+    const t = setTimeout(() => setLoading(false), 800);
     return () => clearTimeout(t);
   }, []);
 
@@ -58,22 +61,21 @@ function App() {
     else window.scrollTo(0, 0);
   }, [location.pathname, scrollRef]);
 
+  const path = location.pathname;
   const isAdminRoute = path.startsWith("/admin");
   const isStudentRoute = path.startsWith("/student/");
   const userType = localStorage.getItem("userType");
 
-  let HeaderComponent;
-  if (isAdminRoute) HeaderComponent = <AdminHeader />;
-  else if (!isStudentRoute) {
-    HeaderComponent = (
-      <Header
-        showDashboardBtn={!!userType}
-        dashboardTarget={
-          userType === "admin" ? "/admin-dashboard" : "/student/dashboard"
-        }
-      />
-    );
-  }
+  const HeaderComponent = isAdminRoute ? (
+    <AdminHeader />
+  ) : (
+    <Header
+      showDashboardBtn={!!userType}
+      dashboardTarget={
+        userType === "admin" ? "/admin-dashboard" : "/student/dashboard"
+      }
+    />
+  );
 
   if (loading)
     return (
@@ -86,8 +88,9 @@ function App() {
     <LayoutGroup>
       {HeaderComponent}
 
+      {/* Main content area with scroll */}
       <div data-scroll-container ref={scrollRef}>
-        <div data-scroll-section className="pt-header">
+        <div data-scroll-section className="min-h-screen pt-[80px]">
           <Routes>
             {/* 🏠 Home */}
             <Route
@@ -105,7 +108,7 @@ function App() {
             {/* 🧾 Student registration */}
             <Route path="/student/register" element={<StudentRegister />} />
 
-            {/* 🎓 Student Dashboard Layout */}
+            {/* 🎓 Student Dashboard */}
             <Route path="/student" element={<StudentLayout />}>
               <Route path="dashboard" element={<SdHome />} />
             </Route>
@@ -126,18 +129,26 @@ function App() {
                 </ProtectedAdminRoute>
               }
             />
-            <Route path="/admin/*" element={<AdminPanel />} />    
-<Route path="/admin/student/:uid" element={<AdminStudentProfile />} />
+            <Route path="/admin/*" element={<AdminPanel />} />
+            <Route path="/admin/student/:uid" element={<AdminStudentProfile />} />
             <Route path="/admin/courses" element={<AdminClasses />} />
-            <Route path="/admin/batches" element={<AdminBatches />} />  
+            <Route path="/admin/batches" element={<AdminBatches />} />
+            <Route path="/admin/blog/new" element={<BlogEditor />} />
+
+            {/* 📰 Blogs */}
+            <Route path="/blogs" element={<BlogList />} />
+            <Route path="/blogs/:id" element={<BlogPost />} />
+
+            {/* 🚧 Coming soon */}
             <Route path="/coming-soon" element={<ComingSoonCourses />} />
 
-            {/* 🔁 Catch-all route */}
+            {/* 🔁 Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-
-          {!isAdminRoute && <Footer />}
         </div>
+
+        {/* Footer only for non-admin routes */}
+        {!isAdminRoute && <Footer />}
       </div>
     </LayoutGroup>
   );

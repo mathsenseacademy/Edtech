@@ -1,4 +1,4 @@
-// src/components/StudentRegister/StudentRegister.jsx
+// src/components/StudentRegister.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";

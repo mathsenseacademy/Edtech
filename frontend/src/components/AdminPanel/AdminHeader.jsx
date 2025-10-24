@@ -88,7 +88,7 @@ const AdminHeader = () => {
             </li>
             <li>
               <Link
-                to="/admin/blog"
+                to="/admin/blog/new"
                 className="flex items-center gap-2 hover:-translate-y-0.5 transition"
               >
                 <FaFileAlt /> <span>Blogs</span>
