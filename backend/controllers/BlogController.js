@@ -1,4 +1,4 @@
-import { BlogModel } from "../models/blogModel.js";
+import { BlogModel } from "../models/BlogModel.js";
 
 export const BlogController = {
   // ✅ Create blog
