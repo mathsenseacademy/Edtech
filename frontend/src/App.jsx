@@ -4,14 +4,13 @@ import { Routes, Route, useLocation, Outlet, Navigate } from "react-router-dom";
 import { LayoutGroup } from "framer-motion";
 
 import Header from "./components/Header";
-import AdminHeader from "./components/AdminPanel/AdminHeader";
+import AdminHeader from "./pages/AdminHeader";
 import Footer from "./components/Footer";
 
 import Home from "./pages/Home";
 import StudentRegister from "./pages/StudentRegister";
 import AdminDashboard from "./pages/AdminDashboard";
 import SdHome from "./pages/Dashboard/SdHome";
-import AdminPanel from "./components/AdminPanel/AdminPanel";
 import Roles from "./components/Roles";
 import LoginStudent from "./pages/login/LoginStudent";
 import AdminClasses from "./pages/AdminClasses";
@@ -19,7 +18,7 @@ import AdminBatches from "./pages/AdminBatches";
 import AdminStudentProfile from "./pages/AdminStudentProfile";
 import ComingSoonCourses from "./pages/ComingSoonCourses";
 
-import ProgramsSection from "./components/ProgramsSection";
+import ClassSection from "./components/ClassSection";
 import ClassDetails from "./components/ClassDetails";
 
 import BlogList from "./pages/BlogList";
@@ -114,9 +113,9 @@ function App() {
             </Route>
 
             {/* 🧠 Programs / Classes */}
-            <Route path="/programs" element={<ProgramsSection />} />
+            <Route path="/classs" element={<ClassSection />} />
             <Route
-              path="/programs/class/:classNumber"
+              path="/class/:classNumber"
               element={<ClassDetails />}
             />
 
@@ -129,9 +128,8 @@ function App() {
                 </ProtectedAdminRoute>
               }
             />
-            <Route path="/admin/*" element={<AdminPanel />} />
             <Route path="/admin/student/:uid" element={<AdminStudentProfile />} />
-            <Route path="/admin/courses" element={<AdminClasses />} />
+            <Route path="/admin/classes" element={<AdminClasses />} />
             <Route path="/admin/batches" element={<AdminBatches />} />
             <Route path="/admin/blog/new" element={<BlogEditor />} />
 

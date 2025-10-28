@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUsers, FaFileAlt, FaUserCircle } from "react-icons/fa";
-import logo from "../../assets/logo.png";
-import ProfileModal from "../ProfileModal";
+import logo from "../assets/logo.png";
+import ProfileModal from "../components/ProfileModal";
 
 const AdminHeader = () => {
   const navigate = useNavigate();
@@ -72,10 +72,10 @@ const AdminHeader = () => {
             </li>
             <li>
               <Link
-                to="/admin/courses"
+                to="/admin/classes"
                 className="flex items-center gap-2 hover:-translate-y-0.5 transition"
               >
-                <FaFileAlt /> <span>Courses</span>
+                <FaFileAlt /> <span>Classes</span>
               </Link>
             </li>
             <li>

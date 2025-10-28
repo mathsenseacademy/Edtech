@@ -4,102 +4,163 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const API_URL = "https://mathsenseacademy.onrender.com/api/classes";
 
-const AdminClasses = () => {
+const classGroups = [
+  { label: "Class 1-2", range: "1-2" },
+  { label: "Class 3-4", range: "3-4" },
+  ...Array.from({ length: 8 }, (_, i) => ({
+    label: `Class ${i + 5}`,
+    range: `${i + 5}`,
+  })),
+];
+
+export default function AdminClasses() {
   const [classes, setClasses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState(null);
-  const [form, setForm] = useState({ classNumber: "", title: "", description: "" });
+  const [selectedRange, setSelectedRange] = useState(null);
+  const [form, setForm] = useState({
+    classRange: "",
+    title: "",
+    description: "",
+    topics: [],
+    courseType: false,
+    purpose: "",
+    suggestedBooks: [],
+    active: true,
+  });
+  const [newTopic, setNewTopic] = useState("");
+  const [newBook, setNewBook] = useState("");
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     fetchClasses();
   }, []);
 
-  // ✅ Fetch all classes
   const fetchClasses = async () => {
     try {
       const res = await axios.get(API_URL);
-      setClasses(res.data || []);
+      // ensure arrays to avoid map crash
+      const safeData = (res.data || []).map((c) => ({
+        ...c,
+        topics: Array.isArray(c.topics) ? c.topics : [],
+        suggestedBooks: Array.isArray(c.suggestedBooks) ? c.suggestedBooks : [],
+      }));
+      setClasses(safeData);
     } catch (err) {
       console.error("❌ Error fetching classes:", err);
       setClasses([]);
     }
   };
 
-  // ✅ Select a class to edit
-  const handleSelectClass = (num) => {
-    setSelectedClass(num);
-    const existing = classes.find((c) => String(c.classNumber) === String(num));
-    if (existing) {
-      setForm({
-        classNumber: existing.classNumber,
-        title: existing.title,
-        description: existing.description,
-      });
-    } else {
-      setForm({ classNumber: num, title: "", description: "" });
+  const handleSelectRange = (range) => {
+    setSelectedRange(range);
+    const existing = classes.find((c) => c.classRange === range);
+    setForm(
+      existing
+        ? {
+            ...existing,
+            topics: Array.isArray(existing.topics)
+              ? existing.topics
+              : [],
+            suggestedBooks: Array.isArray(existing.suggestedBooks)
+              ? existing.suggestedBooks
+              : [],
+          }
+        : {
+            classRange: range,
+            title: "",
+            description: "",
+            topics: [],
+            courseType: false,
+            purpose: "",
+            suggestedBooks: [],
+            active: true,
+          }
+    );
+    setMessage("");
+  };
+
+  const handleAddTopic = () => {
+    if (newTopic.trim()) {
+      setForm({ ...form, topics: [...(form.topics || []), newTopic.trim()] });
+      setNewTopic("");
     }
   };
 
-  // ✅ Handle Create/Update
+  const handleAddBook = () => {
+    if (newBook.trim()) {
+      setForm({
+        ...form,
+        suggestedBooks: [...(form.suggestedBooks || []), newBook.trim()],
+      });
+      setNewBook("");
+    }
+  };
+
+  const handleRemoveItem = (field, index) => {
+    const updated = [...form[field]];
+    updated.splice(index, 1);
+    setForm({ ...form, [field]: updated });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.classNumber) return alert("Select a class first.");
+    if (!form.classRange) return;
     setLoading(true);
-
     try {
-      await axios.post(API_URL, form);
+      const existing = classes.find((c) => c.classRange === form.classRange);
+      if (existing) {
+        await axios.put(`${API_URL}/${existing.id}`, form);
+        setMessage(`✅ Updated ${form.classRange} successfully`);
+      } else {
+        await axios.post(API_URL, form);
+        setMessage(`✅ Created ${form.classRange} successfully`);
+      }
       await fetchClasses();
-      alert("✅ Class saved successfully!");
-      setSelectedClass(null);
-      setForm({ classNumber: "", title: "", description: "" });
+      setSelectedRange(null);
     } catch (err) {
-      console.error("❌ Failed to save class:", err);
-      alert("Failed to save class.");
+      console.error("❌ Error saving class:", err);
+      setMessage("❌ Failed to save class. Try again.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  // ✅ Delete class
-  const handleDelete = async (num) => {
-    if (!window.confirm(`Are you sure you want to delete Class ${num}?`)) return;
-
-    try {
-      await axios.delete(`${API_URL}/${num}`);
-      await fetchClasses();
-      alert(`🗑️ Class ${num} deleted successfully!`);
-    } catch (err) {
-      console.error("❌ Error deleting class:", err);
-      alert("Failed to delete class.");
     }
   };
 
   return (
     <div className="p-6 mt-16 min-h-screen bg-gradient-to-br from-orange-100 to-amber-200 font-poppins">
       <h1 className="text-4xl font-bold mb-8 text-center text-indigo-700">
-        📚 Manage Classes
+        📚 Manage Class Courses
       </h1>
+
+      {message && (
+        <p
+          className={`text-center mb-6 font-medium ${
+            message.startsWith("✅") ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {message}
+        </p>
+      )}
 
       {/* --- Class Buttons --- */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-10">
-        {Array.from({ length: 12 }, (_, i) => i + 1).map((num) => (
+        {classGroups.map((group) => (
           <button
-            key={num}
-            onClick={() => handleSelectClass(num)}
+            key={group.range}
+            onClick={() => handleSelectRange(group.range)}
             className={`py-3 rounded-xl shadow-md font-semibold transition-all duration-200 border-2 ${
-              selectedClass === num
+              selectedRange === group.range
                 ? "bg-indigo-600 text-white border-indigo-700 scale-105"
                 : "bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-100 hover:scale-105"
             }`}
           >
-            Class {num}
+            {group.label}
           </button>
         ))}
       </div>
 
-      {/* --- Form Section --- */}
+      {/* --- Selected Class Form --- */}
       <AnimatePresence>
-        {selectedClass && (
+        {selectedRange && (
           <motion.form
             onSubmit={handleSubmit}
             initial={{ opacity: 0, y: -20 }}
@@ -109,14 +170,14 @@ const AdminClasses = () => {
             className="bg-white p-6 rounded-2xl shadow-lg border border-indigo-100 max-w-xl mx-auto space-y-4 mb-12"
           >
             <h2 className="text-xl font-bold text-center text-indigo-700">
-              {classes.find((c) => c.classNumber === selectedClass)
-                ? `✏️ Edit Class ${selectedClass}`
-                : `➕ Add Class ${selectedClass}`}
+              {classes.some((c) => c.classRange === selectedRange)
+                ? `✏️ Edit ${selectedRange}`
+                : `➕ Add ${selectedRange}`}
             </h2>
 
             <input
               type="text"
-              placeholder="Enter Title"
+              placeholder="Enter Course Name"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-indigo-400 outline-none"
@@ -128,9 +189,117 @@ const AdminClasses = () => {
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-indigo-400 outline-none"
-              rows="4"
+              rows="3"
               required
             />
+
+            <textarea
+              placeholder="Purpose of Course (optional)"
+              value={form.purpose}
+              onChange={(e) => setForm({ ...form, purpose: e.target.value })}
+              className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-indigo-400 outline-none"
+              rows="2"
+            />
+
+            {/* Course Type */}
+            <div className="flex items-center gap-3">
+              <label className="font-medium">Course Type:</label>
+              <select
+                value={form.courseType ? "long" : "short"}
+                onChange={(e) =>
+                  setForm({ ...form, courseType: e.target.value === "long" })
+                }
+                className="border p-2 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
+              >
+                <option value="short">Short</option>
+                <option value="long">Long</option>
+              </select>
+            </div>
+
+            {/* Topics */}
+            <div>
+              <label className="font-medium">Topics:</label>
+              <div className="flex gap-2 mt-1">
+                <input
+                  type="text"
+                  placeholder="Add a topic"
+                  value={newTopic}
+                  onChange={(e) => setNewTopic(e.target.value)}
+                  className="border p-2 rounded-lg flex-1 focus:ring-2 focus:ring-indigo-400 outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddTopic}
+                  className="bg-indigo-500 text-white px-4 rounded-lg"
+                >
+                  Add
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {(form.topics || []).map((t, i) => (
+                  <span
+                    key={i}
+                    className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                  >
+                    {t}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem("topics", i)}
+                      className="text-red-500 font-bold"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Books */}
+            <div>
+              <label className="font-medium">Suggested Books (optional):</label>
+              <div className="flex gap-2 mt-1">
+                <input
+                  type="text"
+                  placeholder="Add a book"
+                  value={newBook}
+                  onChange={(e) => setNewBook(e.target.value)}
+                  className="border p-2 rounded-lg flex-1 focus:ring-2 focus:ring-indigo-400 outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddBook}
+                  className="bg-indigo-500 text-white px-4 rounded-lg"
+                >
+                  Add
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {(form.suggestedBooks || []).map((b, i) => (
+                  <span
+                    key={i}
+                    className="bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                  >
+                    {b}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem("suggestedBooks", i)}
+                      className="text-red-500 font-bold"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={form.active}
+                onChange={(e) => setForm({ ...form, active: e.target.checked })}
+              />
+              <span className="font-medium">Active</span>
+            </div>
 
             <div className="flex gap-3">
               <button
@@ -142,7 +311,7 @@ const AdminClasses = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setSelectedClass(null)}
+                onClick={() => setSelectedRange(null)}
                 className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition"
               >
                 Cancel
@@ -151,53 +320,6 @@ const AdminClasses = () => {
           </motion.form>
         )}
       </AnimatePresence>
-
-      {/* --- Class Cards --- */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {classes.length === 0 ? (
-          <p className="text-center text-gray-500 col-span-full">
-            No classes available yet.
-          </p>
-        ) : (
-          classes.map((cls, i) => (
-            <motion.div
-              key={`${cls.classNumber}-${i}`}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-white p-5 rounded-xl shadow-md hover:shadow-xl border border-indigo-100 transition-all flex flex-col justify-between relative"
-            >
-              <span className="absolute top-3 right-3 bg-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1 rounded-full">
-                Class {cls.classNumber}
-              </span>
-
-              <div className="mt-4">
-                <h2 className="font-bold text-lg text-indigo-800 mb-1">
-                  {cls.title}
-                </h2>
-                <p className="text-gray-600 text-sm line-clamp-4">{cls.description}</p>
-              </div>
-
-              <div className="mt-5 flex justify-between items-center">
-                <button
-                  onClick={() => handleSelectClass(cls.classNumber)}
-                  className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg font-medium hover:bg-indigo-200 transition"
-                >
-                  ✏️ Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(cls.classNumber)}
-                  className="px-4 py-2 bg-red-100 text-red-600 rounded-lg font-medium hover:bg-red-200 transition"
-                >
-                  🗑️ Delete
-                </button>
-              </div>
-            </motion.div>
-          ))
-        )}
-      </div>
     </div>
   );
-};
-
-export default AdminClasses;
+}

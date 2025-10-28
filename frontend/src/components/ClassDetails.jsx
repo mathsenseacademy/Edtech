@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
-import { motion } from "framer-motion";
 import fallbackImg from "../assets/img10.png";
+
+const API_URL = "https://mathsenseacademy.onrender.com/api/classes";
 
 export default function ClassDetails() {
   const { classNumber } = useParams();
@@ -12,11 +13,11 @@ export default function ClassDetails() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchClass = async () => {
+    const fetchClasses = async () => {
       try {
-        const res = await axios.get("https://mathsenseacademy.onrender.com/api/classes");
+        const res = await axios.get(API_URL);
         const filtered = res.data.filter(
-          (c) => String(c.classNumber) === String(classNumber)
+          (cls) => String(cls.classRange) === String(classNumber)
         );
         setClassList(filtered);
       } catch (err) {
@@ -26,12 +27,12 @@ export default function ClassDetails() {
         setLoading(false);
       }
     };
-    fetchClass();
+    fetchClasses();
   }, [classNumber]);
 
   if (loading)
     return (
-      <div className="text-center py-20 text-lg text-gray-500">
+      <div className="text-center py-20 text-lg text-gray-500 animate-pulse">
         Loading class details...
       </div>
     );
@@ -44,147 +45,123 @@ export default function ClassDetails() {
     );
 
   return (
-    <div className="bg-gradient-to-b from-[#fffdf6] to-[#fff7e6] min-h-screen px-6 py-12 font-poppins">
-      <Link
-        to="/programs"
-        className="text-[#875714] font-semibold hover:underline mb-6 inline-block"
-      >
-        ← Back to Programs
-      </Link>
-
-      {/* Title Section */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#875714] mb-3">
-          Class {classNumber}
-        </h1>
-        <p className="text-gray-600 text-lg">
-          Explore all available modules, topics, and lessons for this class.
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-[#fff9f2] via-[#fffdf8] to-[#fefcf4] px-6 py-12 font-poppins">
+      {/* Back button */}
+      <div className="max-w-6xl mx-auto mb-8">
+        <Link
+          to="/programs"
+          className="text-[#875714] font-semibold hover:text-[#a66b1c] transition duration-150 inline-flex items-center gap-1"
+        >
+          ← Back to Programs
+        </Link>
       </div>
 
-      {/* --- Multiple Cards if Multiple Entries --- */}
+      {/* Page Title */}
+      <h1 className="text-4xl md:text-5xl font-bold text-[#875714] mb-12 text-center">
+        Courses for Class {classNumber}
+      </h1>
+
+      {/* Courses Grid */}
       <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {classList.length > 0 ? (
           classList.map((cls, i) => (
-            <motion.div
+            <div
               key={i}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden border border-[#f0b429]/40 hover:shadow-xl transition-all"
+              className={`rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 bg-white overflow-hidden transform hover:-translate-y-1 ${
+                !cls.active ? "opacity-70 grayscale-[10%]" : ""
+              }`}
             >
-              <div className="bg-[#fff4d6] flex items-center justify-center p-8">
+              {/* Image */}
+              <div className="h-48 w-full overflow-hidden bg-gradient-to-br from-[#fff8e7] to-[#fefbf4] flex items-center justify-center">
                 <img
                   src={cls.image || fallbackImg}
-                  alt={cls.title || `Class ${classNumber}`}
-                  className="w-52 h-52 object-contain transition-transform duration-300 hover:scale-105"
+                  alt={cls.title || `Class ${cls.classRange}`}
+                  className="h-full w-auto object-contain hover:scale-105 transition duration-500"
                   onError={(e) => (e.target.src = fallbackImg)}
                 />
               </div>
 
-              <div className="p-6">
-                <h2 className="text-2xl font-bold text-[#875714] mb-3">
-                  {cls.title || `Subject ${i + 1}`}
-                </h2>
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  {cls.description ||
-                    "Comprehensive lessons and exercises designed to strengthen your conceptual clarity and problem-solving skills."}
-                </p>
+              {/* Content */}
+              <div className="p-6 flex flex-col justify-between h-full">
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-2xl font-semibold text-[#875714] leading-snug">
+                      {cls.title || `Class ${cls.classRange}`}
+                    </h3>
+                    <span
+                      className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                        cls.active
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-600"
+                      }`}
+                    >
+                      {cls.active ? "Active" : "Inactive"}
+                    </span>
+                  </div>
 
-                <div className="bg-[#fffaf0] border-l-4 border-[#f0b429] p-3 rounded-xl text-sm italic text-[#875714]">
-                  “Mathematics is not about numbers, equations, or algorithms: it’s about understanding.”
+                  <p className="text-gray-700 text-sm mb-3 leading-relaxed">
+                    {cls.description ||
+                      "Explore engaging lessons and strengthen your foundational concepts."}
+                  </p>
+
+                  {cls.purpose && (
+                    <div className="mb-3">
+                      <h6 className="font-semibold text-gray-800 text-sm mb-1">
+                        Purpose:
+                      </h6>
+                      <p className="text-gray-600 text-sm italic">
+                        {cls.purpose}
+                      </p>
+                    </div>
+                  )}
+
+                  {cls.topics?.length > 0 && (
+                    <div className="mb-3">
+                      <h6 className="font-semibold text-gray-800 text-sm mb-1">
+                        Topics Covered:
+                      </h6>
+                      <p className="text-gray-600 text-sm">
+                        {cls.topics.join(", ")}
+                      </p>
+                    </div>
+                  )}
+
+                  {cls.suggestedBooks?.length > 0 && (
+                    <div className="mt-2">
+                      <h6 className="font-semibold text-gray-800 text-sm mb-1">
+                        Suggested Books:
+                      </h6>
+                      <ul className="list-disc pl-5 text-gray-600 text-sm space-y-1">
+                        {cls.suggestedBooks.map((book, idx) => (
+                          <li key={idx}>{book}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div className="mt-6">
+                  <button
+                    disabled={!cls.active}
+                    className={`w-full py-2 rounded-full font-semibold transition duration-200 ${
+                      cls.active
+                        ? "bg-[#875714] text-white hover:bg-[#9c6c20]"
+                        : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    }`}
+                  >
+                    {cls.active ? "View Course Details" : "Inactive Course"}
+                  </button>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))
         ) : (
-          <div className="text-center text-gray-600 col-span-full py-20 text-lg">
-            No modules found for this class yet.
-          </div>
+          <p className="text-center text-gray-600 col-span-full py-20 text-lg">
+            No courses found for this class.
+          </p>
         )}
       </div>
-
-      {/* --- Topics Section --- */}
-      <div className="max-w-6xl mx-auto mt-16">
-        <h2 className="text-2xl font-bold text-[#875714] mb-6 border-b-2 border-[#f0b429] inline-block">
-          📘 Key Topics Covered
-        </h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            "Number Systems",
-            "Algebraic Expressions",
-            "Geometry & Shapes",
-            "Mensuration & Area",
-            "Trigonometry Essentials",
-            "Data & Statistics",
-          ].map((topic, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + i * 0.05 }}
-              className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all p-5 border-l-4 border-[#f0b429]"
-            >
-              <h3 className="text-lg font-semibold text-[#875714]">{topic}</h3>
-              <p className="text-gray-600 text-sm mt-2">
-                Deep dive into {topic.toLowerCase()} with real-world examples and interactive problems.
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* --- Fun Facts / Insights --- */}
-      <div className="max-w-6xl mx-auto mt-16">
-        <h2 className="text-2xl font-bold text-[#875714] mb-6 border-b-2 border-[#f0b429] inline-block">
-          💡 Did You Know?
-        </h2>
-        <div className="bg-[#fffaf0] rounded-3xl p-6 text-[#875714] text-lg shadow-inner border border-[#f0b429]/30">
-          <ul className="space-y-3 list-disc pl-6">
-            <li>Mathematics helps develop critical thinking and analytical skills.</li>
-            <li>Patterns and logic from math influence architecture, music, and art.</li>
-            <li>Even nature follows mathematical principles — like Fibonacci sequences!</li>
-          </ul>
-        </div>
-      </div>
-
-      {/* --- Recommended Books --- */}
-      <div className="max-w-6xl mx-auto mt-16">
-        <h2 className="text-2xl font-bold text-[#875714] mb-6 border-b-2 border-[#f0b429] inline-block">
-          📚 Recommended Books
-        </h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { name: "NCERT Mathematics", author: "National Council of Educational Research" },
-            { name: "RS Aggarwal Mathematics", author: "R.S. Aggarwal" },
-            { name: "RD Sharma Mathematics", author: "R.D. Sharma" },
-          ].map((book, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 + i * 0.1 }}
-              className="bg-[#fffaf0] border border-[#f0b429]/50 rounded-2xl p-5 hover:bg-[#fff4d6] transition shadow-sm"
-            >
-              <h3 className="text-lg font-semibold text-[#875714]">{book.name}</h3>
-              <p className="text-gray-600 text-sm mt-1">by {book.author}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* --- Inspirational Banner --- */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="max-w-6xl mx-auto mt-20 text-center bg-gradient-to-r from-[#f0b429] to-[#875714] text-white py-12 px-6 rounded-3xl shadow-lg"
-      >
-        <h2 className="text-2xl md:text-3xl font-semibold italic mb-2">
-          “Mathematics gives us hope that every problem has a solution.”
-        </h2>
-        <p className="text-sm md:text-base opacity-90">— Anonymous</p>
-      </motion.div>
     </div>
   );
 }

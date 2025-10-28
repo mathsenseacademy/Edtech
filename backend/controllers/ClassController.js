@@ -42,14 +42,4 @@ export const ClassController = {
       res.status(500).json({ message: "Error updating class" });
     }
   },
-
-  async delete(req, res) {
-    try {
-      await ClassModel.delete(req.params.id);
-      res.json({ message: "Class deleted" });
-    } catch (error) {
-      console.error("🔥 Error deleting class:", error);
-      res.status(500).json({ message: "Error deleting class" });
-    }
-  },
 };

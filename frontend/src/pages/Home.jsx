@@ -3,7 +3,7 @@ import React from "react";
 import Hero from '../components/Hero';
 import Roles from "../components/Roles";
 import FeaturesSection from '../components/FeaturesSection';
-import ProgramsSection from '../components/ProgramsSection';
+import ClassSection from '../components/ClassSection';
 import TestimonialSection from '../components/TestimonialSection';
 
 const Home = ({ heroRef, sentinelRef }) => {
@@ -25,10 +25,10 @@ const Home = ({ heroRef, sentinelRef }) => {
 </section>
 
  <section 
-        id="programs" 
+        id="class" 
         className="w-full max-w-6xl px-5 py-10 box-border md:px-4 md:py-8"
       >
-        <ProgramsSection />
+        <ClassSection />
       </section>
 
       {/* 1-pixel sentinel marks end of hero */}

@@ -191,7 +191,7 @@ const Header = () => {
                             key={cls.number}
                             className="px-4 py-2 hover:bg-gray-300 cursor-pointer transition"
                             onClick={() => {
-                              navigate(`/programs/class/${cls.number}`);
+                              navigate(`/class/${cls.number}`);
                               setClassDropdownOpen(false);
                             }}
                           >
@@ -402,7 +402,7 @@ const Header = () => {
                               <button
                                 className="w-full text-left py-2"
                                 onClick={() => {
-                                  navigate(`/programs/class/${cls.number}`);
+                                  navigate(`/class/${cls.number}`);
                                   setClassDropdownOpen(false);
                                   setMobileMenuOpen(false);
                                 }}
