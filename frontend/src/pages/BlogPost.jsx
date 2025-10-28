@@ -8,7 +8,7 @@ const BlogPost = () => {
   useEffect(() => {
     if (!id) return;
 
-    fetch(`http://localhost:5000/api/blogs/${id}`)
+    fetch(`https://mathsenseacademy.onrender.com/api/blogs/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Blog not found: ${res.status}`);
         return res.json();
