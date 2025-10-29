@@ -17,6 +17,7 @@
     "express": "^5.1.0",
     "firebase-admin": "^13.5.0",
     "imagekit": "^6.0.0",
+    "multer": "^2.0.2",
     "node-cron": "^4.2.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
