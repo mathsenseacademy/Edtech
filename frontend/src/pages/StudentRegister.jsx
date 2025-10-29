@@ -5,8 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function StudentRegister({ onClose, googleAuthData = null }) {
   const navigate = useNavigate();
-  
-  // Get Google auth data from sessionStorage if not passed as prop (memoized)
+  // Memoized Google auth data from props or session storage
   const authData = useMemo(() => {
     if (googleAuthData) return googleAuthData;
     
@@ -289,52 +288,28 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
     setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000);
   };
 
-  const imageToBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
   const handleChange = async (e) => {
     const { name, type, files, value, checked } = e.target;
 
+    
     if (type === "file" && files?.[0]) {
-      try {
-        const rawBase64 = await imageToBase64(files[0]);
-        const img = new Image();
-        img.onload = async () => {
-          const canvas = document.createElement("canvas");
-          const maxWidth = 200;
-          const scale = maxWidth / img.width;
-          canvas.width = maxWidth;
-          canvas.height = img.height * scale;
+  const file = files[0];
+  const formDataUpload = new FormData();
+  formDataUpload.append("image", file);
 
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  try {
+    showToast("Uploading image...", "success");
+    const { data } = await api.post("/upload", formDataUpload, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-          let quality = 0.7;
-          let compressed = canvas.toDataURL("image/jpeg", quality);
-          let blob = await (await fetch(compressed)).blob();
-          let sizeKB = blob.size / 1024;
-
-          while (sizeKB > 150 && quality > 0.1) {
-            quality -= 0.1;
-            compressed = canvas.toDataURL("image/jpeg", quality);
-            blob = await (await fetch(compressed)).blob();
-            sizeKB = blob.size / 1024;
-          }
-
-          setFormData((prev) => ({ ...prev, [name]: compressed }));
-          showToast("Image uploaded and compressed", "success");
-        };
-        img.src = rawBase64;
-      } catch (err) {
-        console.error("Image upload error", err);
-        showToast("Failed to upload image", "danger");
-      }
-    } else if (type === "checkbox") {
+    setFormData((prev) => ({ ...prev, [name]: data.url }));
+    showToast("Image uploaded successfully ✅", "success");
+  } catch (err) {
+    console.error("Image upload failed:", err);
+    showToast("Image upload failed ❌", "danger");
+  }
+} else if (type === "checkbox") {
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
