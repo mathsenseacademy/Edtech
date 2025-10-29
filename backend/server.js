@@ -13,6 +13,7 @@ import studentRoutes from "./routes/StudentRoutes.js";
 import classRoutes from "./routes/ClassRoutes.js";
 import batchRoutes from "./routes/BatchRoutes.js";
 import BlogRoutes from "./routes/BlogRoutes.js";
+import UploadRoutes from "./routes/UploadRoutes.js";
 
 // ✅ Import Swagger
 import swaggerJsDoc from "swagger-jsdoc";
@@ -173,6 +174,7 @@ app.use("/student", studentRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/batches", batchRoutes);
 app.use("/api/blogs", BlogRoutes);
+app.use("/api/upload", UploadRoutes);
 
 /* -----------------------------------------
  ✅ ROOT ROUTE

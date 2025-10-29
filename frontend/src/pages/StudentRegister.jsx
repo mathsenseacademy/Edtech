@@ -299,7 +299,7 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
 
   try {
     showToast("Uploading image...", "success");
-    const { data } = await api.post("/upload", formDataUpload, {
+    const { data } = await api.post("/api/upload", formDataUpload, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
