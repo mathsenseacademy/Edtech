@@ -3,11 +3,13 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import fallbackImg from "../assets/img10.png";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = "https://mathsenseacademy.onrender.com/api/classes";
 
 export default function ClassDetails() {
   const { classNumber } = useParams();
+  const navigate = useNavigate();
   const [classList, setClassList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -45,9 +47,9 @@ export default function ClassDetails() {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#fff9f2] via-[#fffdf8] to-[#fefcf4] px-6 py-12 font-poppins">
-      {/* Back button */}
-      <div className="max-w-6xl mx-auto mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#fffaf3] via-[#fffdf9] to-[#fff9f1] px-6 py-12 font-poppins">
+      {/* Back Button */}
+      <div className="max-w-5xl mx-auto mb-10">
         <Link
           to="/programs"
           className="text-[#875714] font-semibold hover:text-[#a66b1c] transition duration-150 inline-flex items-center gap-1"
@@ -57,37 +59,25 @@ export default function ClassDetails() {
       </div>
 
       {/* Page Title */}
-      <h1 className="text-4xl md:text-5xl font-bold text-[#875714] mb-12 text-center">
+      <h1 className="text-4xl md:text-5xl font-bold text-[#875714] mb-16 text-center">
         Courses for Class {classNumber}
       </h1>
 
-      {/* Courses Grid */}
-      <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {/* Each Class Full Page Style */}
         {classList.length > 0 ? (
           classList.map((cls, i) => (
             <div
               key={i}
-              className={`rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 bg-white overflow-hidden transform hover:-translate-y-1 ${
-                !cls.active ? "opacity-70 grayscale-[10%]" : ""
-              }`}
+              className="rounded-3xl shadow-xl border border-gray-200 bg-white overflow-hidden transition duration-300"
             >
-              {/* Image */}
-              <div className="h-48 w-full overflow-hidden bg-gradient-to-br from-[#fff8e7] to-[#fefbf4] flex items-center justify-center">
-                <img
-                  src={cls.image || fallbackImg}
-                  alt={cls.title || `Class ${cls.classRange}`}
-                  className="h-full w-auto object-contain hover:scale-105 transition duration-500"
-                  onError={(e) => (e.target.src = fallbackImg)}
-                />
-              </div>
+              {/* Top Banner */}
+              <div className="w-full bg-gradient-to-r from-[#fff6e6] to-[#fffaf3] p-8 flex flex-col md:flex-row md:items-center md:justify-between">
+                <div className="flex-1 space-y-3">
+                  <h2 className="text-3xl font-bold text-[#875714]">
+                    {cls.title || `Class ${cls.classRange}`}
+                  </h2>
 
-              {/* Content */}
-              <div className="p-6 flex flex-col justify-between h-full">
-                <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-2xl font-semibold text-[#875714] leading-snug">
-                      {cls.title || `Class ${cls.classRange}`}
-                    </h3>
+                  <div className="flex items-center gap-3">
                     <span
                       className={`text-xs font-semibold px-3 py-1 rounded-full ${
                         cls.active
@@ -97,71 +87,95 @@ export default function ClassDetails() {
                     >
                       {cls.active ? "Active" : "Inactive"}
                     </span>
+
+                    <span className="text-sm text-gray-600 italic">
+                      Course Range: {cls.classRange}
+                    </span>
                   </div>
-
-                  <p className="text-gray-700 text-sm mb-3 leading-relaxed">
-                    {cls.description ||
-                      "Explore engaging lessons and strengthen your foundational concepts."}
-                  </p>
-
-                  {cls.purpose && (
-                    <div className="mb-3">
-                      <h6 className="font-semibold text-gray-800 text-sm mb-1">
-                        Purpose:
-                      </h6>
-                      <p className="text-gray-600 text-sm italic">
-                        {cls.purpose}
-                      </p>
-                    </div>
-                  )}
-
-                  {cls.topics?.length > 0 && (
-                    <div className="mb-3">
-                      <h6 className="font-semibold text-gray-800 text-sm mb-1">
-                        Topics Covered:
-                      </h6>
-                      <p className="text-gray-600 text-sm">
-                        {cls.topics.join(", ")}
-                      </p>
-                    </div>
-                  )}
-
-                  {cls.suggestedBooks?.length > 0 && (
-                    <div className="mt-2">
-                      <h6 className="font-semibold text-gray-800 text-sm mb-1">
-                        Suggested Books:
-                      </h6>
-                      <ul className="list-disc pl-5 text-gray-600 text-sm space-y-1">
-                        {cls.suggestedBooks.map((book, idx) => (
-                          <li key={idx}>{book}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
                 </div>
+
+                <div className="mt-6 md:mt-0 md:ml-8">
+                  <img
+                    src={cls.image || fallbackImg}
+                    alt={cls.title || `Class ${cls.classRange}`}
+                    className="h-48 w-auto object-contain mx-auto rounded-xl shadow-md bg-white p-2"
+                    onError={(e) => (e.target.src = fallbackImg)}
+                  />
+                </div>
+              </div>
+
+              {/* Body Content */}
+              <div className="p-8 space-y-8 text-gray-700">
+                {/* Description */}
+                {cls.description && (
+                  <section>
+                    <h3 className="text-xl font-semibold text-[#875714] mb-2">
+                      Descriptionsssssssssssss
+                    </h3>
+                    <p className="leading-relaxed">{cls.description}</p>
+                  </section>
+                )}
+
+                {/* Purpose */}
+                {cls.purpose && (
+                  <section>
+                    <h3 className="text-xl font-semibold text-[#875714] mb-2">
+                      Purpose
+                    </h3>
+                    <p className="italic">{cls.purpose}</p>
+                  </section>
+                )}
+
+                {/* Topics */}
+                {cls.topics?.length > 0 && (
+                  <section>
+                    <h3 className="text-xl font-semibold text-[#875714] mb-2">
+                      Topics Covered
+                    </h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {cls.topics.map((topic, idx) => (
+                        <li key={idx}>{topic}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
+                {/* Suggested Books */}
+                {cls.suggestedBooks?.length > 0 && (
+                  <section>
+                    <h3 className="text-xl font-semibold text-[#875714] mb-2">
+                      Suggested Books
+                    </h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {cls.suggestedBooks.map((book, idx) => (
+                        <li key={idx}>{book}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
 
                 {/* Footer */}
-                <div className="mt-6">
-                  <button
-                    disabled={!cls.active}
-                    className={`w-full py-2 rounded-full font-semibold transition duration-200 ${
-                      cls.active
-                        ? "bg-[#875714] text-white hover:bg-[#9c6c20]"
-                        : "bg-gray-300 text-gray-600 cursor-not-allowed"
-                    }`}
-                  >
-                    {cls.active ? "View Course Details" : "Inactive Course"}
-                  </button>
-                </div>
+                <div className="pt-6">
+  <button
+    onClick={() => cls.active && navigate("/login/student")}
+    disabled={!cls.active}
+    className={`w-full md:w-auto px-8 py-3 rounded-full font-semibold transition duration-200 ${
+      cls.active
+        ? "bg-[#875714] text-white hover:bg-[#9c6c20]"
+        : "bg-gray-300 text-gray-600 cursor-not-allowed"
+    }`}
+  >
+    {cls.active ? "Enroll Now" : "Inactive Course"}
+  </button>
+</div>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-600 col-span-full py-20 text-lg">
+          <p className="text-center text-gray-600 py-20 text-lg">
             No courses found for this class.
           </p>
         )}
       </div>
-    </div>
   );
 }
