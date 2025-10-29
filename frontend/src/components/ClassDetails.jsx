@@ -110,7 +110,7 @@ export default function ClassDetails() {
                 {cls.description && (
                   <section>
                     <h3 className="text-xl font-semibold text-[#875714] mb-2">
-                      Descriptionsssssssssssss
+                      Description
                     </h3>
                     <p className="leading-relaxed">{cls.description}</p>
                   </section>
