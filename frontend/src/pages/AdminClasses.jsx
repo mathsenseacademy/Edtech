@@ -16,6 +16,7 @@ const classGroups = [
 export default function AdminClasses() {
   const [classes, setClasses] = useState([]);
   const [selectedRange, setSelectedRange] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState(null);
   const [form, setForm] = useState({
     classRange: "",
     title: "",
@@ -38,7 +39,6 @@ export default function AdminClasses() {
   const fetchClasses = async () => {
     try {
       const res = await axios.get(API_URL);
-      // ensure arrays to avoid map crash
       const safeData = (res.data || []).map((c) => ({
         ...c,
         topics: Array.isArray(c.topics) ? c.topics : [],
@@ -53,29 +53,29 @@ export default function AdminClasses() {
 
   const handleSelectRange = (range) => {
     setSelectedRange(range);
-    const existing = classes.find((c) => c.classRange === range);
-    setForm(
-      existing
-        ? {
-            ...existing,
-            topics: Array.isArray(existing.topics)
-              ? existing.topics
-              : [],
-            suggestedBooks: Array.isArray(existing.suggestedBooks)
-              ? existing.suggestedBooks
-              : [],
-          }
-        : {
-            classRange: range,
-            title: "",
-            description: "",
-            topics: [],
-            courseType: false,
-            purpose: "",
-            suggestedBooks: [],
-            active: true,
-          }
-    );
+    setSelectedCourse(null);
+    resetForm(range);
+    setMessage("");
+  };
+
+  const resetForm = (range) => {
+    setForm({
+      classRange: range,
+      title: "",
+      description: "",
+      topics: [],
+      courseType: false,
+      purpose: "",
+      suggestedBooks: [],
+      active: true,
+    });
+    setNewTopic("");
+    setNewBook("");
+  };
+
+  const handleEditCourse = (course) => {
+    setSelectedCourse(course);
+    setForm({ ...course });
     setMessage("");
   };
 
@@ -107,23 +107,41 @@ export default function AdminClasses() {
     if (!form.classRange) return;
     setLoading(true);
     try {
-      const existing = classes.find((c) => c.classRange === form.classRange);
-      if (existing) {
-        await axios.put(`${API_URL}/${existing.id}`, form);
-        setMessage(`✅ Updated ${form.classRange} successfully`);
+      if (selectedCourse) {
+        // Update existing course
+        await axios.put(`${API_URL}/${selectedCourse.id}`, form);
+        setMessage(`✅ Updated course "${form.title}" successfully`);
       } else {
+        // Create new course
         await axios.post(API_URL, form);
-        setMessage(`✅ Created ${form.classRange} successfully`);
+        setMessage(`✅ Created new course for ${form.classRange}`);
       }
       await fetchClasses();
-      setSelectedRange(null);
+      resetForm(form.classRange);
+      setSelectedCourse(null);
     } catch (err) {
-      console.error("❌ Error saving class:", err);
-      setMessage("❌ Failed to save class. Try again.");
+      console.error("❌ Error saving course:", err);
+      setMessage("❌ Failed to save. Try again.");
     } finally {
       setLoading(false);
     }
   };
+
+  const handleDelete = async (courseId) => {
+    if (!window.confirm("Delete this course?")) return;
+    try {
+      await axios.delete(`${API_URL}/${courseId}`);
+      setMessage("🗑️ Course deleted successfully.");
+      await fetchClasses();
+    } catch (err) {
+      console.error("❌ Error deleting course:", err);
+      setMessage("❌ Failed to delete course.");
+    }
+  };
+
+  const filteredCourses = classes.filter(
+    (c) => c.classRange === selectedRange
+  );
 
   return (
     <div className="p-6 mt-16 min-h-screen bg-gradient-to-br from-orange-100 to-amber-200 font-poppins">
@@ -134,7 +152,9 @@ export default function AdminClasses() {
       {message && (
         <p
           className={`text-center mb-6 font-medium ${
-            message.startsWith("✅") ? "text-green-600" : "text-red-600"
+            message.startsWith("✅") || message.startsWith("🗑️")
+              ? "text-green-600"
+              : "text-red-600"
           }`}
         >
           {message}
@@ -158,7 +178,51 @@ export default function AdminClasses() {
         ))}
       </div>
 
-      {/* --- Selected Class Form --- */}
+      {/* --- Courses List --- */}
+      {selectedRange && (
+        <div className="max-w-3xl mx-auto mb-8">
+          <h3 className="text-xl font-semibold mb-3 text-indigo-700">
+            Existing Courses for {selectedRange}
+          </h3>
+          {filteredCourses.length === 0 ? (
+            <p className="text-gray-500">No courses yet for this class.</p>
+          ) : (
+            <div className="space-y-3">
+              {filteredCourses.map((course) => (
+                <div
+                  key={course.id}
+                  className="flex justify-between items-center bg-white rounded-lg shadow p-3 border border-gray-100"
+                >
+                  <div>
+                    <h4 className="font-bold text-indigo-700">
+                      {course.title}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {course.description.slice(0, 80)}...
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEditCourse(course)}
+                      className="px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(course.id)}
+                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* --- Add/Edit Form --- */}
       <AnimatePresence>
         {selectedRange && (
           <motion.form
@@ -170,9 +234,9 @@ export default function AdminClasses() {
             className="bg-white p-6 rounded-2xl shadow-lg border border-indigo-100 max-w-xl mx-auto space-y-4 mb-12"
           >
             <h2 className="text-xl font-bold text-center text-indigo-700">
-              {classes.some((c) => c.classRange === selectedRange)
-                ? `✏️ Edit ${selectedRange}`
-                : `➕ Add ${selectedRange}`}
+              {selectedCourse
+                ? `✏️ Edit: ${selectedCourse.title}`
+                : `➕ Add New Course for ${selectedRange}`}
             </h2>
 
             <input
@@ -187,14 +251,16 @@ export default function AdminClasses() {
             <textarea
               placeholder="Enter Description"
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-indigo-400 outline-none"
               rows="3"
               required
             />
 
             <textarea
-              placeholder="Purpose of Course (optional)"
+              placeholder="Purpose (optional)"
               value={form.purpose}
               onChange={(e) => setForm({ ...form, purpose: e.target.value })}
               className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-indigo-400 outline-none"
@@ -256,7 +322,7 @@ export default function AdminClasses() {
 
             {/* Books */}
             <div>
-              <label className="font-medium">Suggested Books (optional):</label>
+              <label className="font-medium">Suggested Books:</label>
               <div className="flex gap-2 mt-1">
                 <input
                   type="text"
@@ -311,10 +377,13 @@ export default function AdminClasses() {
               </button>
               <button
                 type="button"
-                onClick={() => setSelectedRange(null)}
+                onClick={() => {
+                  setSelectedCourse(null);
+                  resetForm(selectedRange);
+                }}
                 className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition"
               >
-                Cancel
+                Clear
               </button>
             </div>
           </motion.form>

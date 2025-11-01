@@ -7,14 +7,14 @@ const AdminBatches = () => {
   const [classes] = useState([...Array(12).keys()].map((n) => n + 1));
   const [selectedClass, setSelectedClass] = useState(null);
   const [batches, setBatches] = useState([]);
-  const [students, setStudents] = useState([]);
+  const [assignedStudents, setAssignedStudents] = useState([]);
+  const [unassignedStudents, setUnassignedStudents] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [batchName, setBatchName] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Fetch batches for selected class
   const fetchBatches = async (cls) => {
-    if (!cls) return;
     try {
       const res = await axios.get(`${API_BASE}/batches/class/${cls}`);
       setBatches(res.data || []);
@@ -24,14 +24,27 @@ const AdminBatches = () => {
     }
   };
 
-  // Fetch students of selected class
-  const fetchStudents = async (cls) => {
+  // Fetch assigned and unassigned students for selected batch
+  const fetchBatchStudents = async (batchId, cls) => {
+    if (!batchId || !cls) return;
     try {
-      const res = await axios.get(`${API_BASE}/student/class/${cls}`);
-      setStudents(res.data || []);
+      const [allStudentsRes, batchStudentsRes] = await Promise.all([
+        axios.get(`${API_BASE}/student/class/${cls}`),
+        axios.get(`${API_BASE}/batches/${batchId}/students`),
+      ]);
+
+      const allStudents = allStudentsRes.data || [];
+      const assigned = batchStudentsRes.data || [];
+      const assignedIds = new Set(assigned.map((s) => s.id));
+
+      const unassigned = allStudents.filter((s) => !assignedIds.has(s.id));
+
+      setAssignedStudents(assigned);
+      setUnassignedStudents(unassigned);
     } catch (err) {
-      console.error("Error fetching students:", err);
-      setStudents([]);
+      console.error("Error fetching batch students:", err);
+      setAssignedStudents([]);
+      setUnassignedStudents([]);
     }
   };
 
@@ -39,12 +52,13 @@ const AdminBatches = () => {
   useEffect(() => {
     if (selectedClass) {
       fetchBatches(selectedClass);
-      fetchStudents(selectedClass);
       setSelectedBatch(null);
+      setAssignedStudents([]);
+      setUnassignedStudents([]);
     }
   }, [selectedClass]);
 
-  // Create or update batch
+  // Create new batch
   const saveBatch = async () => {
     if (!batchName || !selectedClass) return alert("Please fill all fields");
 
@@ -56,7 +70,7 @@ const AdminBatches = () => {
       });
       setBatchName("");
       fetchBatches(selectedClass);
-      alert("✅ Batch saved!");
+      alert("✅ Batch created!");
     } catch (err) {
       console.error("Error saving batch:", err);
       alert("Failed to save batch");
@@ -69,31 +83,49 @@ const AdminBatches = () => {
   const deleteBatch = async (batchId) => {
     if (!window.confirm("Delete this batch?")) return;
     try {
-      setLoading(true);
       await axios.delete(`${API_BASE}/batches/${batchId}`);
       fetchBatches(selectedClass);
-      if (selectedBatch?.id === batchId) setSelectedBatch(null);
+      if (selectedBatch?.id === batchId) {
+        setSelectedBatch(null);
+        setAssignedStudents([]);
+        setUnassignedStudents([]);
+      }
       alert("🗑️ Batch deleted");
     } catch (err) {
       console.error("Error deleting batch:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Assign/unassign student to batch
-  const toggleStudentBatch = async (studentId) => {
-    if (!selectedBatch) return alert("Select a batch first!");
-    try {
-      await axios.post(`${API_BASE}/batches/${selectedBatch.id}/toggle`, {
-        studentId,
-      });
-      fetchStudents(selectedClass);
-      alert("✅ Updated batch membership");
-    } catch (err) {
-      console.error("Error toggling student batch:", err);
-      alert("Failed to update batch membership");
-    }
+  // Assign a student
+  const assignStudent = async (studentUid) => {
+  if (!selectedBatch) return alert("Select a batch first!");
+  try {
+    await axios.post(`${API_BASE}/batches/${selectedBatch.id}/assign`, {
+      studentUid, // ✅ changed
+    });
+    fetchBatchStudents(selectedBatch.id, selectedClass);
+  } catch (err) {
+    console.error("Error assigning student:", err);
+  }
+};
+
+// Unassign a student
+const unassignStudent = async (studentUid) => {
+  if (!selectedBatch) return alert("Select a batch first!");
+  try {
+    await axios.post(`${API_BASE}/batches/${selectedBatch.id}/unassign`, {
+      studentUid, // ✅ changed
+    });
+    fetchBatchStudents(selectedBatch.id, selectedClass);
+  } catch (err) {
+    console.error("Error unassigning student:", err);
+  }
+};
+
+  // When selecting a batch
+  const handleBatchClick = (b) => {
+    setSelectedBatch(b);
+    fetchBatchStudents(b.id, selectedClass);
   };
 
   return (
@@ -118,14 +150,13 @@ const AdminBatches = () => {
       </div>
 
       {selectedClass && (
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Batch Management */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Batches */}
           <div className="bg-white p-4 rounded-xl shadow">
             <h2 className="font-bold text-lg text-blue-700 mb-3">
               Batches for Class {selectedClass}
             </h2>
 
-            {/* Create / Edit Batch */}
             <div className="flex gap-2 mb-4">
               <input
                 type="text"
@@ -143,20 +174,19 @@ const AdminBatches = () => {
               </button>
             </div>
 
-            {/* Batch List */}
             <ul className="space-y-2">
               {batches.map((b) => (
                 <li
                   key={b.id}
-                  className={`p-3 border rounded flex justify-between items-center ${
+                  className={`p-3 border rounded flex justify-between items-center cursor-pointer ${
                     selectedBatch?.id === b.id
                       ? "bg-blue-100 border-blue-400"
                       : "bg-white"
                   }`}
                 >
                   <span
-                    onClick={() => setSelectedBatch(b)}
-                    className="font-semibold cursor-pointer text-blue-700"
+                    onClick={() => handleBatchClick(b)}
+                    className="font-semibold text-blue-700"
                   >
                     {b.name}
                   </span>
@@ -171,42 +201,80 @@ const AdminBatches = () => {
             </ul>
           </div>
 
-          {/* Student Assignment */}
+          {/* Assigned Students */}
           <div className="bg-white p-4 rounded-xl shadow">
-            <h2 className="font-bold text-lg text-blue-700 mb-3">
-              Students in Class {selectedClass}
+            <h2 className="font-bold text-lg text-green-700 mb-3">
+              Assigned Students
             </h2>
             {selectedBatch ? (
-              <p className="mb-2 text-sm text-gray-600">
-                Assign to: <b>{selectedBatch.name}</b>
-              </p>
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {assignedStudents.length > 0 ? (
+                  assignedStudents.map((s) => (
+                    <div
+                      key={s.id}
+                      className="flex justify-between items-center p-2 border rounded"
+                    >
+                      <div>
+                        <p className="font-semibold">
+                          {s.first_name} {s.last_name}
+                        </p>
+                        <p className="text-sm text-gray-500">{s.email}</p>
+                      </div>
+                      <button
+                        onClick={() => unassignStudent(s.id)}
+                        className="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                      >
+                        Unassign
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-sm">No assigned students.</p>
+                )}
+              </div>
             ) : (
-              <p className="mb-2 text-sm text-gray-500">
-                Select a batch to assign students.
+              <p className="text-sm text-gray-500">
+                Select a batch to see assigned students.
               </p>
             )}
+          </div>
 
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {students.map((s) => (
-                <div
-                  key={s.id}
-                  className="flex justify-between items-center p-2 border rounded"
-                >
-                  <div>
-                    <p className="font-semibold">
-                      {s.first_name} {s.last_name}
-                    </p>
-                    <p className="text-sm text-gray-500">{s.email}</p>
-                  </div>
-                  <button
-                    onClick={() => toggleStudentBatch(s.id)}
-                    className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                  >
-                    Toggle
-                  </button>
-                </div>
-              ))}
-            </div>
+          {/* Unassigned Students */}
+          <div className="bg-white p-4 rounded-xl shadow">
+            <h2 className="font-bold text-lg text-orange-700 mb-3">
+              Unassigned Students
+            </h2>
+            {selectedBatch ? (
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {unassignedStudents.length > 0 ? (
+                  unassignedStudents.map((s) => (
+                    <div
+                      key={s.id}
+                      className="flex justify-between items-center p-2 border rounded"
+                    >
+                      <div>
+                        <p className="font-semibold">
+                          {s.first_name} {s.last_name}
+                        </p>
+                        <p className="text-sm text-gray-500">{s.email}</p>
+                      </div>
+                      <button
+                        onClick={() => assignStudent(s.id)}
+                        className="text-sm bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                      >
+                        Assign
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-sm">All students assigned!</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">
+                Select a batch to see unassigned students.
+              </p>
+            )}
           </div>
         </div>
       )}

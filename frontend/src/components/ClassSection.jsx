@@ -10,12 +10,15 @@ export default function ClassSection() {
   const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
 
-  // Fetch all classes
+  // Fetch all active classes
   useEffect(() => {
     const fetchClasses = async () => {
       try {
         const res = await axios.get(API_URL);
-        setClasses(res.data || []);
+        const all = res.data || [];
+        // ✅ Only keep active ones
+        const activeClasses = all.filter((cls) => cls.active);
+        setClasses(activeClasses);
       } catch (err) {
         console.error("❌ Error fetching classes:", err);
       }
@@ -23,19 +26,9 @@ export default function ClassSection() {
     fetchClasses();
   }, []);
 
-  // Static class groups
-  const classGroups = [
-    { range: "1-2" },
-    { range: "3-4" },
-    ...Array.from({ length: 8 }, (_, i) => ({ range: `${i + 5}` })),
-  ];
-
-  const handleCardClick = (range) => {
-    navigate(`/class/${range}`);
+  const handleCardClick = (cls) => {
+    navigate(`/class/${cls.classRange}`);
   };
-
-  const findClassInfo = (range) =>
-    classes.find((cls) => cls.classRange === range);
 
   return (
     <section className="bg-[#fffdf6] px-6 py-12 font-poppins">
@@ -59,74 +52,50 @@ export default function ClassSection() {
         <div>
           <p className="text-lg md:text-xl font-medium text-gray-700 leading-relaxed">
             Explore our thoughtfully designed programs — from Class 1 to 12.
-            Each group covers structured lessons, clear learning paths, and
-            builds conceptual strength step by step.
+            Each course offers a structured learning path that helps students
+            build strong conceptual foundations in Mathematics and related subjects.
           </p>
         </div>
       </div>
 
       {/* Cards Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {classGroups.map(({ range }) => {
-          const cls = findClassInfo(range);
-          const isActive = cls?.active ?? false;
-          const title = cls?.title || `Class ${range}`;
-
-          return (
+        {classes.length === 0 ? (
+          <p className="text-gray-600 text-center col-span-full">
+            No active courses available at the moment.
+          </p>
+        ) : (
+          classes.map((cls) => (
             <div
-              key={range}
-              onClick={() => handleCardClick(range)}
-              className={`cursor-pointer rounded-2xl shadow-lg hover:shadow-2xl transition duration-200 overflow-hidden border-2 ${
-                isActive
-                  ? "border-green-300 bg-white"
-                  : "border-gray-200 bg-gray-100 opacity-80"
-              }`}
+              key={cls._id || `${cls.classRange}-${cls.title}`}
+              onClick={() => handleCardClick(cls)}
+              className="cursor-pointer rounded-2xl shadow-lg hover:shadow-2xl transition duration-200 overflow-hidden border-2 border-green-300 bg-white"
             >
               {/* Image */}
               <div className="h-40 bg-gray-100 flex items-center justify-center">
                 <img
                   src={fallbackImg}
-                  alt={`Class ${range}`}
+                  alt={cls.title}
                   className="h-full w-auto object-contain"
                 />
               </div>
-              
 
               {/* Content */}
               <div className="p-6">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-2xl font-bold text-[#875714]">
-                    {title}
-                  </h3>
-                  <span
-                    className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                      isActive
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-600"
-                    }`}
-                  >
-                    {isActive ? "Active" : "Inactive"}
-                  </span>
-                </div>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  {cls?.description
-                    ? cls.description
-                    : `Learn essential concepts and build strong fundamentals for Class ${range}.`}
+                <h3 className="text-2xl font-bold text-[#875714] mb-2">
+                  {cls.title}
+                </h3>
+                <p className="text-gray-600 text-sm mb-2">
+                  <strong>Class:</strong> {cls.classRange}
                 </p>
-                {cls?.topics?.length > 0 && (
-                  <div className="mt-3">
-                    <h6 className="font-semibold text-gray-800 text-sm mb-1">
-                      Topics Covered:
-                    </h6>
-                    <p className="text-gray-600 text-sm line-clamp-2">
-                      {cls.topics.join(", ")}
-                    </p>
-                  </div>
-                )}
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  {cls.description ||
+                    `Learn essential concepts and build strong fundamentals for Class ${cls.classRange}.`}
+                </p>
               </div>
             </div>
-          );
-        })}
+          ))
+        )}
       </div>
     </section>
   );

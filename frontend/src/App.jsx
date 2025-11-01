@@ -17,9 +17,11 @@ import AdminClasses from "./pages/AdminClasses";
 import AdminBatches from "./pages/AdminBatches";
 import AdminStudentProfile from "./pages/AdminStudentProfile";
 import ComingSoonCourses from "./pages/ComingSoonCourses";
+import About from "./pages/About";
 
 import ClassSection from "./components/ClassSection";
 import ClassDetails from "./components/ClassDetails";
+import CourseDetail from "./components/CourseDetail";
 
 import BlogList from "./pages/BlogList";
 import BlogPost from "./pages/BlogPost";
@@ -62,7 +64,6 @@ function App() {
 
   const path = location.pathname;
   const isAdminRoute = path.startsWith("/admin");
-  const isStudentRoute = path.startsWith("/student/");
   const userType = localStorage.getItem("userType");
 
   const HeaderComponent = isAdminRoute ? (
@@ -96,6 +97,7 @@ function App() {
               path="/"
               element={<Home sentinelRef={sentinelRef} redirectToLogin={true} />}
             />
+            <Route path="/about" element={<About />} />
 
             {/* 👥 Roles */}
             <Route path="/roles" element={<Roles />} />
@@ -118,6 +120,8 @@ function App() {
               path="/class/:classNumber"
               element={<ClassDetails />}
             />
+            <Route path="/class/:classNumber/:courseId" element={<CourseDetail />} />
+
 
             {/* 🧑‍💼 Admin routes */}
             <Route

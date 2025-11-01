@@ -14,6 +14,7 @@ import {
 import { Phone, Mail, Menu, X, ChevronDown } from "lucide-react";
 import logo from "../assets/logoWith_Name.svg";
 import StudentRegister from "../pages/StudentRegister";
+import About from "../pages/About";
 
 const Header = () => {
   const [showStickyRegister, setShowStickyRegister] = useState(false);
@@ -81,9 +82,9 @@ const Header = () => {
 
   const navItems = [
     { type: "link", to: "/", label: t("Home") },
-    { type: "anchor", to: "programs", label: t("OurProgram") },
+    // { type: "anchor", to: "ClassSection", label: t("OurProgram") },
     { type: "anchor", to: "testimonials", label: t("Testimonials") },
-    { type: "anchor", to: "about", label: t("About") },
+    // { type: "anchor", to: "/About", label: t("About") },
     { type: "link", to: "/blogs", label: t("Blog") },
   ];
 

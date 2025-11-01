@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
+import { uploadToFirebase } from "../utils/uploadToFirebase";
 
 export default function StudentRegister({ onClose, googleAuthData = null }) {
   const navigate = useNavigate();
@@ -207,8 +208,6 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [countryCodes, setCountryCodes] = useState([]);
   const [codesLoading, setCodesLoading] = useState(true);
-  const [courses, setCourses] = useState([]);
-  const [coursesLoading, setCoursesLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -261,20 +260,6 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
     })();
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await api.get(
-          "coursemanegment/all_courses_show_public/"
-        );
-        setCourses(data);
-      } catch (err) {
-        console.error("Failed to load courses:", err);
-      } finally {
-        setCoursesLoading(false);
-      }
-    })();
-  }, []);
 
   // Show toast notification about auto-filled data (only once)
   useEffect(() => {
@@ -294,21 +279,16 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
     
     if (type === "file" && files?.[0]) {
   const file = files[0];
-  const formDataUpload = new FormData();
-  formDataUpload.append("image", file);
-
   try {
-    showToast("Uploading image...", "success");
-    const { data } = await api.post("/api/upload", formDataUpload, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    setFormData((prev) => ({ ...prev, [name]: data.url }));
+    showToast("Uploading image to Firebase...", "success");
+    const downloadURL = await uploadToFirebase(file, "students");
+    setFormData((prev) => ({ ...prev, [name]: downloadURL }));
     showToast("Image uploaded successfully ✅", "success");
   } catch (err) {
-    console.error("Image upload failed:", err);
+    console.error("Firebase upload failed:", err);
     showToast("Image upload failed ❌", "danger");
   }
+
 } else if (type === "checkbox") {
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {

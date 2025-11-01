@@ -146,31 +146,62 @@ const AdminStudentProfile = () => {
 
           {/* Batch Assignment */}
           <div className="bg-blue-50 p-4 rounded-lg shadow-sm w-full md:w-1/2">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
-              Batch Assignment
-            </h3>
-            <select
-              value={selectedBatch}
-              onChange={(e) => setSelectedBatch(e.target.value)}
-              className="w-full border rounded-lg p-2 mb-3"
-            >
-              <option value="">No Batch</option>
-              {batches
-                .filter((b) => b.class_name === student.class_name)
-                .map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name} ({b.class_name})
-                  </option>
-                ))}
-            </select>
-            <button
-              onClick={handleBatchAssign}
-              disabled={updating}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            >
-              {updating ? "Updating..." : "Save Batch"}
-            </button>
-          </div>
+  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+    Batch Assignment
+  </h3>
+
+  <select
+    value={selectedBatch}
+    onChange={(e) => setSelectedBatch(e.target.value)}
+    className="w-full border rounded-lg p-2 mb-3"
+  >
+    <option value="">No Batch</option>
+    {batches
+      .filter(
+        (b) =>
+          Number(b.classNumber) ===
+          Number(student.student_class || student.classNumber)
+      )
+      .map((b) => (
+        <option key={b.id} value={b.id}>
+          {b.name} (Class {b.classNumber})
+        </option>
+      ))}
+  </select>
+
+  <div className="flex gap-2">
+    <button
+      onClick={handleBatchAssign}
+      disabled={updating}
+      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+    >
+      {updating ? "Updating..." : "Save Batch"}
+    </button>
+
+    <button
+      onClick={async () => {
+        if (!selectedBatch) return alert("No batch selected to unassign.");
+        try {
+          setUpdating(true);
+          await axios.post(`${API_BASE}/batches/${selectedBatch}/unassign`, {
+            studentUid: uid,
+          });
+          alert("✅ Student unassigned from batch successfully!");
+          setSelectedBatch("");
+        } catch (err) {
+          console.error("Error unassigning batch:", err);
+          alert("❌ Failed to unassign batch");
+        } finally {
+          setUpdating(false);
+        }
+      }}
+      disabled={updating}
+      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+    >
+      {updating ? "Updating..." : "Unassign Batch"}
+    </button>
+  </div>
+</div>
         </div>
 
         {/* Student Details */}
