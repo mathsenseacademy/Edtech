@@ -14,6 +14,37 @@ export const BatchController = {
     }
   },
 
+  async getStudentsByBatch(req, res) {
+  try {
+    const { id: batchId } = req.params;
+
+    const batchDoc = await db.collection("batches").doc(batchId).get();
+    if (!batchDoc.exists) return res.status(404).json({ message: "Batch not found" });
+
+    const batchData = batchDoc.data();
+    const studentUids = batchData.students || [];
+
+    if (studentUids.length === 0) return res.json([]); // no students assigned
+
+    // Fetch all student documents
+    const studentDocs = await Promise.all(
+      studentUids.map((uid) => db.collection("students").doc(uid).get())
+    );
+
+    const students = studentDocs
+      .filter((doc) => doc.exists)
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+    res.json(students);
+  } catch (err) {
+    console.error("🔥 getStudentsByBatch error:", err);
+    res.status(500).json({ message: "Error fetching batch students" });
+  }
+},
+
   async getById(req, res) {
     try {
       const batch = await BatchModel.getById(req.params.id);

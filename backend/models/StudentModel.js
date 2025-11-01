@@ -76,6 +76,20 @@ export const StudentModel = {
     }
   },
 
+// Get students by class
+async getByClass(classNumber) {
+  try {
+    const snapshot = await studentsCollection
+      .where("student_class", "==", classNumber)
+      .get();
+
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("🔥 StudentModel.getByClass error:", error);
+    throw error;
+  }
+},
+
   // Update fees status
   async updateFeesStatus(uid, status) {
     try {
@@ -178,20 +192,6 @@ export const StudentModel = {
       return !!student;
     } catch (error) {
       console.error("🔥 Error in exists:", error);
-      throw error;
-    }
-  },
-
-  // Get by class
-  async getByClass(studentClass) {
-    try {
-      const snapshot = await studentsCollection
-        .where("student_class", "==", studentClass)
-        .orderBy("registered_at", "desc")
-        .get();
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    } catch (error) {
-      console.error("🔥 Error getting by class:", error);
       throw error;
     }
   },

@@ -232,6 +232,27 @@ export const StudentController = {
     }
   },
 
+  // Get students by class number
+// =============================================
+// Get students by class number
+// =============================================
+async getByClass(req, res) {
+  try {
+    const { classNumber } = req.params;
+    const students = await StudentModel.getByClass(classNumber);
+
+    if (!students || students.length === 0) {
+      return res.status(404).json({ message: "No students found for this class" });
+    }
+
+    return res.json(students);
+  } catch (err) {
+    console.error("🔥 Error fetching students by class:", err);
+    return res.status(500).json({ message: "Error fetching students by class" });
+  }
+},
+
+
   // =============================================
   // Admin: Toggle Fees (Yes / No)
   // =============================================

@@ -4,18 +4,21 @@ import { BatchController } from "../controllers/BatchController.js";
 
 const router = express.Router();
 
+// Class filter FIRST
+router.get("/class/:classNumber", BatchController.getByClass);
+
+// Student assignments
+router.post("/:id/assign", BatchController.assignStudent);
+router.post("/:id/unassign", BatchController.unassignStudent);
+
+// Get students in a batch — must come BEFORE :id
+router.get("/:id/students", BatchController.getStudentsByBatch);
+
 // Basic CRUD
 router.get("/", BatchController.getAll);
 router.post("/", BatchController.create);
 router.get("/:id", BatchController.getById);
 router.put("/:id", BatchController.update);
 router.delete("/:id", BatchController.delete);
-
-// Class filter
-router.get("/class/:classNumber", BatchController.getByClass);
-
-// Student assignments
-router.post("/:id/assign", BatchController.assignStudent);
-router.post("/:id/unassign", BatchController.unassignStudent);
 
 export default router;
