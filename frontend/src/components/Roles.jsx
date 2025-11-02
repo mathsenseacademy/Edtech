@@ -41,12 +41,7 @@ const Roles = () => {
   ];
 
   return (
-    <motion.div
-      className="bg-teal-100 shadow-2xl rounded-2xl p-10 text-center max-w-5xl w-full mx-auto"
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
+    <div className="bg-sky-200 shadow-2xl rounded-2xl p-10 text-center max-w-5xl w-full mx-auto">
       <p className="text-teal-600 mb-10 text-xl font-semibold">
         Please select your role to continue:
       </p>
@@ -78,7 +73,7 @@ const Roles = () => {
           </motion.div>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

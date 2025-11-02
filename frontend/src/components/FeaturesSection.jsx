@@ -50,7 +50,7 @@ const FeaturesSection = () => {
   };
 
   return (
-    <section className="bg-white px-6 py-8 md:px-12 font-poppins">
+    <section className="bg-sky-200 px-6 py-8 md:px-12 font-poppins">
       {/* Header */}
       <div className="mx-auto w-full md:w-3/4 text-center mb-10">
         <h2 className="flex items-center justify-center gap-3 flex-wrap text-[#875714] font-bold text-3xl md:text-4xl">

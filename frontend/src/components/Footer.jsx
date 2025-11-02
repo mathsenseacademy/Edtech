@@ -8,7 +8,7 @@ import logo from "../assets/logoWith_Name.svg";
 
 export default function Footer() {
   return (
-    <footer className="font-poppins text-[#1a1a1a] bg-[#f3f4ee]">
+    <footer className="font-poppins text-[#1a1a1a] bg-gradient-to-r bg-gray-800">
       {/* ── Brand Collabs ── */}
       <div className="flex flex-wrap justify-center gap-8 px-6 pt-6">
         {[brand1, brand2, brand3, brand4].map((src, i) => (
@@ -22,7 +22,7 @@ export default function Footer() {
       </div>
 
       {/* ── Main Footer ── */}
-      <div className="bg-gradient-to-r from-[#fff37d] to-[#ff98e6]">
+      <div className="bg-gradient-to-r bg-gray-800 text-white">
         <div className="flex flex-wrap justify-between gap-8 px-6 py-12">
           {/* Newsletter */}
           <div className="flex-1 min-w-[300px] max-w-[400px]">
@@ -49,8 +49,8 @@ export default function Footer() {
           <div className="flex-2 flex flex-wrap justify-between gap-8 min-w-[300px]">
             {/* Company */}
             <div className="flex-1 min-w-[150px]">
-              <h4 className="text-lg font-semibold mb-3">Company</h4>
-              <ul className="space-y-2">
+              <h4 className="text-lg font-semibold mb-3 text-yellow-200 hover:text-amber-400">Company</h4>
+              <ul className="space-y-2 text-white">
                 <li><Link to="/" className="footer-link">Home</Link></li>
                 <li><Link to="/about" className="footer-link">About</Link></li>
                 <li><Link to="/solutions" className="footer-link">Solutions</Link></li>
@@ -62,8 +62,8 @@ export default function Footer() {
 
             {/* Documentation */}
             <div className="flex-1 min-w-[150px]">
-              <h4 className="text-lg font-semibold mb-3">Documentation</h4>
-              <ul className="space-y-2">
+              <h4 className="text-lg font-semibold mb-3 text-yellow-200 hover:text-amber-400">Documentation</h4>
+              <ul className="space-y-2 text-white">
                 <li><Link to="/help" className="footer-link">Help Centre</Link></li>
                 <li><Link to="/contact" className="footer-link">Contact</Link></li>
                 <li><Link to="/faq" className="footer-link">FAQ</Link></li>
@@ -73,8 +73,8 @@ export default function Footer() {
 
             {/* Social */}
             <div className="flex-1 min-w-[150px]">
-              <h4 className="text-lg font-semibold mb-3">Social</h4>
-              <ul className="space-y-2">
+              <h4 className="text-lg font-semibold mb-3 text-yellow-200 hover:text-amber-400">Social</h4>
+              <ul className="space-y-2 text-white">
                 <li><a href="https://www.facebook.com/shomesirmath/" className="footer-link">Facebook</a></li>
                 <li><a href="https://www.instagram.com/maths_ense/" className="footer-link">Instagram</a></li>
                 <li><a href="https://www.youtube.com/@mathsenseacademy" className="footer-link">YouTube</a></li>
@@ -91,7 +91,7 @@ export default function Footer() {
           <span className="opacity-70">
             ©MathSenseAcademy. All Rights Reserved {new Date().getFullYear()}
           </span>
-          <Link to="/terms" className="footer-link">Terms &amp; Conditions</Link>
+          <Link to="/terms" className="footer-link text-white">Terms &amp; Conditions</Link>
         </div>
       </div>
     </footer>

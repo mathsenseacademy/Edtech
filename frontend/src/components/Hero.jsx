@@ -7,7 +7,7 @@ const Hero = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   return (
-    <section className="w-full min-h-screen font-poppins bg-gradient-to-r from-sky-300 to-green-300 overflow-hidden flex items-center">
+    <section className="w-full min-h-screen font-poppins bg-sky-200 overflow-hidden flex items-center">
       <div className="flex flex-col md:flex-row items-center gap-12 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-8">
         {/* Left content */}
         <div className="flex-1 text-center md:text-left">

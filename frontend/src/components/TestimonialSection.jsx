@@ -38,11 +38,11 @@ export default function TestimonialSection() {
   return (
     // keep the bg image in /public as testmonial_bg.png, or change to an imported asset if you prefer
     <section className="bg-[url('/testmonial_bg.png')] bg-center bg-cover">
-      <div className="p-6 bg-[#04053870] backdrop-blur-md">
+      <div className="p-6 bg-sky-200 backdrop-blur-md">
         {/* Heading */}
         <div className="mb-16 text-center">
-          <h2 className="text-amber-400 text-3xl font-bold">Testimonials</h2>
-          <p className="text-yellow-100 text-base max-w-2xl mx-auto">
+          <h2 className="text-amber-800 text-3xl font-bold">Testimonials</h2>
+          <p className="text-amber-400 text-base max-w-2xl mx-auto">
             Lorem Ipsum is simply dummy text of the printing and typesetting
             industry. It has survived not only five centuries but also the leap
             into electronic typesetting.

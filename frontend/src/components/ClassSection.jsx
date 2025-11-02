@@ -31,7 +31,7 @@ export default function ClassSection() {
   };
 
   return (
-    <section className="bg-[#fffdf6] px-6 py-12 font-poppins">
+    <section className="bg-sky-200 px-6 py-12 font-poppins">
       {/* Header */}
       <h2 className="text-4xl md:text-5xl font-bold mb-8 text-left text-[#875714] flex items-center">
         <span className="inline-flex items-center justify-center w-12 h-12 border-2 border-[#875714] rounded-full bg-white text-[#875714] text-3xl animate-spin-slow mr-2">
@@ -88,10 +88,17 @@ export default function ClassSection() {
                 <p className="text-gray-600 text-sm mb-2">
                   <strong>Class:</strong> {cls.classRange}
                 </p>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  {cls.description ||
-                    `Learn essential concepts and build strong fundamentals for Class ${cls.classRange}.`}
-                </p>
+                <div className="flex items-center gap-3">
+                    <span
+                      className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                        cls.courseType
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-600"
+                      }`}
+                    >
+                      {cls.courseType ? "Long" : "Short"} Course
+                    </span>
+                  </div>
               </div>
             </div>
           ))
