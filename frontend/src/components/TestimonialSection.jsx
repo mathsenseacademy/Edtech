@@ -43,9 +43,7 @@ export default function TestimonialSection() {
         <div className="mb-16 text-center">
           <h2 className="text-amber-800 text-3xl font-bold">Testimonials</h2>
           <p className="text-amber-400 text-base max-w-2xl mx-auto">
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. It has survived not only five centuries but also the leap
-            into electronic typesetting.
+            At Mathsense Academy, every learner’s success tells our story. Hear how our students overcame challenges and achieved their academic goals with us.
           </p>
         </div>
 

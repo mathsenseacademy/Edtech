@@ -1,4 +1,3 @@
-// backend/controllers/BatchController.js
 import { BatchModel } from "../models/BatchModel.js";
 import { db } from "../firebase/firebaseAdmin.js";
 import { StudentModel } from "../models/StudentModel.js";
@@ -15,35 +14,34 @@ export const BatchController = {
   },
 
   async getStudentsByBatch(req, res) {
-  try {
-    const { id: batchId } = req.params;
+    try {
+      const { id: batchId } = req.params;
 
-    const batchDoc = await db.collection("batches").doc(batchId).get();
-    if (!batchDoc.exists) return res.status(404).json({ message: "Batch not found" });
+      const batchDoc = await db.collection("batches").doc(batchId).get();
+      if (!batchDoc.exists) return res.status(404).json({ message: "Batch not found" });
 
-    const batchData = batchDoc.data();
-    const studentUids = batchData.students || [];
+      const batchData = batchDoc.data();
+      const studentUids = batchData.students || [];
 
-    if (studentUids.length === 0) return res.json([]); // no students assigned
+      if (studentUids.length === 0) return res.json([]); // no students assigned
 
-    // Fetch all student documents
-    const studentDocs = await Promise.all(
-      studentUids.map((uid) => db.collection("students").doc(uid).get())
-    );
+      const studentDocs = await Promise.all(
+        studentUids.map((uid) => db.collection("students").doc(uid).get())
+      );
 
-    const students = studentDocs
-      .filter((doc) => doc.exists)
-      .map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const students = studentDocs
+        .filter((doc) => doc.exists)
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-    res.json(students);
-  } catch (err) {
-    console.error("🔥 getStudentsByBatch error:", err);
-    res.status(500).json({ message: "Error fetching batch students" });
-  }
-},
+      res.json(students);
+    } catch (err) {
+      console.error("🔥 getStudentsByBatch error:", err);
+      res.status(500).json({ message: "Error fetching batch students" });
+    }
+  },
 
   async getById(req, res) {
     try {
@@ -67,13 +65,20 @@ export const BatchController = {
     }
   },
 
+  // ✅ Create batch with day & time
   async create(req, res) {
     try {
-      const { name, description, classNumber } = req.body;
+      const { name, description, classNumber, day, time } = req.body;
       if (!name || classNumber === undefined)
         return res.status(400).json({ message: "name and classNumber required" });
 
-      const newBatch = await BatchModel.create({ name, description, classNumber });
+      const newBatch = await BatchModel.create({
+        name,
+        description,
+        classNumber,
+        day,
+        time,
+      });
       res.status(201).json(newBatch);
     } catch (err) {
       console.error("🔥 create batch:", err);
@@ -81,9 +86,23 @@ export const BatchController = {
     }
   },
 
+  // ✅ Update batch info (supports day & time changes)
   async update(req, res) {
     try {
-      const updated = await BatchModel.update(req.params.id, req.body);
+      const batchId = req.params.id;
+      const { name, description, day, time } = req.body;
+
+      const batch = await BatchModel.getById(batchId);
+      if (!batch) return res.status(404).json({ message: "Batch not found" });
+
+      const updated = await BatchModel.update(batchId, {
+        name: name ?? batch.name,
+        description: description ?? batch.description,
+        day: day ?? batch.day,
+        time: time ?? batch.time,
+        updated_at: new Date().toISOString(),
+      });
+
       res.json(updated);
     } catch (err) {
       console.error("🔥 update batch:", err);
@@ -97,7 +116,6 @@ export const BatchController = {
       const batch = await BatchModel.getById(batchId);
       if (!batch) return res.status(404).json({ message: "Batch not found" });
 
-      // Remove batch reference from all students
       const studentUids = batch.students || [];
       for (const uid of studentUids) {
         const studentRef = db.collection("students").doc(uid);
@@ -189,6 +207,40 @@ export const BatchController = {
     } catch (err) {
       console.error("🔥 unassignStudent error:", err);
       res.status(500).json({ message: err.message || "Error unassigning student" });
+    }
+  },
+
+  async unassignBatch(req, res) {
+    try {
+      const batchId = req.params.id;
+      const batchDoc = await db.collection("batches").doc(batchId).get();
+
+      if (!batchDoc.exists) return res.status(404).json({ message: "Batch not found" });
+
+      const batchData = batchDoc.data();
+      const studentUids = batchData.students || [];
+
+      await Promise.all(
+        studentUids.map(async (uid) => {
+          const studentRef = db.collection("students").doc(uid);
+          await db.runTransaction(async (t) => {
+            const sDoc = await t.get(studentRef);
+            if (!sDoc.exists) return;
+            const updatedBatches = (sDoc.data().batches || []).filter((b) => b !== batchId);
+            t.update(studentRef, { batches: updatedBatches, updated_at: new Date().toISOString() });
+          });
+        })
+      );
+
+      await db.collection("batches").doc(batchId).update({
+        students: [],
+        updated_at: new Date().toISOString(),
+      });
+
+      res.json({ message: "Batch unassigned from all students successfully" });
+    } catch (err) {
+      console.error("🔥 unassignBatch error:", err);
+      res.status(500).json({ message: err.message || "Error unassigning batch" });
     }
   },
 };

@@ -11,7 +11,7 @@ const Hero = () => {
       <div className="flex flex-col md:flex-row items-center gap-12 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-8">
         {/* Left content */}
         <div className="flex-1 text-center md:text-left">
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-amber-600 mb-4 leading-tight">
             Unlock Your Child's{" "}
             <span className="text-amber-700">Math Potential</span>
           </h1>

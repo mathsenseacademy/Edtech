@@ -101,13 +101,13 @@ const Header = () => {
     <>
       {/* ── Fixed Header ── */}
       <motion.header
-        className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-stone-900 to-gray-700 text-white shadow-lg"
+        className="fixed top-0 left-0 right-0 z-50 bg-gray-800 text-white shadow-lg"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
       >
         {/* Top Info Bar - Desktop Only */}
-        <div className="hidden lg:block bg-gradient-to-r from-gray-800 to-stone-800">
+        <div className="hidden lg:block bg-gray-800">
           <div className="max-w-7xl mx-auto px-4 py-1">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-6">
@@ -144,7 +144,7 @@ const Header = () => {
         </div>
 
         {/* Main Navigation */}
-        <nav className="bg-gradient-to-r from-gray-300 to-stone-900 border-t border-white/10">
+        <nav className="bg-gray-800 border-t border-white/10">
           <div className="max-w-7xl mx-auto px-4 py-1 flex items-center justify-between">
             {/* Logo */}
             <motion.div
