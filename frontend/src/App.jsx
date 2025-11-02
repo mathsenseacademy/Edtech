@@ -6,6 +6,7 @@ import { LayoutGroup } from "framer-motion";
 import Header from "./components/Header";
 import AdminHeader from "./pages/AdminHeader";
 import Footer from "./components/Footer";
+import Loader from "./components/Loader/Loader";
 
 import Home from "./pages/Home";
 import StudentRegister from "./pages/StudentRegister";
@@ -53,6 +54,12 @@ function App() {
   const sentinelRef = useRef(null);
 
   useEffect(() => {
+    // Wait for loader animation before showing main site
+    const timer = setTimeout(() => setLoading(false), 6200); // match your Loader duration
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const t = setTimeout(() => setLoading(false), 800);
     return () => clearTimeout(t);
   }, []);
@@ -77,12 +84,7 @@ function App() {
     />
   );
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center h-screen text-gray-600">
-        Loading...
-      </div>
-    );
+  if (loading) return <Loader />;
 
   return (
     <LayoutGroup>
