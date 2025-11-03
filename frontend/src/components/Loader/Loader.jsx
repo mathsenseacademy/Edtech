@@ -72,9 +72,6 @@ const Loader = () => {
         </motion.span>
       </div>
 
-      {/* Optional text */}
-      <p className="mt-4 text-lg text-gray-700">Loading Math Senseacademy...</p>
-
       {/* Tailwind keyframes */}
       <style>
         {`

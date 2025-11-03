@@ -28,17 +28,17 @@ export default function Footer() {
           <div className="flex-1 min-w-[300px] max-w-[400px]">
             <img src={logo} alt="Math Senseacademy" className="max-w-[180px] mb-4" />
             <p className="mb-4 text-base">
-              Stay in the loop and sign up for the Wardiere newsletter:
+              Stay in the loop! Subscribe to our newsletter for the latest updates, tips, and exclusive offers from Math Senseacademy.
             </p>
             <form className="flex relative">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-full border border-black/20 outline-none"
+                className="flex-1 px-4 py-3 rounded-full border border-yellow-500 outline-none"
               />
               <button
                 type="submit"
-                className="w-12 h-12 flex items-center justify-center bg-[#1a0a40] text-white rounded-full -ml-12 hover:bg-[#2a1a60] transition"
+                className="w-12 h-12 flex items-center justify-center bg-yellow-500 text-white rounded-full -ml-12 hover:bg-[#2a1a60] transition"
               >
                 →
               </button>
