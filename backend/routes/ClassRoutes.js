@@ -15,4 +15,6 @@ router.get("/:id", ClassController.getById);
 // Update class by ID
 router.put("/:id", ClassController.update);
 
+router.delete("/:id", ClassController.delete);
+
 export default router;
