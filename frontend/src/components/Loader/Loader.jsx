@@ -47,31 +47,6 @@ const Loader = () => {
         />
       </motion.div>
 
-      {/* Jumping math icons */}
-      <div className="flex gap-4 text-3xl mt-6 text-blue-600">
-        <motion.span animate={{ y: [0, -15, 0] }} transition={{ duration: 1, repeat: Infinity }}>
-          ∑
-        </motion.span>
-        <motion.span
-          animate={{ y: [0, -15, 0] }}
-          transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
-        >
-          √
-        </motion.span>
-        <motion.span
-          animate={{ y: [0, -15, 0] }}
-          transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
-        >
-          π
-        </motion.span>
-        <motion.span
-          animate={{ y: [0, -15, 0] }}
-          transition={{ duration: 1, repeat: Infinity, delay: 0.6 }}
-        >
-          ∞
-        </motion.span>
-      </div>
-
       {/* Tailwind keyframes */}
       <style>
         {`

@@ -101,7 +101,7 @@ const Header = () => {
     <>
       {/* ── Fixed Header ── */}
       <motion.header
-        className="fixed top-0 left-0 right-0 z-50 bg-gray-800 text-white shadow-lg"
+        className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-stone-400 to-gray-800 text-white shadow-lg"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
@@ -144,7 +144,7 @@ const Header = () => {
         </div>
 
         {/* Main Navigation */}
-        <nav className="bg-gray-800 border-t border-white/10">
+        <nav className="bg-gradient-to-r from-stone-400 to-gray-800 border-t border-white/10">
           <div className="max-w-7xl mx-auto px-4 py-1 flex items-center justify-between">
             {/* Logo */}
             <motion.div
