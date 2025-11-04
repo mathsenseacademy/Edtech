@@ -279,6 +279,14 @@ const Header = () => {
 
             </div>
 
+            <a
+    href="tel:+919147718572"
+    className="flex items-center gap-2 text-yellow-300 text-sm font-medium lg:hidden"
+  >
+    <Phone size={16} />
+    <span>+91 9147718572</span>
+  </a>
+
             {/* Mobile Hamburger */}
             <button
               className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition"
