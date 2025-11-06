@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Routes, Route, useLocation, Outlet, Navigate } from "react-router-dom";
 import { LayoutGroup } from "framer-motion";
+import { HelmetProvider } from "react-helmet-async";
 
 import Header from "./components/Header";
 import AdminHeader from "./pages/AdminHeader";
@@ -87,6 +88,7 @@ function App() {
   if (loading) return <Loader />;
 
   return (
+    <HelmetProvider>
     <LayoutGroup>
       {HeaderComponent}
 
@@ -155,6 +157,7 @@ function App() {
         {!isAdminRoute && <Footer />}
       </div>
     </LayoutGroup>
+    </HelmetProvider>
   );
 }
 
