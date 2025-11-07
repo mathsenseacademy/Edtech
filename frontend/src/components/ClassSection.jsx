@@ -10,14 +10,36 @@ export default function ClassSection() {
   const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
 
-  // Fetch all active classes
+  // Helper: get numeric sort key from classRange
+  const getNumericKey = (cls) => {
+    // classRange might be "1-2", "3-4", "10", or even "Class 1" etc.
+    const raw = (cls.classRange || cls.class_range || cls.range || "").toString();
+    // Find the first number in the string
+    const m = raw.match(/(\d+)/);
+    if (m) return parseInt(m[1], 10);
+    // If not found, try fallback fields
+    if (typeof cls.classNumber === "number") return cls.classNumber;
+    return Number.POSITIVE_INFINITY;
+  };
+
+  // Fetch all active classes and sort them numerically by classRange
   useEffect(() => {
     const fetchClasses = async () => {
       try {
         const res = await axios.get(API_URL);
         const all = res.data || [];
-        // ✅ Only keep active ones
-        const activeClasses = all.filter((cls) => cls.active);
+
+        // Filter active and then sort by numeric key (and by title as tiebreaker)
+        const activeClasses = all
+          .filter((c) => c.active) // keep only active
+          .sort((a, b) => {
+            const ka = getNumericKey(a);
+            const kb = getNumericKey(b);
+            if (ka !== kb) return ka - kb;
+            // tiebreaker: by title (so multiple courses for same classRange are separate)
+            return (a.title || "").localeCompare(b.title || "");
+          });
+
         setClasses(activeClasses);
       } catch (err) {
         console.error("❌ Error fetching classes:", err);
@@ -27,6 +49,7 @@ export default function ClassSection() {
   }, []);
 
   const handleCardClick = (cls) => {
+    // You had navigate(`/class/${cls.classRange}`) before; keep that or send id
     navigate(`/class/${cls.classRange}`);
   };
 
@@ -89,16 +112,14 @@ export default function ClassSection() {
                   <strong>Class:</strong> {cls.classRange}
                 </p>
                 <div className="flex items-center gap-3">
-                    <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                        cls.courseType
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-600"
-                      }`}
-                    >
-                      {cls.courseType ? "Long" : "Short"} Course
-                    </span>
-                  </div>
+                  <span
+                    className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                      cls.courseType ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
+                    }`}
+                  >
+                    {cls.courseType ? "Regular" : "Short"} Course
+                  </span>
+                </div>
               </div>
             </div>
           ))

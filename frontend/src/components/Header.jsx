@@ -300,9 +300,7 @@ const Header = () => {
 
         {/* Spacer div */}
         <div className="h-[4px] lg:h-[4px]" />
-
-        {/* Sticky Register Button */}
-        {showStickyRegister && (
+        {/* {showStickyRegister && (
           <motion.button
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -312,7 +310,7 @@ const Header = () => {
           >
             {t("Student Register")}
           </motion.button>
-        )}
+        )} */}
 
         {/* Student Register Modal */}
         {showRegisterModal && (

@@ -1,4 +1,3 @@
-// src/components/StudentRegister.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +8,7 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
   // Memoized Google auth data from props or session storage
   const authData = useMemo(() => {
     if (googleAuthData) return googleAuthData;
-    
+
     const storedData = sessionStorage.getItem("googleAuthData");
     if (storedData) {
       try {
@@ -169,11 +168,11 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
   // Helper function to parse Google display name into first and last name
   const parseGoogleName = (displayName) => {
     if (!displayName) return { firstName: "", lastName: "" };
-    
+
     const nameParts = displayName.trim().split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
-    
+
     return { firstName, lastName };
   };
 
@@ -193,7 +192,7 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
     // Auto-fill Google data if available
     if (authData) {
       const { firstName, lastName } = parseGoogleName(authData.displayName);
-      
+
       initialData.email = authData.email || "";
       initialData.first_name = firstName;
       initialData.last_name = lastName;
@@ -209,6 +208,8 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
   const [countryCodes, setCountryCodes] = useState([]);
   const [codesLoading, setCodesLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     (async () => {
@@ -219,7 +220,7 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const list = await res.json();
-        
+
         // Remove duplicates and create unique keys
         const uniqueCodes = new Map();
         list.forEach((country, index) => {
@@ -229,13 +230,14 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
               code: country.dial_code,
               label: `${country.name} (${country.dial_code})`,
               uniqueKey: key,
-              index: index
+              index: index,
             });
           }
         });
-        
-        const codes = Array.from(uniqueCodes.values())
-          .sort((a, b) => a.code.localeCompare(b.code));
+
+        const codes = Array.from(uniqueCodes.values()).sort((a, b) =>
+          a.code.localeCompare(b.code)
+        );
 
         setCountryCodes(codes);
 
@@ -260,7 +262,6 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
     })();
   }, []);
 
-
   // Show toast notification about auto-filled data (only once)
   useEffect(() => {
     if (authData) {
@@ -276,45 +277,95 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
   const handleChange = async (e) => {
     const { name, type, files, value, checked } = e.target;
 
-    
-    if (type === "file" && files?.[0]) {
-  const file = files[0];
-  try {
-    showToast("Uploading image to Firebase...", "success");
-    const downloadURL = await uploadToFirebase(file, "students");
-    setFormData((prev) => ({ ...prev, [name]: downloadURL }));
-    showToast("Image uploaded successfully ✅", "success");
-  } catch (err) {
-    console.error("Firebase upload failed:", err);
-    showToast("Image upload failed ❌", "danger");
-  }
+    // Clear the error for this field when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
 
-} else if (type === "checkbox") {
+    if (type === "file" && files?.[0]) {
+      const file = files[0];
+      try {
+        setIsUploading(true);
+        showToast("Uploading image...", "success");
+        const downloadURL = await uploadToFirebase(file, "students");
+        setFormData((prev) => ({ ...prev, [name]: downloadURL }));
+        showToast("Image uploaded successfully ✅", "success");
+      } catch (err) {
+        console.error("Firebase upload failed:", err);
+        showToast("Image upload failed ❌", "danger");
+        setErrors((prev) => ({
+          ...prev,
+          [name]: "Image upload failed. Please try again.",
+        }));
+      } finally {
+        setIsUploading(false);
+      }
+    } else if (type === "checkbox") {
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  const handleNext = () => {
-    for (let f of steps[currentStep].fields) {
-      const val = formData[f.name];
-      if (f.required && (val === "" || val === false)) {
-        return showToast(`${f.label} is required.`, "danger");
+  // Helper function to validate fields
+  const validateStep = () => {
+    const newErrors = {};
+    const currentFields = steps[currentStep].fields;
+
+    for (const f of currentFields) {
+      const value = formData[f.name];
+
+      // 1. Check for required
+      if (f.required && (value === "" || value === false)) {
+        newErrors[f.name] = `${f.label} is required.`;
+        continue; // Go to next field
+      }
+
+      // 2. Add specific format validation
+      if (f.name === "email" && value && !/\S+@\S+\.\S+/.test(value)) {
+        newErrors.email = "Please enter a valid email address.";
+      }
+
+      // 10-digit phone number check
+      if (
+        (f.name === "contact_number_1" || f.name === "contact_number_2") &&
+        value &&
+        !/^\d{10}$/.test(value)
+      ) {
+        newErrors[f.name] = "Please enter a valid 10-digit phone number.";
+      }
+
+      // 6-digit PIN code check
+      if (f.name === "pin" && value && !/^\d{6}$/.test(value)) {
+        newErrors.pin = "Please enter a valid 6-digit PIN code.";
+      }
+
+      // Date of birth check
+      if (f.name === "date_of_birth" && value) {
+        if (new Date(value) > new Date()) {
+          newErrors.date_of_birth = "Date of birth cannot be in the future.";
+        }
       }
     }
-    setCurrentStep((s) => s + 1);
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Return true if no errors
+  };
+
+  const handleNext = () => {
+    if (validateStep()) {
+      setCurrentStep((s) => s + 1);
+    } else {
+      showToast("Please correct the errors on the form.", "danger");
+    }
   };
 
   const handleBack = () => setCurrentStep((s) => Math.max(0, s - 1));
 
   const handleRegisterSubmit = async () => {
-    // Validate all required fields
-    for (const f of allFields) {
-      const val = formData[f.name];
-      if (f.required && (val === "" || val === false)) {
-        return showToast(`${f.label} is required.`, "danger");
-      }
+    // Validate the final step
+    if (!validateStep()) {
+      return showToast("Please correct the errors on the form.", "danger");
     }
 
     setIsSubmitting(true);
@@ -352,7 +403,7 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
     // Clear Google auth data from session storage
     sessionStorage.removeItem("googleAuthData");
     setShowSuccessModal(false);
-    
+
     // Navigate to dashboard instead of calling onClose
     navigate("/student/dashboard");
   };
@@ -372,7 +423,10 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-[1000]" onClick={promptExit} />
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 z-[1000]"
+        onClick={promptExit}
+      />
 
       {/* Main Modal */}
       <div className="fixed top-1/2 left-1/2 w-[90%] max-w-md xl:max-w-lg 2xl:max-w-xl transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg overflow-hidden z-[1001] shadow-xl">
@@ -386,24 +440,45 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
               </span>
             )}
           </h5>
-          <button className="bg-transparent border-none text-2xl text-white cursor-pointer hover:opacity-80" onClick={promptExit}>
+          <button
+            className="bg-transparent border-none text-2xl text-white cursor-pointer hover:opacity-80"
+            onClick={promptExit}
+          >
             ×
           </button>
         </div>
 
         {/* Body */}
         <div className="p-4">
+          {/* Step Indicator */}
+          <div className="mb-4 text-sm text-gray-500">
+            Step <strong>{currentStep + 1}</strong> of{" "}
+            <strong>{steps.length}</strong>
+          </div>
+
           {/* Warning message if no Google auth data */}
           {!authData && (
             <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
               <div className="flex items-start">
-                <svg className="w-5 h-5 text-yellow-400 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                <svg
+                  className="w-5 h-5 text-yellow-400 mt-0.5 mr-3 flex-shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 <div className="flex-1">
-                  <h4 className="text-sm font-medium text-yellow-800 mb-1">Manual Registration</h4>
+                  <h4 className="text-sm font-medium text-yellow-800 mb-1">
+                    Manual Registration
+                  </h4>
                   <p className="text-xs text-yellow-700 mb-2">
-                    You're registering manually. For a better experience with auto-filled information, please use Google login from the login page.
+                    You're registering manually. For a better experience with
+                    auto-filled information, please use Google login from the
+                    login page.
                   </p>
                   <button
                     onClick={() => navigate("/student/login")}
@@ -415,7 +490,7 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
               </div>
             </div>
           )}
-          
+
           <h6 className="mb-2 text-amber-700 text-base font-medium">{title}</h6>
           {description && (
             <p
@@ -427,18 +502,29 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
           )}
 
           {fields.length > 1 ? (
-            <div className="flex flex-wrap gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mb-4">
               {fields.map((f) => {
                 // Phone fields with country code
-                if (f.name === "contact_number_1" || f.name === "contact_number_2") {
-                  const codeField = f.name === "contact_number_1" ? "country_code_1" : "country_code_2";
+                if (
+                  f.name === "contact_number_1" ||
+                  f.name === "contact_number_2"
+                ) {
+                  const codeField =
+                    f.name === "contact_number_1"
+                      ? "country_code_1"
+                      : "country_code_2";
 
                   return (
-                    <div key={f.name} className="w-full sm:w-[48%] lg:w-[48%]">
-                      <label className="block mb-1 text-cyan-700 font-medium text-sm">{f.label}</label>
+                    <div key={f.name} className="sm:col-span-2">
+                      <label className="block mb-1 text-cyan-700 font-medium text-sm">
+                        {f.label}
+                      </label>
                       <div className="flex gap-2">
                         {codesLoading ? (
-                          <select disabled className="w-32 p-2 border border-gray-300 rounded text-sm">
+                          <select
+                            disabled
+                            className="w-32 p-2 border border-gray-300 rounded text-sm"
+                          >
                             <option>Loading…</option>
                           </select>
                         ) : (
@@ -463,9 +549,18 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
                           onChange={handleChange}
                           placeholder="1234567890"
                           required={f.required}
-                          className="flex-1 p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                          className={`flex-1 p-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                            errors[f.name]
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
                         />
                       </div>
+                      {errors[f.name] && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors[f.name]}
+                        </p>
+                      )}
                     </div>
                   );
                 }
@@ -488,14 +583,20 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
                   ];
 
                   return (
-                    <div key={f.name} className="w-full sm:w-[48%] lg:w-[30%]">
-                      <label className="block mb-1 text-cyan-700 font-medium text-sm">{f.label}</label>
+                    <div key={f.name}>
+                      <label className="block mb-1 text-cyan-700 font-medium text-sm">
+                        {f.label}
+                      </label>
                       <select
                         name="student_class"
                         value={formData.student_class}
                         onChange={handleChange}
                         required={f.required}
-                        className="w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        className={`w-full p-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                          errors[f.name]
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
                       >
                         <option value="">Select a class</option>
                         {classes.map((cls) => (
@@ -504,13 +605,26 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
                           </option>
                         ))}
                       </select>
+                      {errors[f.name] && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors[f.name]}
+                        </p>
+                      )}
                     </div>
                   );
                 }
 
-                // All other fields
-                const colClass = fields.length === 2 ? "w-full sm:w-[48%]" : "w-full sm:w-[48%] lg:w-[30%]";
-                
+                // Determine column span
+                let colClass = "";
+                if (
+                  f.type === "textarea" ||
+                  f.type === "file" ||
+                  f.name === "address" ||
+                  f.type === "checkbox"
+                ) {
+                  colClass = "sm:col-span-2"; // Full width
+                }
+
                 return (
                   <div key={f.name} className={colClass}>
                     {f.type === "checkbox" ? (
@@ -528,9 +642,14 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
                       <>
                         <label className="block mb-1 text-cyan-700 font-medium text-sm">
                           {f.label}
-                          {authData && (f.name === "email" || f.name === "first_name" || f.name === "last_name") && (
-                            <span className="ml-1 text-xs text-green-600">(Auto-filled)</span>
-                          )}
+                          {authData &&
+                            (f.name === "email" ||
+                              f.name === "first_name" ||
+                              f.name === "last_name") && (
+                              <span className="ml-1 text-xs text-green-600">
+                                (Auto-filled)
+                              </span>
+                            )}
                         </label>
 
                         {f.type === "textarea" ? (
@@ -538,7 +657,11 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
                             name={f.name}
                             value={formData[f.name]}
                             onChange={handleChange}
-                            className="w-full p-2 mb-3 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            className={`w-full p-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                              errors[f.name]
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            }`}
                             rows="3"
                           />
                         ) : f.type === "file" ? (
@@ -548,14 +671,38 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
                               accept="image/*"
                               name={f.name}
                               onChange={handleChange}
-                              className="w-full p-2 mb-3 border border-gray-300 rounded text-sm file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-cyan-700 file:text-white file:cursor-pointer hover:file:bg-cyan-800"
+                              disabled={isUploading}
+                              className={`w-full p-2 border rounded text-sm file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-cyan-700 file:text-white file:cursor-pointer hover:file:bg-cyan-800 ${
+                                errors[f.name]
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              }`}
                             />
-                            {formData[f.name] && (
-                              <img
-                                src={formData[f.name]}
-                                alt="Preview"
-                                className="block max-w-full h-auto mt-2 rounded border"
-                              />
+                            {isUploading && (
+                              <p className="text-sm text-cyan-700 mt-2">
+                                Uploading, please wait...
+                              </p>
+                            )}
+                            {formData[f.name] && !isUploading && (
+                              <div className="mt-2 relative w-32">
+                                <img
+                                  src={formData[f.name]}
+                                  alt="Preview"
+                                  className="block max-w-full h-auto rounded border"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      [f.name]: "",
+                                    }));
+                                  }}
+                                  className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-sm hover:bg-red-700"
+                                >
+                                  &times;
+                                </button>
+                              </div>
                             )}
                           </>
                         ) : (
@@ -565,9 +712,16 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
                             value={formData[f.name]}
                             onChange={handleChange}
                             required={f.required}
-                            className={`w-full p-2 mb-3 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                              authData && (f.name === "email" || f.name === "first_name" || f.name === "last_name") 
-                                ? "bg-green-50" 
+                            className={`w-full p-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                              errors[f.name]
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            } ${
+                              authData &&
+                              (f.name === "email" ||
+                                f.name === "first_name" ||
+                                f.name === "last_name")
+                                ? "bg-green-50"
                                 : ""
                             }`}
                             readOnly={f.name === "email" && authData}
@@ -575,26 +729,43 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
                         )}
                       </>
                     )}
+                    {errors[f.name] && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors[f.name]}
+                      </p>
+                    )}
                   </div>
                 );
               })}
             </div>
           ) : (
-            <input
-              type={fields[0].type}
-              name={fields[0].name}
-              placeholder={fields[0].label}
-              value={formData[fields[0].name]}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            />
+            // Fallback for single-field steps (like Date of Birth)
+            <>
+              <input
+                type={fields[0].type}
+                name={fields[0].name}
+                placeholder={fields[0].label}
+                value={formData[fields[0].name]}
+                onChange={handleChange}
+                className={`w-full p-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                  errors[fields[0].name]
+                    ? "border-red-500"
+                    : "border-gray-300"
+                }`}
+              />
+              {errors[fields[0].name] && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors[fields[0].name]}
+                </p>
+              )}
+            </>
           )}
         </div>
 
         {/* Footer */}
         <div className="flex justify-end gap-2 px-4 py-2 bg-gray-50">
           {currentStep > 0 && (
-            <button 
+            <button
               className="border-none rounded px-4 py-2 text-sm cursor-pointer bg-amber-700 text-white hover:bg-amber-800 transition-colors"
               onClick={handleBack}
               disabled={isSubmitting}
@@ -603,24 +774,24 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
             </button>
           )}
           {currentStep < steps.length - 1 ? (
-            <button 
+            <button
               className="border-none rounded px-4 py-2 text-sm cursor-pointer bg-cyan-700 text-white hover:bg-cyan-800 transition-colors"
               onClick={handleNext}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploading}
             >
               Next
             </button>
           ) : (
-            <button 
+            <button
               className={`border-none rounded px-4 py-2 text-sm cursor-pointer transition-colors ${
-                isSubmitting 
-                  ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
-                  : 'bg-yellow-400 text-black hover:bg-yellow-500'
+                isSubmitting || isUploading
+                  ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                  : "bg-yellow-400 text-black hover:bg-yellow-500"
               }`}
               onClick={handleRegisterSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploading}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit'}
+              {isSubmitting ? "Submitting..." : "Submit"}
             </button>
           )}
         </div>
@@ -628,9 +799,11 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
 
       {/* Toast */}
       {toast.show && (
-        <div className={`fixed bottom-4 right-4 px-4 py-3 rounded text-white z-[1002] text-sm ${
-          toast.type === "success" ? "bg-cyan-700" : "bg-amber-700"
-        }`}>
+        <div
+          className={`fixed bottom-4 right-4 px-4 py-3 rounded text-white z-[1002] text-sm ${
+            toast.type === "success" ? "bg-cyan-700" : "bg-amber-700"
+          }`}
+        >
           {toast.message}
         </div>
       )}
@@ -641,28 +814,46 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-[1000]" />
           <div className="fixed top-1/2 left-1/2 w-[90%] max-w-md transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg overflow-hidden z-[1001] shadow-xl">
             <div className="flex justify-between items-center bg-green-600 px-4 py-3 text-white">
-              <h5 className="text-lg font-semibold">Registration Successful! 🎉</h5>
+              <h5 className="text-lg font-semibold">
+                Registration Successful! 🎉
+              </h5>
             </div>
             <div className="p-6 text-center">
               <div className="mb-4">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  <svg
+                    className="w-8 h-8 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    ></path>
                   </svg>
                 </div>
-                <h6 className="text-lg font-semibold text-gray-900 mb-2">Welcome to our institute!</h6>
+                <h6 className="text-lg font-semibold text-gray-900 mb-2">
+                  Welcome to our institute!
+                </h6>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Your registration has been completed successfully. Your Google account has been linked and you can now access your student dashboard.
+                  Your registration has been completed successfully. Your
+                  Google account has been linked and you can now access your
+                  student dashboard.
                 </p>
               </div>
               <div className="bg-blue-50 p-3 rounded-lg mb-4">
                 <p className="text-blue-800 text-xs">
-                  <strong>Account Linked:</strong> You can now login anytime using your Google account to access your student portal and course materials.
+                  <strong>Account Linked:</strong> You can now login anytime
+                  using your Google account to access your student portal and
+                  course materials.
                 </p>
               </div>
             </div>
             <div className="flex justify-center px-4 py-3 bg-gray-50">
-              <button 
+              <button
                 className="border-none rounded px-6 py-2 text-sm cursor-pointer bg-cyan-700 text-white hover:bg-cyan-800 transition-colors"
                 onClick={handleSuccessModalClose}
               >
@@ -682,16 +873,18 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
               <h5 className="text-lg font-semibold">Quit Registration?</h5>
             </div>
             <div className="p-4">
-              <p className="text-sm">All entered data will be lost. Are you sure?</p>
+              <p className="text-sm">
+                All entered data will be lost. Are you sure?
+              </p>
             </div>
             <div className="flex justify-end gap-2 px-4 py-2 bg-gray-50">
-              <button 
+              <button
                 className="border-none rounded px-4 py-2 text-sm cursor-pointer bg-amber-700 text-white hover:bg-amber-800 transition-colors"
                 onClick={() => confirmExit(false)}
               >
                 No, Go Back
               </button>
-              <button 
+              <button
                 className="border-none rounded px-4 py-2 text-sm cursor-pointer bg-yellow-400 text-black hover:bg-yellow-500 transition-colors"
                 onClick={() => confirmExit(true)}
               >
