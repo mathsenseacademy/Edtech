@@ -11,6 +11,7 @@ yarn-error.log*
 
 # Firebase service account (don’t ever commit!)
 firebase/serviceAccountKey.json
+fuctions/firebase/serviceAccountKey.json
 
 # Build artifacts
 dist/
