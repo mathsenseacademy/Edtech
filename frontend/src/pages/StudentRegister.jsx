@@ -385,7 +385,7 @@ export default function StudentRegister({ onClose, googleAuthData = null }) {
     delete payload.country_code_2;
 
     try {
-      await api.post("student/register/", payload);
+      await api.post("api/student/register", payload);
       showToast("Registration successful! 🎉", "success");
       setShowSuccessModal(true);
     } catch (err) {
