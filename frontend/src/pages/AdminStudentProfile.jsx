@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 
-const API_BASE = "https://mathsenseacademy.onrender.com/api";
+const API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api";
 
 const AdminStudentProfile = () => {
   const { uid } = useParams();

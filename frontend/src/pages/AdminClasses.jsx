@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
-const API_URL = "https://mathsenseacademy.onrender.com/api/classes";
+const API_URL = "https://api-bqojuh5xfq-uc.a.run.app/api/classes";
 
 const classGroups = [
   { label: "Class 1-2", range: "1-2" },

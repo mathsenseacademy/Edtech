@@ -4,7 +4,7 @@ import axios from "axios";
 import heroImage from "../assets/our-programs-hero.png";
 import fallbackImg from "../assets/img10.png";
 
-const API_URL = "https://mathsenseacademy.onrender.com/api/classes";
+const API_URL = "https://api-bqojuh5xfq-uc.a.run.app/api/classes";
 
 export default function ClassSection() {
   const navigate = useNavigate();

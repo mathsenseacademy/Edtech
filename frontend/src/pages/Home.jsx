@@ -9,7 +9,7 @@ import TestimonialSection from "../components/TestimonialSection";
 
 const Home = ({ heroRef, sentinelRef }) => {
   return (
-    <div className="flex flex-col items-center gap-15 p-5 bg-gradient-to-r from-sky-200 to-teal-700 md:gap-10 md:p-2.5">
+    <div className="flex flex-col items-center gap-15 p-5 bg-gradient-to-r from-sky-200 to-teal-200 md:gap-10 md:p-2.5">
 
       {/* ✅ SEO META TAGS */}
       <Helmet>

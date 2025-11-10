@@ -6,7 +6,7 @@ const BlogList = () => {
   const [blogs, setBlogs] = useState([]);
 
   useEffect(() => {
-    fetch("https://mathsenseacademy.onrender.com/api/blogs")
+    fetch("https://api-bqojuh5xfq-uc.a.run.app/api/blogs")
       .then((res) => res.json())
       .then((data) => setBlogs(data))
       .catch((err) => console.error("❌ Blog list fetch error:", err));

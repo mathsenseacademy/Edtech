@@ -5,7 +5,7 @@ import axios from "axios";
 import fallbackImg from "../assets/img10.png";
 import { Helmet } from "react-helmet-async";
 
-const API_URL = "https://mathsenseacademy.onrender.com/api/classes";
+const API_URL = "https://api-bqojuh5xfq-uc.a.run.app/api/classes";
 
 export default function CourseDetail() {
   const { classNumber, courseId } = useParams();

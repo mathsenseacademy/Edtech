@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "https://mathsenseacademy.onrender.com/api/student";
-const BATCH_API = "https://mathsenseacademy.onrender.com/api/batches";
+const API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api/student";
+const BATCH_API = "https://api-bqojuh5xfq-uc.a.run.app/api/batches";
 
 const SdHome = () => {
   const [student, setStudent] = useState(null);

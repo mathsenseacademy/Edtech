@@ -3,7 +3,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://mathsenseacademy.onrender.com', // Your backend URL
+  baseURL: 'https://api-bqojuh5xfq-uc.a.run.app', // Your backend URL
   timeout: 10000, // 10 seconds timeout
   headers: {
     'Content-Type': 'application/json',

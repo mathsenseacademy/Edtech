@@ -61,7 +61,7 @@ export default function BlogEditor() {
 
     setIsSubmitting(true);
     try {
-      await api.post("https://mathsenseacademy.onrender.com/api/blogs", formData);
+      await api.post("https://api-bqojuh5xfq-uc.a.run.app/api/blogs", formData);
       showToast("Blog created successfully!", "success");
       setFormData({ title: "", content: "", blog_image: "" });
     } catch (err) {

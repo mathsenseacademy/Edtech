@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "https://mathsenseacademy.onrender.com/api";
+const API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api";
 
 const AdminBatches = () => {
   const [classes] = useState([...Array(12).keys()].map((n) => n + 1));

@@ -5,7 +5,7 @@ import axios from "axios";
 import fallbackImg from "../assets/img10.png";
 import { Helmet } from "react-helmet-async";
 
-const API_URL = "https://mathsenseacademy.onrender.com/api/classes";
+const API_URL = "https://api-bqojuh5xfq-uc.a.run.app/api/classes";
 
 export default function ClassDetails() {
   const { classNumber } = useParams();
@@ -56,7 +56,7 @@ export default function ClassDetails() {
   const pageImg = classList[0]?.image || fallbackImg;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#fffaf3] via-[#fffdf9] to-[#fff9f1] px-6 py-12 font-poppins">
+    <div className="min-h-screen bg-gradient-to-br from-[#3f3424] via-[#fffdf9] to-[#fff9f1] px-6 py-12 font-poppins">
 
       {/* ✅ SEO Helmet Tags */}
       <Helmet>
