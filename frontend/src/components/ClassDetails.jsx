@@ -56,7 +56,7 @@ export default function ClassDetails() {
   const pageImg = classList[0]?.image || fallbackImg;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#3f3424] via-[#fffdf9] to-[#fff9f1] px-6 py-12 font-poppins">
+    <div className="min-h-screen bg-[#ddd7d1] px-6 py-12 font-poppins">
 
       {/* ✅ SEO Helmet Tags */}
       <Helmet>
