@@ -60,6 +60,20 @@ export default function SdHome() {
     }
   };
 
+  const formatTime12Hour = (time24) => {
+  if (!time24) return "";
+
+  const [hourStr, minuteStr] = time24.split(":");
+  let hour = parseInt(hourStr, 10);
+  const minute = minuteStr || "00";
+
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12; // convert 0 or 12 to 12
+
+  return `${hour}:${minute} ${ampm}`;
+};
+
+
   useEffect(() => {
     mountedRef.current = true;
     loadStudentProfile();
@@ -101,7 +115,16 @@ export default function SdHome() {
           try {
             if (typeof b === "string") {
               const res = await axios.get(`${BATCH_API}/${b}`);
-              if (res.data?.name) batchNames.push({ name: res.data.name });
+              if (res.data) {
+  setStudent((prev) => ({
+    ...prev,
+    batches: [{ 
+      name: res.data.name, 
+      time: res.data.time,
+      day: res.data.day 
+    }]
+  }));
+}
             } else if (b?.name) {
               batchNames.push(b);
             }
@@ -161,6 +184,25 @@ export default function SdHome() {
   } else if (student?.batch && String(student.batch).trim() !== "") {
     displayBatch = student.batch;
   }
+
+  // TIME DISPLAY
+let displayTime = "";
+if (student?.batches && Array.isArray(student.batches) && student.batches.length > 0) {
+  displayTime = student.batches
+    .map((b) => formatTime12Hour(b.time || ""))
+    .join(", ");
+} else if (student?.batch_time) {
+  displayTime = formatTime12Hour(student.batch_time);
+}
+
+
+  let displayDay = "";
+  if (student?.batches && Array.isArray(student.batches) && student.batches.length > 0) {
+    displayDay = student.batches.map((b) => b.day || "").join(", ");
+  } else if (student?.batch_day) {
+    displayDay = student.batch_day;
+  }
+
 
   // Loading / Error states
   if (loading) {
@@ -275,30 +317,45 @@ export default function SdHome() {
             </p>
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-            <p className="text-gray-600">
-              <strong>Batch:</strong>{" "}
-              {displayBatch === "Not assigned yet" ? (
-                <span className="italic text-gray-400">{displayBatch}</span>
-              ) : (
-                <span className="text-blue-700 font-semibold">{displayBatch}</span>
-              )}
-            </p>
+          <div className="mt-3 text-sm space-y-1">
+  
+  {/* LINE 1: Batch + Time */}
+  <div className="mt-3 space-y-2 text-sm">
 
-            <p
-              className={`font-semibold ${
-                student.feesPaid || student.fees_status === "Paid"
-                  ? "text-green-600"
-                  : "text-red-500"
-              }`}
-            >
-              💰 Fees: {student.fees_status || (student.feesPaid ? "Paid" : "Not Paid")}
-            </p>
+  <div className="flex flex-wrap items-center gap-2">
+    <span className="font-semibold text-gray-700">Batch:</span>
+    {displayBatch === "Not assigned yet" ? (
+      <span className="italic text-gray-400">{displayBatch}</span>
+    ) : (
+      <span className="text-blue-700 font-semibold">{displayBatch}</span>
+    )}
+  </div>
 
-            {/* <p className="text-gray-500">
-              <strong>Registered:</strong> {formattedDate}
-            </p> */}
-          </div>
+  <div className="flex flex-wrap items-center gap-2">
+    <span className="font-semibold text-gray-700">Batch Time:</span>
+    <span className="text-gray-700">{displayTime || "-"}</span>
+  </div>
+
+  <div className="flex flex-wrap items-center gap-2">
+    <span className="font-semibold text-gray-700">Day:</span>
+    <span className="text-gray-700">{displayDay || "-"}</span>
+  </div>
+
+</div>
+
+
+  <p
+    className={`font-semibold ${
+      student.feesPaid || student.fees_status === "Paid"
+        ? "text-green-600"
+        : "text-red-500"
+    }`}
+  >
+    💰 Fees: {student.fees_status || (student.feesPaid ? "Paid" : "Not Paid")}
+  </p>
+
+</div>
+
 
           <div className="mt-4">
             <button
