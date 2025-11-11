@@ -8,6 +8,7 @@ import Header from "./components/Header";
 import AdminHeader from "./pages/AdminHeader";
 import Footer from "./components/Footer";
 import Loader from "./components/Loader/Loader";
+import HelpCenter from "./pages/HelpCenter";
 
 import Home from "./pages/Home";
 import StudentRegister from "./pages/StudentRegister";
@@ -38,7 +39,6 @@ function StudentLayout() {
       <main className="min-h-[80vh] pt-[80px]">
         <Outlet />
       </main>
-      {/* Footer removed from here - will be rendered by main App */}
     </>
   );
 }
@@ -102,6 +102,7 @@ function App() {
                 element={<Home sentinelRef={sentinelRef} redirectToLogin={true} />}
               />
               <Route path="/about" element={<About />} />
+              <Route path="/helpCenter" element={<HelpCenter />} />
 
               {/* 👥 Roles */}
               <Route path="/roles" element={<Roles />} />

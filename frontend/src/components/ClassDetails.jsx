@@ -6,6 +6,7 @@ import fallbackImg from "../assets/img10.png";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { FaBookOpen, FaClock, FaUserTie, FaStar } from "react-icons/fa";
+import mentor from "../assets/teacher.png";
 
 const API_URL = "https://api-bqojuh5xfq-uc.a.run.app/api/classes";
 
@@ -44,7 +45,7 @@ export default function ClassDetails() {
   const staticFAQs = [
     {
       q: "What is the class size?",
-      a: "Typical batch size is 8–16 students. We keep groups small to ensure personalised attention."
+      a: "Typical batch size is 15–20 students. We keep groups small to ensure personalised attention."
     },
     {
       q: "Can my child switch batches if timing clashes?",
@@ -54,6 +55,18 @@ export default function ClassDetails() {
       q: "Will I get recordings?",
       a: "Yes. Every class is recorded and available to enrolled students for revision for a limited period."
     },
+    {
+      q: "What is the pricing?",
+      a: "There is different pricing for various courses in monthly structure. Contact admin for current offers."
+    },
+    {
+      q: "How experienced are the instructors?",
+      a: "Instructors have 15 years of teaching experience and are passionate about math education."
+    },
+    {
+      q: "What if my child misses a class?",
+      a: "Recordings and notes of all classes are made available to students for revision and catching up on missed sessions."
+    }
   ];
 
   const staticTestimonials = [
@@ -65,6 +78,21 @@ export default function ClassDetails() {
       name: "Priya (Student)",
       text: "Classes are fun and I actually look forward to math now. The quizzes are helpful."
     },
+    {
+      name: "Rohit (Parent)",
+      text: "The mentor understood my child's struggles and tailored the sessions accordingly. Highly recommend!"
+    },
+    {
+      name: "Sneha (Student)",
+      text: "I improved my problem-solving speed and accuracy. The mock tests were just like the real exams."
+    },
+    {
+      name: "Kavita (Parent)",
+      text: "Great value for money. The small batch size ensured my child got the attention needed to excel."
+    },
+    {      name: "Meera (Parent)",
+      text: "The personalized mentoring helped my child overcome specific challenges in math. Very grateful!"
+    }
   ];
 
   useEffect(() => {
@@ -208,16 +236,6 @@ export default function ClassDetails() {
                       </button>
                     </div>
                   </div>
-
-                  <div className="flex justify-center md:justify-end">
-                    <img
-                      src={cls.image || fallbackImg}
-                      alt={cls.title || `Class ${cls.classRange} course image`}
-                      className="h-40 w-auto object-contain rounded-2xl shadow-md bg-white p-2"
-                      loading="lazy"
-                      onError={(e) => (e.target.src = fallbackImg)}
-                    />
-                  </div>
                 </div>
 
                 {/* Course body */}
@@ -269,15 +287,15 @@ export default function ClassDetails() {
                     <h3 className="text-lg font-semibold text-[#875714]">Instructor</h3>
                     <div className="flex items-center gap-4 mt-3">
                       <img
-                        src={cls.instructorPhoto || fallbackImg}
+                        src={mentor}
                         alt={cls.instructorName || "Instructor photo"}
                         className="w-20 h-20 rounded-full object-cover shadow-sm"
                         onError={(e) => (e.target.src = fallbackImg)}
                       />
                       <div>
                         <div className="font-semibold text-gray-800">{cls.instructorName || "Experienced Math Mentor"}</div>
-                        <div className="text-sm text-gray-600">{cls.instructorBio || "M.Sc / B.Ed with 7+ years of teaching experience in school & competitive exams."}</div>
-                        <div className="mt-2 text-xs text-gray-500">Office hours: {cls.officeHours || "Sat-Sun 6–8 PM"}</div>
+                        <div className="text-sm text-gray-600">{cls.instructorBio || "PhD with 15+ years of teaching experience in school & competitive exams."}</div>
+                        <div className="mt-2 text-xs text-gray-500">Office hours: {cls.officeHours || "Sat-Sun 8am–9 PM"}</div>
                       </div>
                     </div>
                   </section>
@@ -289,38 +307,8 @@ export default function ClassDetails() {
           )}
         </div>
 
-        {/* Right column: sticky panel */}
+        
         <aside className="space-y-6">
-          {/* <div className="sticky top-28 bg-white rounded-2xl p-5 shadow-lg border border-gray-100">
-            <div className="flex items-center gap-4">
-              <img src={classList[0]?.image || fallbackImg} alt="Course thumbnail" className="w-20 h-20 object-cover rounded-lg" />
-              <div>
-                <div className="text-sm text-gray-500">Featured</div>
-                <div className="text-lg font-bold text-[#875714]">{classList[0]?.title || `Class ${classNumber}`}</div>
-                <div className="text-sm text-gray-600 mt-1">{classList[0]?.classRange ? `Class ${classList[0].classRange}` : ""}</div>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-2 text-sm text-gray-600">
-              <div className="p-2 rounded bg-sky-50 text-center">{classList[0]?.duration || "Ongoing"}</div>
-              <div className="p-2 rounded bg-sky-50 text-center">Live classes</div>
-              <div className="p-2 rounded bg-sky-50 text-center">Recorded sessions</div>
-              <div className="p-2 rounded bg-sky-50 text-center">Small batches</div>
-            </div>
-
-            <button
-              onClick={() => navigate("/login/student")}
-              className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-[#875714] text-white font-semibold hover:bg-[#a66b1c] transition"
-              aria-label="Enroll in course"
-            >
-              Enroll Now
-            </button>
-
-            <div className="mt-3 text-xs text-gray-500">
-              Or call us: <a href="tel:+919147718572" className="text-[#7d4900] font-semibold">+91 9147718572</a>
-            </div>
-          </div> */}
-
           {/* Testimonials */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h4 className="font-semibold text-[#875714]">What parents say</h4>

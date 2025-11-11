@@ -53,10 +53,8 @@ export default function Footer() {
               <ul className="space-y-2 text-white">
                 <li><Link to="/" className="footer-link">Home</Link></li>
                 <li><Link to="/about" className="footer-link">About</Link></li>
-                <li><Link to="/solutions" className="footer-link">Solutions</Link></li>
-                <li><Link to="/pricing" className="footer-link">Pricing</Link></li>
-                <li><Link to="/team" className="footer-link">Team</Link></li>
-                <li><Link to="/career" className="footer-link">Career</Link></li>
+                <li><Link to="/about" className="footer-link">Team</Link></li>
+                <li><Link to="/about" className="footer-link">Career</Link></li>
               </ul>
             </div>
 
@@ -64,10 +62,10 @@ export default function Footer() {
             <div className="flex-1 min-w-[150px]">
               <h4 className="text-lg font-semibold mb-3 text-yellow-200 hover:text-amber-400">Documentation</h4>
               <ul className="space-y-2 text-white">
-                <li><Link to="/help" className="footer-link">Help Centre</Link></li>
-                <li><Link to="/contact" className="footer-link">Contact</Link></li>
-                <li><Link to="/faq" className="footer-link">FAQ</Link></li>
-                <li><Link to="/privacy" className="footer-link">Privacy Policy</Link></li>
+                <li><Link to="/helpCenter" className="footer-link">Help Centre</Link></li>
+                <li><Link to="/helpCenter" className="footer-link">Contact</Link></li>
+                <li><Link to="/helpCenter" className="footer-link">FAQ</Link></li>
+                <li><Link to="/helpCenter" className="footer-link">Privacy Policy</Link></li>
               </ul>
             </div>
 
@@ -97,7 +95,3 @@ export default function Footer() {
     </footer>
   );
 }
-
-/* Tailwind helper for animated links */
-const footerLink =
-  "relative inline-block text-[#1a1a1a] no-underline pb-0.5 transition hover:text-pink-600 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-pink-600 hover:after:w-full after:transition-all after:duration-300";

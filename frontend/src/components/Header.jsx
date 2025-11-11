@@ -14,7 +14,6 @@ import {
 import { Phone, Mail, Menu, X, ChevronDown } from "lucide-react";
 import logo from "../assets/logoWith_Name.svg";
 import StudentRegister from "../pages/StudentRegister";
-import About from "../pages/About";
 
 const Header = () => {
   const [showStickyRegister, setShowStickyRegister] = useState(false);
@@ -27,20 +26,21 @@ const Header = () => {
   const classRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
-  // Class data with routes
+  // Class data with routes - SEO optimized with proper labels
   const classes = Array.from({ length: 12 }, (_, i) => ({
     name: `Class ${i + 1}`,
-    number: i + 1
+    number: i + 1,
+    ariaLabel: `Mathematics courses for Class ${i + 1} students`
   }));
 
-  // Course data with routes (all go to coming-soon)
+  // Course data with routes - SEO optimized
   const courses = [
-    { name: "JEE" },
-    { name: "UGC" },
-    { name: "NET" },
-    { name: "UPSC" },
-    { name: "WBSC" },
-    { name: "Other Exams" }
+    { name: "JEE", ariaLabel: "Joint Entrance Examination preparation courses" },
+    { name: "UGC", ariaLabel: "University Grants Commission exam preparation" },
+    { name: "NET", ariaLabel: "National Eligibility Test preparation" },
+    { name: "UPSC", ariaLabel: "Union Public Service Commission exam courses" },
+    { name: "WBSC", ariaLabel: "West Bengal Service Commission preparation" },
+    { name: "Other Exams", ariaLabel: "Other competitive examination courses" }
   ];
 
   const { t } = useTranslation();
@@ -81,20 +81,19 @@ const Header = () => {
   }, [mobileMenuOpen]);
 
   const navItems = [
-    { type: "link", to: "/", label: t("Home") },
-    // { type: "anchor", to: "ClassSection", label: t("OurProgram") },
-    { type: "anchor", to: "testimonials", label: t("Testimonials") },
-    // { type: "anchor", to: "/About", label: t("About") },
-    { type: "link", to: "/blogs", label: t("Blog") },
+    { type: "link", to: "/", label: t("Home"), ariaLabel: "Go to homepage" },
+    { type: "link", to: "/about", label: t("About"), ariaLabel: "Learn about MathSense Academy" },
+    { type: "anchor", to: "testimonials", label: t("Testimonials"), ariaLabel: "Read student testimonials" },
+    { type: "link", to: "/blogs", label: t("Blog"), ariaLabel: "Read our educational blog" },
   ];
 
   const socialLinks = [
-    { href: "https://wa.me/9062428472", icon: FaWhatsapp, label: "Whatsapp" },
-    { href: "https://www.facebook.com/shomesirmath/", icon: FaFacebookF, label: "Facebook" },
-    { href: "https://x.com/ShomeSuvad79678", icon: FaTwitter, label: "Twitter" },
-    { href: "https://www.instagram.com/maths_ense", icon: FaInstagram, label: "Instagram" },
-    { href: "https://www.youtube.com/@mathsenseacademy", icon: FaYoutube, label: "YouTube" },
-    { href: "https://www.linkedin.com/in/suvadip-shome-1817ba289/", icon: FaLinkedinIn, label: "LinkedinIn" }
+    { href: "https://wa.me/9062428472", icon: FaWhatsapp, label: "WhatsApp", ariaLabel: "Contact us on WhatsApp" },
+    { href: "https://www.facebook.com/shomesirmath/", icon: FaFacebookF, label: "Facebook", ariaLabel: "Follow us on Facebook" },
+    { href: "https://x.com/ShomeSuvad79678", icon: FaTwitter, label: "Twitter", ariaLabel: "Follow us on Twitter" },
+    { href: "https://www.instagram.com/maths_ense", icon: FaInstagram, label: "Instagram", ariaLabel: "Follow us on Instagram" },
+    { href: "https://www.youtube.com/@mathsenseacademy", icon: FaYoutube, label: "YouTube", ariaLabel: "Subscribe to our YouTube channel" },
+    { href: "https://www.linkedin.com/in/suvadip-shome-1817ba289/", icon: FaLinkedinIn, label: "LinkedIn", ariaLabel: "Connect on LinkedIn" }
   ];
 
   return (
@@ -105,6 +104,7 @@ const Header = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
+        role="banner"
       >
         {/* Top Info Bar - Desktop Only */}
         <div className="hidden lg:block bg-gray-800">
@@ -114,28 +114,32 @@ const Header = () => {
                 <a
                   href="tel:+919147718572"
                   className="flex items-center gap-2 hover:text-yellow-300 transition"
+                  aria-label="Call MathSense Academy at +91 9147718572"
                 >
-                  <Phone size={14} /> +91 9147718572
+                  <Phone size={14} aria-hidden="true" /> 
+                  <span>+91 9147718572</span>
                 </a>
                 <a
                   href="mailto:mathsenseacademy@gmail.com"
                   className="flex items-center gap-2 hover:text-yellow-300 transition"
+                  aria-label="Email MathSense Academy"
                 >
-                  <Mail size={14} /> mathsenseacademy@gmail.com
+                  <Mail size={14} aria-hidden="true" /> 
+                  <span>mathsenseacademy@gmail.com</span>
                 </a>
               </div>
               <div className="flex items-center gap-4">
                 <span>Follow us:</span>
-                {socialLinks.map(({ href, icon: Icon, label }) => (
+                {socialLinks.map(({ href, icon: Icon, label, ariaLabel }) => (
                   <a
                     key={label}
                     href={href}
                     target="_blank"
-                    rel="noreferrer"
-                    aria-label={label}
+                    rel="noopener noreferrer"
+                    aria-label={ariaLabel}
                     className="hover:text-yellow-300 transition text-sm"
                   >
-                    <Icon />
+                    <Icon aria-hidden="true" />
                   </a>
                 ))}
               </div>
@@ -144,7 +148,7 @@ const Header = () => {
         </div>
 
         {/* Main Navigation */}
-        <nav className="bg-gradient-to-r from-stone-400 to-gray-800 border-t border-white/10">
+        <nav className="bg-gradient-to-r from-stone-400 to-gray-800 border-t border-white/10" role="navigation" aria-label="Main navigation">
           <div className="max-w-7xl mx-auto px-4 py-1 flex items-center justify-between">
             {/* Logo */}
             <motion.div
@@ -154,13 +158,15 @@ const Header = () => {
             >
               <img
                 src={logo}
-                alt="Math Sense Academy"
+                alt="MathSense Academy - Online Math Learning Platform"
                 className="h-10 sm:h-12 cursor-pointer hover:scale-105 transition-transform duration-300"
                 onClick={() => {
                   navigate("/");
                   window.scrollTo({ top: 0, behavior: "smooth" });
                   setMobileMenuOpen(false);
                 }}
+                width="auto"
+                height="48"
               />
 
               {/* Desktop Dropdowns */}
@@ -170,10 +176,14 @@ const Header = () => {
                   <button
                     className="flex items-center gap-1 px-3 py-1 hover:text-yellow-300 font-medium transition"
                     onClick={() => setClassDropdownOpen((prev) => !prev)}
+                    aria-expanded={classDropdownOpen}
+                    aria-haspopup="true"
+                    aria-label="Browse classes from 1 to 12"
                   >
                     {t("Class")}
                     <ChevronDown
                       size={16}
+                      aria-hidden="true"
                       className={`transform transition-transform ${
                         classDropdownOpen ? "rotate-180" : ""
                       }`}
@@ -186,17 +196,24 @@ const Header = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         className="absolute mt-2 bg-white text-gray-900 rounded shadow-lg overflow-hidden w-40 z-50"
+                        role="menu"
                       >
                         {classes.map((cls) => (
                           <li
                             key={cls.number}
-                            className="px-4 py-2 hover:bg-gray-300 cursor-pointer transition"
-                            onClick={() => {
-                              navigate(`/class/${cls.number}`);
-                              setClassDropdownOpen(false);
-                            }}
+                            role="none"
                           >
-                            {cls.name}
+                            <button
+                              className="w-full text-left px-4 py-2 hover:bg-gray-300 cursor-pointer transition"
+                              onClick={() => {
+                                navigate(`/class/${cls.number}`);
+                                setClassDropdownOpen(false);
+                              }}
+                              role="menuitem"
+                              aria-label={cls.ariaLabel}
+                            >
+                              {cls.name}
+                            </button>
                           </li>
                         ))}
                       </motion.ul>
@@ -209,10 +226,14 @@ const Header = () => {
                   <button
                     className="flex items-center gap-1 px-3 py-1 hover:text-yellow-300 font-medium transition"
                     onClick={() => setCourseDropdownOpen(!courseDropdownOpen)}
+                    aria-expanded={courseDropdownOpen}
+                    aria-haspopup="true"
+                    aria-label="Browse competitive exam courses"
                   >
                     {t("Courses")}
                     <ChevronDown
                       size={16}
+                      aria-hidden="true"
                       className={`transform transition-transform ${
                         courseDropdownOpen ? "rotate-180" : ""
                       }`}
@@ -225,17 +246,24 @@ const Header = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         className="absolute mt-2 bg-white text-gray-900 rounded shadow-lg overflow-hidden w-48 z-50"
+                        role="menu"
                       >
                         {courses.map((course) => (
                           <li
                             key={course.name}
-                            className="px-4 py-2 hover:bg-gray-300 cursor-pointer transition"
-                            onClick={() => {
-                              navigate("/coming-soon");
-                              setCourseDropdownOpen(false);
-                            }}
+                            role="none"
                           >
-                            {course.name}
+                            <button
+                              className="w-full text-left px-4 py-2 hover:bg-gray-300 cursor-pointer transition"
+                              onClick={() => {
+                                navigate("/coming-soon");
+                                setCourseDropdownOpen(false);
+                              }}
+                              role="menuitem"
+                              aria-label={course.ariaLabel}
+                            >
+                              {course.name}
+                            </button>
                           </li>
                         ))}
                       </motion.ul>
@@ -254,6 +282,7 @@ const Header = () => {
                       <Link
                         to={item.to}
                         className="text-white hover:text-yellow-300 transition-colors duration-200 font-medium"
+                        aria-label={item.ariaLabel}
                       >
                         {item.label}
                       </Link>
@@ -261,6 +290,7 @@ const Header = () => {
                       <a
                         href={`#${item.to}`}
                         className="text-white hover:text-yellow-300 transition-colors duration-200 font-medium"
+                        aria-label={item.ariaLabel}
                       >
                         {item.label}
                       </a>
@@ -272,45 +302,35 @@ const Header = () => {
               {/* Desktop Auth Button */}
               <button
                 onClick={() => navigate("/login/student")}
-                className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700"
+                className="px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700 transition"
+                aria-label="Student login"
               >
                 Login
               </button>
-
             </div>
 
             <a
-    href="tel:+919147718572"
-    className="flex items-center gap-2 text-yellow-300 text-sm font-medium lg:hidden"
-  >
-    <Phone size={16} />
-    <span>+91 9147718572</span>
-  </a>
+              href="tel:+919147718572"
+              className="ml-28 flex text-sm font-medium lg:hidden"
+              aria-label="Call us at +91 9147718572"
+            >
+              <Phone size={16} aria-hidden="true" />
+            </a>
 
             {/* Mobile Hamburger */}
             <button
               className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open mobile menu"
+              aria-expanded={mobileMenuOpen}
             >
-              <Menu size={24} />
+              <Menu size={24} aria-hidden="true" />
             </button>
           </div>
         </nav>
 
         {/* Spacer div */}
         <div className="h-[4px] lg:h-[4px]" />
-        {/* {showStickyRegister && (
-          <motion.button
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="fixed bottom-6 right-6 px-5 py-3 font-semibold text-gray-900 bg-yellow-500 rounded-full shadow-lg hover:scale-105 hover:bg-green-500 transition z-40"
-            onClick={() => setShowRegisterModal(true)}
-          >
-            {t("Student Register")}
-          </motion.button>
-        )} */}
 
         {/* Student Register Modal */}
         {showRegisterModal && (
@@ -321,15 +341,17 @@ const Header = () => {
       {/* Mobile Right-side Drawer (80% width) */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          // Overlay + Drawer container
           <motion.div
             className="fixed inset-0 z-50 flex"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setMobileMenuOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile navigation menu"
           >
-            {/* Dimmed overlay (left 20%) - clickable */}
+            {/* Dimmed overlay (left 20%) */}
             <div className="w-1/5" />
 
             {/* Drawer (right 80%) */}
@@ -340,59 +362,82 @@ const Header = () => {
               animate={{ x: 0 }}
               exit={{ x: 300 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside drawer
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="h-full bg-gradient-to-b from-white to-gray-100 text-gray-800 p-6 flex flex-col">
                 <div className="flex items-center justify-between">
                   <img
                     src={logo}
-                    alt="Math Sense Academy"
+                    alt="MathSense Academy"
                     className="h-10 cursor-pointer"
                     onClick={() => {
                       navigate("/");
                       window.scrollTo({ top: 0, behavior: "smooth" });
                       setMobileMenuOpen(false);
                     }}
+                    width="auto"
+                    height="40"
                   />
 
                   <button
                     onClick={() => setMobileMenuOpen(false)}
-                    aria-label="Close menu"
+                    aria-label="Close mobile menu"
                     className="p-2 rounded-md hover:bg-gray-200"
                   >
-                    <X size={22} />
+                    <X size={22} aria-hidden="true" />
                   </button>
                 </div>
 
                 {/* Contact block */}
-                <div className="mt-6 border rounded-lg p-4 bg-white shadow-sm">
-                  <a href="tel:+919147718572" className="flex items-center gap-3 text-sm font-medium">
-                    <Phone size={16} />
+                <address className="not-italic mt-6 border rounded-lg p-4 bg-white shadow-sm">
+                  <a 
+                    href="tel:+919147718572" 
+                    className="flex items-center gap-3 text-sm font-medium hover:text-rose-600 transition"
+                    aria-label="Call +91 9147718572"
+                  >
+                    <Phone size={16} aria-hidden="true" />
                     <span>+91 9147718572</span>
                   </a>
-                  <a href="mailto:mathsenseacademy@gmail.com" className="flex items-center gap-3 text-sm font-medium mt-2">
-                    <Mail size={16} />
+                  <a 
+                    href="mailto:mathsenseacademy@gmail.com" 
+                    className="flex items-center gap-3 text-sm font-medium mt-2 hover:text-rose-600 transition"
+                    aria-label="Email mathsenseacademy@gmail.com"
+                  >
+                    <Mail size={16} aria-hidden="true" />
                     <span>mathsenseacademy@gmail.com</span>
                   </a>
 
                   <div className="flex items-center gap-3 mt-3">
-                    {socialLinks.map(({ href, icon: Icon, label }) => (
-                      <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="p-1 rounded-md hover:bg-gray-200">
-                        <Icon />
+                    {socialLinks.map(({ href, icon: Icon, label, ariaLabel }) => (
+                      <a 
+                        key={label} 
+                        href={href} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        aria-label={ariaLabel}
+                        className="p-1 rounded-md hover:bg-gray-200 transition"
+                      >
+                        <Icon aria-hidden="true" />
                       </a>
                     ))}
                   </div>
-                </div>
+                </address>
 
-                <nav className="mt-6 flex-1 overflow-y-auto">
+                <nav className="mt-6 flex-1 overflow-y-auto" aria-label="Mobile navigation">
                   {/* Classes accordion */}
                   <div className="mt-2">
                     <button
                       onClick={() => setClassDropdownOpen((p) => !p)}
                       className="w-full flex items-center justify-between py-3 px-2 font-medium"
+                      aria-expanded={classDropdownOpen}
+                      aria-label="Browse classes"
                     >
-                      <span> {t("Class")} </span>
-                      <ChevronDown size={18} className={`${classDropdownOpen ? 'rotate-180' : ''} transform transition`} />
+                      <span>{t("Class")}</span>
+                      <ChevronDown 
+                        size={18} 
+                        aria-hidden="true"
+                        className={`${classDropdownOpen ? 'rotate-180' : ''} transform transition`} 
+                      />
                     </button>
 
                     <AnimatePresence>
@@ -407,12 +452,13 @@ const Header = () => {
                           {classes.map((cls) => (
                             <li key={cls.number}>
                               <button
-                                className="w-full text-left py-2"
+                                className="w-full text-left py-2 hover:text-rose-600 transition"
                                 onClick={() => {
                                   navigate(`/class/${cls.number}`);
                                   setClassDropdownOpen(false);
                                   setMobileMenuOpen(false);
                                 }}
+                                aria-label={cls.ariaLabel}
                               >
                                 {cls.name}
                               </button>
@@ -428,9 +474,15 @@ const Header = () => {
                     <button
                       onClick={() => setCourseDropdownOpen((p) => !p)}
                       className="w-full flex items-center justify-between py-3 px-2 font-medium"
+                      aria-expanded={courseDropdownOpen}
+                      aria-label="Browse courses"
                     >
-                      <span> {t("Courses")} </span>
-                      <ChevronDown size={18} className={`${courseDropdownOpen ? 'rotate-180' : ''} transform transition`} />
+                      <span>{t("Courses")}</span>
+                      <ChevronDown 
+                        size={18} 
+                        aria-hidden="true"
+                        className={`${courseDropdownOpen ? 'rotate-180' : ''} transform transition`} 
+                      />
                     </button>
 
                     <AnimatePresence>
@@ -445,12 +497,13 @@ const Header = () => {
                           {courses.map((course) => (
                             <li key={course.name}>
                               <button
-                                className="w-full text-left py-2"
+                                className="w-full text-left py-2 hover:text-rose-600 transition"
                                 onClick={() => {
                                   navigate('/coming-soon');
                                   setCourseDropdownOpen(false);
                                   setMobileMenuOpen(false);
                                 }}
+                                aria-label={course.ariaLabel}
                               >
                                 {course.name}
                               </button>
@@ -466,11 +519,21 @@ const Header = () => {
                     {navItems.map((item) => (
                       <li key={item.label}>
                         {item.type === 'link' ? (
-                          <Link to={item.to} onClick={() => setMobileMenuOpen(false)} className="block py-3 font-medium">
+                          <Link 
+                            to={item.to} 
+                            onClick={() => setMobileMenuOpen(false)} 
+                            className="block py-3 font-medium hover:text-rose-600 transition"
+                            aria-label={item.ariaLabel}
+                          >
                             {item.label}
                           </Link>
                         ) : (
-                          <a href={`#${item.to}`} onClick={() => setMobileMenuOpen(false)} className="block py-3 font-medium">
+                          <a 
+                            href={`#${item.to}`} 
+                            onClick={() => setMobileMenuOpen(false)} 
+                            className="block py-3 font-medium hover:text-rose-600 transition"
+                            aria-label={item.ariaLabel}
+                          >
                             {item.label}
                           </a>
                         )}
@@ -485,15 +548,16 @@ const Header = () => {
                       navigate('/login/student');
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full px-4 py-3 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700"
+                    className="w-full px-4 py-3 bg-yellow-500 text-gray-900 rounded-lg font-semibold hover:bg-amber-700 transition"
+                    aria-label="Student login"
                   >
                     Login
                   </button>
                 </div>
 
-                <div className="mt-4 text-xs text-gray-500">
-                  © {new Date().getFullYear()} Math Sense Academy
-                </div>
+                <footer className="mt-4 text-xs text-gray-500">
+                  © {new Date().getFullYear()} MathSense Academy. All rights reserved.
+                </footer>
               </div>
             </motion.aside>
           </motion.div>
