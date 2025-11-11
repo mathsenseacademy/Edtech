@@ -104,7 +104,7 @@ const AdminStudentProfile = () => {
   return (
     <div className="p-6 bg-[#f8fafc] min-h-screen">
       <Link
-        to="/admin/dashboard"
+        to="/admin-dashboard"
         className="text-blue-600 hover:underline mb-4 inline-block"
       >
         ← Back to Dashboard
@@ -117,7 +117,7 @@ const AdminStudentProfile = () => {
           <div className="flex flex-col items-center text-center md:items-start md:text-left">
             <img
               src={
-                student.google_photo_url ||
+                // student.google_photo_url ||
                 student.student_photo_path ||
                 "/placeholder.png"
               }

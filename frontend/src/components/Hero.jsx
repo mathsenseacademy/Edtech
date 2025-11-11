@@ -1,6 +1,6 @@
 // src/components/Hero.jsx
 import React from "react";
-import heroImage from "../assets/hero-1.png";
+import heroImage from "../assets/hero.png";
 import { useNavigate } from "react-router-dom";
 
 const Hero = () => {

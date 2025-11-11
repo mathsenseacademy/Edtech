@@ -149,7 +149,7 @@ const AdminDashboard = () => {
 
                 const photo =
                   student_photo_path ||
-                  google_photo_url ||
+                  // google_photo_url ||
                   "https://via.placeholder.com/80";
 
                 return (

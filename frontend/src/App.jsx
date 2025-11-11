@@ -35,10 +35,10 @@ function StudentLayout() {
   return (
     <>
       <Header showDashboardBtn={false} />
-      <main className="min-h-[80vh] pt-[80px]"> {/* space for header */}
+      <main className="min-h-[80vh] pt-[80px]">
         <Outlet />
       </main>
-      <Footer />
+      {/* Footer removed from here - will be rendered by main App */}
     </>
   );
 }
@@ -56,7 +56,7 @@ function App() {
 
   useEffect(() => {
     // Wait for loader animation before showing main site
-    const timer = setTimeout(() => setLoading(false), 6200); // match your Loader duration
+    const timer = setTimeout(() => setLoading(false), 6200);
     return () => clearTimeout(timer);
   }, []);
 
@@ -89,74 +89,70 @@ function App() {
 
   return (
     <HelmetProvider>
-    <LayoutGroup>
-      {HeaderComponent}
+      <LayoutGroup>
+        {HeaderComponent}
 
-      {/* Main content area with scroll */}
-      <div data-scroll-container ref={scrollRef}>
-        <div data-scroll-section className="min-h-screen pt-[80px]">
-          <Routes>
-            {/* 🏠 Home */}
-            <Route
-              path="/"
-              element={<Home sentinelRef={sentinelRef} redirectToLogin={true} />}
-            />
-            <Route path="/about" element={<About />} />
+        {/* Main content area with scroll */}
+        <div data-scroll-container ref={scrollRef}>
+          <div data-scroll-section className="min-h-screen pt-[80px]">
+            <Routes>
+              {/* 🏠 Home */}
+              <Route
+                path="/"
+                element={<Home sentinelRef={sentinelRef} redirectToLogin={true} />}
+              />
+              <Route path="/about" element={<About />} />
 
-            {/* 👥 Roles */}
-            <Route path="/roles" element={<Roles />} />
+              {/* 👥 Roles */}
+              <Route path="/roles" element={<Roles />} />
 
-            {/* 🔐 Logins */}
-            <Route path="/login/student" element={<LoginStudent />} />
-            <Route path="/student/login" element={<LoginStudent />} />
+              {/* 🔐 Logins */}
+              <Route path="/login/student" element={<LoginStudent />} />
+              <Route path="/student/login" element={<LoginStudent />} />
 
-            {/* 🧾 Student registration */}
-            <Route path="/student/register" element={<StudentRegister />} />
+              {/* 🧾 Student registration */}
+              <Route path="/student/register" element={<StudentRegister />} />
 
-            {/* 🎓 Student Dashboard */}
-            <Route path="/student" element={<StudentLayout />}>
-              <Route path="dashboard" element={<SdHome />} />
-            </Route>
+              {/* 🎓 Student Dashboard */}
+              <Route path="/student" element={<StudentLayout />}>
+                <Route path="dashboard" element={<SdHome />} />
+              </Route>
 
-            {/* 🧠 Programs / Classes */}
-            <Route path="/classs" element={<ClassSection />} />
-            <Route
-              path="/class/:classNumber"
-              element={<ClassDetails />}
-            />
-            <Route path="/class/:classNumber/:courseId" element={<CourseDetail />} />
+              {/* 🧠 Programs / Classes */}
+              <Route path="/classs" element={<ClassSection />} />
+              <Route path="/class/:classNumber" element={<ClassDetails />} />
+              <Route path="/class/:classNumber/:courseId" element={<CourseDetail />} />
 
+              {/* 🧑‍💼 Admin routes */}
+              <Route
+                path="/admin-dashboard"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminDashboard />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route path="/admin/student/:uid" element={<AdminStudentProfile />} />
+              <Route path="/admin/classes" element={<AdminClasses />} />
+              <Route path="/admin/batches" element={<AdminBatches />} />
+              <Route path="/admin/blog/new" element={<BlogEditor />} />
 
-            {/* 🧑‍💼 Admin routes */}
-            <Route
-              path="/admin-dashboard"
-              element={
-                <ProtectedAdminRoute>
-                  <AdminDashboard />
-                </ProtectedAdminRoute>
-              }
-            />
-            <Route path="/admin/student/:uid" element={<AdminStudentProfile />} />
-            <Route path="/admin/classes" element={<AdminClasses />} />
-            <Route path="/admin/batches" element={<AdminBatches />} />
-            <Route path="/admin/blog/new" element={<BlogEditor />} />
+              {/* 📰 Blogs */}
+              <Route path="/blogs" element={<BlogList />} />
+              <Route path="/blogs/:id" element={<BlogPost />} />
 
-            {/* 📰 Blogs */}
-            <Route path="/blogs" element={<BlogList />} />
-            <Route path="/blogs/:id" element={<BlogPost />} />
+              {/* 🚧 Coming soon */}
+              <Route path="/coming-soon" element={<ComingSoonCourses />} />
 
-            {/* 🚧 Coming soon */}
-            <Route path="/coming-soon" element={<ComingSoonCourses />} />
+              {/* 🔁 Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
 
-            {/* 🔁 Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          {/* Footer only for non-admin routes */}
+          {!isAdminRoute && <Footer />}
         </div>
-
-        {/* Footer only for non-admin routes */}
-        {!isAdminRoute && <Footer />}
-      </div>
-    </LayoutGroup>
+      </LayoutGroup>
     </HelmetProvider>
   );
 }
