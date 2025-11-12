@@ -1,3 +1,4 @@
+// src/pages/AdminBatches.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -10,50 +11,55 @@ const AdminBatches = () => {
   const [assignedStudents, setAssignedStudents] = useState([]);
   const [unassignedStudents, setUnassignedStudents] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState(null);
+
+  // Batch form inputs
   const [batchName, setBatchName] = useState("");
   const [batchDay, setBatchDay] = useState("");
   const [batchTime, setBatchTime] = useState("");
+  const [batchDay2, setBatchDay2] = useState("");
+  const [batchTime2, setBatchTime2] = useState("");
+
+  // Editing fields
   const [editDay, setEditDay] = useState("");
   const [editTime, setEditTime] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const days = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
 
-  // Fetch batches for selected class
- const fetchBatches = async (cls) => {
-  try {
-    const res = await axios.get(`${API_BASE}/batches/class/${cls}`);
-    const data = res.data;
-
-    // ✅ Ensure it's always an array
-    if (Array.isArray(data)) {
-      setBatches(data);
-    } else if (data && typeof data === "object") {
-      // if API accidentally returns a single object
-      setBatches([data]);
-    } else {
+  // ✅ Fetch batches for selected class
+  const fetchBatches = async (cls) => {
+    try {
+      const res = await axios.get(`${API_BASE}/batches/class/${cls}`);
+      const data = res.data;
+      if (Array.isArray(data)) setBatches(data);
+      else if (data && typeof data === "object") setBatches([data]);
+      else setBatches([]);
+    } catch (err) {
+      console.error("Error fetching batches:", err);
       setBatches([]);
     }
-  } catch (err) {
-    console.error("Error fetching batches:", err);
-    setBatches([]);
-  }
-};
+  };
 
-  // Fetch assigned and unassigned students for selected batch
+  // ✅ Fetch assigned/unassigned students
   const fetchBatchStudents = async (batchId, cls) => {
     if (!batchId || !cls) return;
     try {
-      const [allStudentsRes, batchStudentsRes] = await Promise.all([
+      const [allRes, assignedRes] = await Promise.all([
         axios.get(`${API_BASE}/student/class/${cls}`),
         axios.get(`${API_BASE}/batches/${batchId}/students`),
       ]);
-
-      const allStudents = allStudentsRes.data || [];
-      const assigned = batchStudentsRes.data || [];
+      const all = allRes.data || [];
+      const assigned = assignedRes.data || [];
       const assignedIds = new Set(assigned.map((s) => s.id));
-      const unassigned = allStudents.filter((s) => !assignedIds.has(s.id));
-
+      const unassigned = all.filter((s) => !assignedIds.has(s.id));
       setAssignedStudents(assigned);
       setUnassignedStudents(unassigned);
     } catch (err) {
@@ -63,7 +69,6 @@ const AdminBatches = () => {
     }
   };
 
-  // When class changes
   useEffect(() => {
     if (selectedClass) {
       fetchBatches(selectedClass);
@@ -73,10 +78,16 @@ const AdminBatches = () => {
     }
   }, [selectedClass]);
 
-  // Create new batch
+  // ✅ Create new batch
   const saveBatch = async () => {
-    if (!batchName || !selectedClass || !batchDay || !batchTime)
-      return alert("Please fill all fields (name, day, time)");
+    if (!batchName || !selectedClass || !batchDay || !batchTime) {
+      return alert("Please fill all required fields (name, day, time).");
+    }
+
+    // Check optional pair logic
+    if ((batchDay2 && !batchTime2) || (!batchDay2 && batchTime2)) {
+      return alert("Both second day and second time must be filled together.");
+    }
 
     try {
       setLoading(true);
@@ -85,12 +96,17 @@ const AdminBatches = () => {
         classNumber: selectedClass,
         day: batchDay,
         time: batchTime,
+        day2: batchDay2 || null,
+        time2: batchTime2 || null,
       });
+
       setBatchName("");
       setBatchDay("");
       setBatchTime("");
+      setBatchDay2("");
+      setBatchTime2("");
       fetchBatches(selectedClass);
-      alert("✅ Batch created!");
+      alert("✅ Batch created successfully!");
     } catch (err) {
       console.error("Error saving batch:", err);
       alert("Failed to save batch");
@@ -99,16 +115,17 @@ const AdminBatches = () => {
     }
   };
 
-  // Update existing batch day/time
+  // ✅ Update batch
   const updateBatch = async (batchId) => {
-    if (!editDay || !editTime) return alert("Select both day and time!");
+    if (!editDay || !editTime)
+      return alert("Please select both day and time to update.");
     try {
       await axios.put(`${API_BASE}/batches/${batchId}`, {
         day: editDay,
         time: editTime,
       });
       fetchBatches(selectedClass);
-      alert("✅ Batch updated!");
+      alert("✅ Batch updated successfully!");
       setEditDay("");
       setEditTime("");
       setSelectedBatch(null);
@@ -118,9 +135,9 @@ const AdminBatches = () => {
     }
   };
 
-  // Delete batch
+  // ✅ Delete batch
   const deleteBatch = async (batchId) => {
-    if (!window.confirm("Delete this batch?")) return;
+    if (!window.confirm("Are you sure you want to delete this batch?")) return;
     try {
       await axios.delete(`${API_BASE}/batches/${batchId}`);
       fetchBatches(selectedClass);
@@ -129,16 +146,19 @@ const AdminBatches = () => {
         setAssignedStudents([]);
         setUnassignedStudents([]);
       }
-      alert("🗑️ Batch deleted");
+      alert("🗑️ Batch deleted successfully");
     } catch (err) {
       console.error("Error deleting batch:", err);
     }
   };
 
+  // ✅ Assign / Unassign student
   const assignStudent = async (studentUid) => {
     if (!selectedBatch) return alert("Select a batch first!");
     try {
-      await axios.post(`${API_BASE}/batches/${selectedBatch.id}/assign`, { studentUid });
+      await axios.post(`${API_BASE}/batches/${selectedBatch.id}/assign`, {
+        studentUid,
+      });
       fetchBatchStudents(selectedBatch.id, selectedClass);
     } catch (err) {
       console.error("Error assigning student:", err);
@@ -148,13 +168,16 @@ const AdminBatches = () => {
   const unassignStudent = async (studentUid) => {
     if (!selectedBatch) return alert("Select a batch first!");
     try {
-      await axios.post(`${API_BASE}/batches/${selectedBatch.id}/unassign`, { studentUid });
+      await axios.post(`${API_BASE}/batches/${selectedBatch.id}/unassign`, {
+        studentUid,
+      });
       fetchBatchStudents(selectedBatch.id, selectedClass);
     } catch (err) {
       console.error("Error unassigning student:", err);
     }
   };
 
+  // ✅ On batch select
   const handleBatchClick = (b) => {
     setSelectedBatch(b);
     setEditDay(b.day || "");
@@ -185,13 +208,13 @@ const AdminBatches = () => {
 
       {selectedClass && (
         <div className="grid md:grid-cols-3 gap-6">
-          {/* Batches */}
+          {/* ✅ Batches Section */}
           <div className="bg-white p-4 rounded-xl shadow">
             <h2 className="font-bold text-lg text-blue-700 mb-3">
               Batches for Class {selectedClass}
             </h2>
 
-            {/* Batch creation inputs */}
+            {/* Create Batch Form */}
             <div className="flex flex-col gap-2 mb-4">
               <input
                 type="text"
@@ -201,12 +224,13 @@ const AdminBatches = () => {
                 className="border p-2 rounded w-full"
               />
 
+              {/* First Day & Time */}
               <select
                 value={batchDay}
                 onChange={(e) => setBatchDay(e.target.value)}
                 className="border p-2 rounded w-full"
               >
-                <option value="">Select Day</option>
+                <option value="">Select Day *</option>
                 {days.map((d) => (
                   <option key={d} value={d}>
                     {d}
@@ -221,6 +245,27 @@ const AdminBatches = () => {
                 className="border p-2 rounded w-full"
               />
 
+              {/* Second (Optional) */}
+              <select
+                value={batchDay2}
+                onChange={(e) => setBatchDay2(e.target.value)}
+                className="border p-2 rounded w-full"
+              >
+                <option value="">Select Second Day (Optional)</option>
+                {days.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="time"
+                value={batchTime2}
+                onChange={(e) => setBatchTime2(e.target.value)}
+                className="border p-2 rounded w-full"
+              />
+
               <button
                 onClick={saveBatch}
                 disabled={loading}
@@ -230,7 +275,7 @@ const AdminBatches = () => {
               </button>
             </div>
 
-            {/* Batch list */}
+            {/* Batch List */}
             <ul className="space-y-2">
               {batches.map((b) => (
                 <li
@@ -250,6 +295,11 @@ const AdminBatches = () => {
                       {b.day && b.time && (
                         <p className="text-sm text-gray-600">
                           🗓️ {b.day}, ⏰ {b.time}
+                        </p>
+                      )}
+                      {b.day2 && b.time2 && (
+                        <p className="text-sm text-gray-600">
+                          🗓️ {b.day2}, ⏰ {b.time2}
                         </p>
                       )}
                     </div>
@@ -299,7 +349,7 @@ const AdminBatches = () => {
             </ul>
           </div>
 
-           {/* Assigned Students */}
+          {/* ✅ Assigned Students */}
           <div className="bg-white p-4 rounded-xl shadow">
             <h2 className="font-bold text-lg text-green-700 mb-3">
               Assigned Students
@@ -337,7 +387,7 @@ const AdminBatches = () => {
             )}
           </div>
 
-          {/* Unassigned Students */}
+          {/* ✅ Unassigned Students */}
           <div className="bg-white p-4 rounded-xl shadow">
             <h2 className="font-bold text-lg text-orange-700 mb-3">
               Unassigned Students

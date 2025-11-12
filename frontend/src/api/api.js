@@ -3,7 +3,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://api-bqojuh5xfq-uc.a.run.app', // Your backend URL
+  baseURL: 'https://api-bqojuh5xfq-uc.a.run.app', 
   timeout: 10000, // 10 seconds timeout
   headers: {
     'Content-Type': 'application/json',

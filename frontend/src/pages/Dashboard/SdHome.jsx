@@ -20,12 +20,23 @@ export default function SdHome() {
   const [toast, setToast] = useState(null);
   const mountedRef = useRef(true);
 
-  // Helper to show temporary toast messages (success/error)
+  // Helper to show temporary toast messages
   const showToast = (type, message, ms = 3500) => {
     setToast({ type, message });
     setTimeout(() => {
       if (mountedRef.current) setToast(null);
     }, ms);
+  };
+
+  // Helper: Convert 24-hour to 12-hour format
+  const formatTime12Hour = (time24) => {
+    if (!time24) return "";
+    const [hourStr, minuteStr] = time24.split(":");
+    let hour = parseInt(hourStr, 10);
+    const minute = minuteStr || "00";
+    const ampm = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12 || 12;
+    return `${hour}:${minute} ${ampm}`;
   };
 
   // Load student profile from API
@@ -34,7 +45,6 @@ export default function SdHome() {
       setLoading(true);
       const uid = localStorage.getItem("studentUid");
       if (!uid) {
-        console.warn("No student UID found in localStorage");
         setError("You are not logged in. Please sign in to view your dashboard.");
         setLoading(false);
         return;
@@ -60,47 +70,40 @@ export default function SdHome() {
     }
   };
 
-  const formatTime12Hour = (time24) => {
-  if (!time24) return "";
-
-  const [hourStr, minuteStr] = time24.split(":");
-  let hour = parseInt(hourStr, 10);
-  const minute = minuteStr || "00";
-
-  const ampm = hour >= 12 ? "PM" : "AM";
-  hour = hour % 12 || 12; // convert 0 or 12 to 12
-
-  return `${hour}:${minute} ${ampm}`;
-};
-
-
   useEffect(() => {
     mountedRef.current = true;
     loadStudentProfile();
 
-    // Auto refresh (3 minutes)
-    const interval = setInterval(() => {
-      loadStudentProfile();
-    }, 1000 * 60 * 3);
-
+    // Auto refresh (every 3 minutes)
+    const interval = setInterval(loadStudentProfile, 1000 * 60 * 3);
     return () => {
       mountedRef.current = false;
       clearInterval(interval);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // If API stores batch ids, resolve names
+  // ✅ Enhanced batch fetch logic (with day2/time2)
   useEffect(() => {
     const fetchBatchNames = async () => {
       if (!student) return;
 
-      // single batch id in `batch`
+      // Single batch ID
       if (student.batch && typeof student.batch === "string") {
         try {
           const res = await axios.get(`${BATCH_API}/${student.batch}`);
           if (res.data?.name) {
-            setStudent((prev) => ({ ...prev, batches: [{ name: res.data.name }] }));
+            setStudent((prev) => ({
+              ...prev,
+              batches: [
+                {
+                  name: res.data.name,
+                  day: res.data.day || "",
+                  time: res.data.time || "",
+                  day2: res.data.day2 || "",
+                  time2: res.data.time2 || "",
+                },
+              ],
+            }));
           }
         } catch (err) {
           console.error("Error fetching single batch:", err);
@@ -108,32 +111,37 @@ export default function SdHome() {
         return;
       }
 
-      // array of batch IDs/objects in `batches`
+      // Multiple batches (array)
       if (Array.isArray(student.batches) && student.batches.length > 0) {
-        const batchNames = [];
+        const batchList = [];
+
         for (const b of student.batches) {
           try {
             if (typeof b === "string") {
               const res = await axios.get(`${BATCH_API}/${b}`);
-              if (res.data) {
-  setStudent((prev) => ({
-    ...prev,
-    batches: [{ 
-      name: res.data.name, 
-      time: res.data.time,
-      day: res.data.day 
-    }]
-  }));
-}
+              if (res.data?.name) {
+                batchList.push({
+                  name: res.data.name,
+                  day: res.data.day || "",
+                  time: res.data.time || "",
+                  day2: res.data.day2 || "",
+                  time2: res.data.time2 || "",
+                });
+              }
             } else if (b?.name) {
-              batchNames.push(b);
+              batchList.push({
+                ...b,
+                day2: b.day2 || "",
+                time2: b.time2 || "",
+              });
             }
           } catch (err) {
-            console.error("Error fetching batch in list:", err);
+            console.error("Error fetching batch:", err);
           }
         }
-        if (batchNames.length > 0) {
-          setStudent((prev) => ({ ...prev, batches: batchNames }));
+
+        if (batchList.length > 0) {
+          setStudent((prev) => ({ ...prev, batches: batchList }));
         }
       }
     };
@@ -141,6 +149,7 @@ export default function SdHome() {
     fetchBatchNames();
   }, [student?.batch, student?.batches]);
 
+  // Handle profile edits
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -173,45 +182,16 @@ export default function SdHome() {
     }
   };
 
-  // formatted values for display
+  // Format date
   const formattedDate = student?.registered_at
     ? new Date(student.registered_at).toLocaleString()
     : "-";
-
-  let displayBatch = "Not assigned yet";
-  if (student?.batches && Array.isArray(student.batches) && student.batches.length > 0) {
-    displayBatch = student.batches.map((b) => b.name || b).join(", ");
-  } else if (student?.batch && String(student.batch).trim() !== "") {
-    displayBatch = student.batch;
-  }
-
-  // TIME DISPLAY
-let displayTime = "";
-if (student?.batches && Array.isArray(student.batches) && student.batches.length > 0) {
-  displayTime = student.batches
-    .map((b) => formatTime12Hour(b.time || ""))
-    .join(", ");
-} else if (student?.batch_time) {
-  displayTime = formatTime12Hour(student.batch_time);
-}
-
-
-  let displayDay = "";
-  if (student?.batches && Array.isArray(student.batches) && student.batches.length > 0) {
-    displayDay = student.batches.map((b) => b.day || "").join(", ");
-  } else if (student?.batch_day) {
-    displayDay = student.batch_day;
-  }
-
 
   // Loading / Error states
   if (loading) {
     return (
       <main className="min-h-[60vh] flex items-center justify-center p-6">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-blue-100 animate-pulse mx-auto mb-4" />
-          <p className="text-gray-600">Loading your dashboard...</p>
-        </div>
+        <p className="text-gray-600">Loading your dashboard...</p>
       </main>
     );
   }
@@ -219,12 +199,12 @@ if (student?.batches && Array.isArray(student.batches) && student.batches.length
   if (error) {
     return (
       <main className="min-h-[60vh] flex items-center justify-center p-6">
-        <div className="max-w-xl text-center">
+        <div className="text-center">
           <h2 className="text-xl font-semibold text-red-600 mb-2">Error</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={loadStudentProfile}
-            className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
             Retry
           </button>
@@ -236,18 +216,16 @@ if (student?.batches && Array.isArray(student.batches) && student.batches.length
   if (!student) {
     return (
       <main className="min-h-[60vh] flex items-center justify-center p-6">
-        <div className="text-center">
-          <p className="text-gray-600">Student not found. Please login again.</p>
-        </div>
+        <p className="text-gray-600">Student not found. Please login again.</p>
       </main>
     );
   }
 
-  // Dynamic SEO meta (Helmet)
+  // SEO setup
   const pageTitle = `${student.first_name || "Student"} Dashboard | MathSense Academy`;
   const pageDesc = student.notes
     ? student.notes.slice(0, 140)
-    : `Dashboard for ${student.first_name || ""} ${student.last_name || ""} at MathSense Academy. View enrolment, batch, and profile details.`;
+    : `Dashboard for ${student.first_name || ""} ${student.last_name || ""} at MathSense Academy.`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -263,105 +241,85 @@ if (student?.batches && Array.isArray(student.batches) && student.batches.length
         <title>{pageTitle}</title>
         <meta name="description" content={pageDesc} />
         <meta name="robots" content="noindex, nofollow" />
-        {/* Note: student dashboard is typically private - default to noindex. Remove if you want indexing. */}
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
       {/* Toast */}
       {toast && (
         <div
-          role="status"
-          aria-live="polite"
           className={`fixed right-6 top-6 z-50 rounded-md px-4 py-3 shadow-md ${
-            toast.type === "success" ? "bg-green-600 text-white" : "bg-red-600 text-white"
-          }`}
+            toast.type === "success" ? "bg-green-600" : "bg-red-600"
+          } text-white`}
         >
           {toast.message}
         </div>
       )}
 
       {/* Profile Header */}
-      <section
-        aria-labelledby="profile-heading"
-        className="mb-8 bg-white rounded-xl shadow p-6 grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 items-center"
-      >
-        <div className="flex items-center gap-4">
+      <section className="mb-8 bg-white rounded-xl shadow p-6 grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 items-center">
+        <div>
           <img
-            src={
-              // student.google_photo_url ||
-              student.student_photo_path ||
-              placeholder
-            }
-            alt={`${student.first_name || "Student"} profile photo`}
+            src={student.student_photo_path || placeholder}
+            alt="Student"
             className="w-28 h-28 rounded-full border-4 border-blue-100 object-cover"
             onError={(e) => (e.target.src = placeholder)}
           />
         </div>
 
         <div>
-          <h1 id="profile-heading" className="text-2xl md:text-3xl font-bold text-gray-800">
-            {student.first_name || ""} {student.middle_name || ""} {student.last_name || ""}
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+            {student.first_name} {student.middle_name} {student.last_name}
           </h1>
 
-          <div className="mt-3 flex flex-wrap gap-4 items-center">
-            <p className="text-sm text-gray-600">
-              <strong>Student ID:</strong> {student.student_id || "-"}
-            </p>
-
-            <p className="text-sm text-gray-600">
-              <strong>Class:</strong> {student.student_class || "-"}
-            </p>
-
-            <p className="text-sm text-gray-600">
-              <strong>Email:</strong> {student.email || "-"}
-            </p>
+          <div className="mt-3 text-sm text-gray-700 space-y-1">
+            <p><strong>Student ID:</strong> {student.student_id || "-"}</p>
+            <p><strong>Class:</strong> {student.student_class || "-"}</p>
+            <p><strong>Email:</strong> {student.email || "-"}</p>
           </div>
 
-          <div className="mt-3 text-sm space-y-1">
-  
-  {/* LINE 1: Batch + Time */}
-  <div className="mt-3 space-y-2 text-sm">
+          {/* ✅ Batch + Day/Time Display */}
+          <div className="mt-4 text-sm space-y-3">
+            {student?.batches?.length > 0 ? (
+              student.batches.map((b, i) => (
+                <div key={i} className="space-y-1">
+                  <p>
+                    <span className="font-semibold text-gray-700">Batch:</span>{" "}
+                    <span className="text-blue-700 font-semibold">{b.name}</span>
+                  </p>
+                  {b.day && b.time ? (
+                    <p>
+                      <span className="font-semibold text-gray-700">Day & Time:</span>{" "}
+                      {b.day} – {formatTime12Hour(b.time)}
+                    </p>
+                  ) : null}
+                  {b.day2 && b.time2 ? (
+                    <p>
+                      <span className="font-semibold text-gray-700">2nd Day & Time:</span>{" "}
+                      {b.day2} – {formatTime12Hour(b.time2)}
+                    </p>
+                  ) : null}
+                </div>
+              ))
+            ) : (
+              <p className="italic text-gray-400">Batch not assigned yet</p>
+            )}
+          </div>
 
-  <div className="flex flex-wrap items-center gap-2">
-    <span className="font-semibold text-gray-700">Batch:</span>
-    {displayBatch === "Not assigned yet" ? (
-      <span className="italic text-gray-400">{displayBatch}</span>
-    ) : (
-      <span className="text-blue-700 font-semibold">{displayBatch}</span>
-    )}
-  </div>
-
-  <div className="flex flex-wrap items-center gap-2">
-    <span className="font-semibold text-gray-700">Batch Time:</span>
-    <span className="text-gray-700">{displayTime || "-"}</span>
-  </div>
-
-  <div className="flex flex-wrap items-center gap-2">
-    <span className="font-semibold text-gray-700">Day:</span>
-    <span className="text-gray-700">{displayDay || "-"}</span>
-  </div>
-
-</div>
-
-
-  <p
-    className={`font-semibold ${
-      student.feesPaid || student.fees_status === "Paid"
-        ? "text-green-600"
-        : "text-red-500"
-    }`}
-  >
-    💰 Fees: {student.fees_status || (student.feesPaid ? "Paid" : "Not Paid")}
-  </p>
-
-</div>
-
+          {/* Fees */}
+          <p
+            className={`mt-3 font-semibold ${
+              student.feesPaid || student.fees_status === "Paid"
+                ? "text-green-600"
+                : "text-red-500"
+            }`}
+          >
+            💰 Fees: {student.fees_status || (student.feesPaid ? "Paid" : "Not Paid")}
+          </p>
 
           <div className="mt-4">
             <button
               onClick={() => setEditing((prev) => !prev)}
-              aria-pressed={editing}
-              className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
             >
               {editing ? "Cancel" : "Edit Profile"}
             </button>
@@ -371,14 +329,8 @@ if (student?.batches && Array.isArray(student.batches) && student.batches.length
 
       {/* Editable Form */}
       {editing ? (
-        <section
-          aria-labelledby="edit-heading"
-          className="mb-8 bg-gray-50 p-6 rounded-lg shadow-inner"
-        >
-          <h2 id="edit-heading" className="text-xl font-semibold text-gray-800 mb-4">
-            Update Your Details
-          </h2>
-
+        <section className="mb-8 bg-gray-50 p-6 rounded-lg shadow-inner">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Update Your Details</h2>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -398,12 +350,12 @@ if (student?.batches && Array.isArray(student.batches) && student.batches.length
               { name: "district", label: "District" },
               { name: "state", label: "State" },
               { name: "pin", label: "PIN" },
-              { name: "school_or_college_name", label: "School / college" },
-              { name: "board_or_university_name", label: "Board / university" },
+              { name: "school_or_college_name", label: "School / College" },
+              { name: "board_or_university_name", label: "Board / University" },
               { name: "notes", label: "Notes" },
             ].map((field) => (
-              <div key={field.name} className="flex flex-col">
-                <label htmlFor={field.name} className="text-sm text-gray-600 mb-1">
+              <div key={field.name}>
+                <label htmlFor={field.name} className="text-sm text-gray-600 mb-1 block">
                   {field.label}
                 </label>
                 <input
@@ -416,7 +368,6 @@ if (student?.batches && Array.isArray(student.batches) && student.batches.length
                 />
               </div>
             ))}
-
             <div className="md:col-span-2 flex gap-3 mt-2">
               <button
                 type="submit"
@@ -425,7 +376,6 @@ if (student?.batches && Array.isArray(student.batches) && student.batches.length
               >
                 {updating ? "Saving..." : "Save changes"}
               </button>
-
               <button
                 type="button"
                 onClick={() => {
@@ -440,11 +390,8 @@ if (student?.batches && Array.isArray(student.batches) && student.batches.length
           </form>
         </section>
       ) : (
-        <section aria-labelledby="details-heading" className="mb-8">
-          <h2 id="details-heading" className="text-xl font-semibold text-gray-800 mb-4">
-            Your Details
-          </h2>
-
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               { label: "First name", value: student.first_name },
@@ -461,7 +408,6 @@ if (student?.batches && Array.isArray(student.batches) && student.batches.length
               { label: "School / College", value: student.school_or_college_name },
               { label: "Board / University", value: student.board_or_university_name },
               { label: "Notes", value: student.notes },
-              { label: "Batch", value: displayBatch },
               { label: "Registered at", value: formattedDate },
             ].map((item, idx) => (
               <div key={idx} className="p-4 border rounded-lg bg-white shadow-sm">

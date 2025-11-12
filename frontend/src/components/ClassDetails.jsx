@@ -184,7 +184,7 @@ export default function ClassDetails() {
           </div>
           <div className="bg-white rounded-xl p-3 shadow-sm text-center w-44">
             <div className="text-xs text-gray-500">Avg. Batch Size</div>
-            <div className="text-xl font-bold text-[#875714] mt-1">10–12</div>
+            <div className="text-xl font-bold text-[#875714] mt-1">Less Than 25</div>
             <div className="text-xs text-gray-400">Small groups for focus</div>
           </div>
         </div>
@@ -295,7 +295,6 @@ export default function ClassDetails() {
                       <div>
                         <div className="font-semibold text-gray-800">{cls.instructorName || "Experienced Math Mentor"}</div>
                         <div className="text-sm text-gray-600">{cls.instructorBio || "PhD with 15+ years of teaching experience in school & competitive exams."}</div>
-                        <div className="mt-2 text-xs text-gray-500">Office hours: {cls.officeHours || "Sat-Sun 8am–9 PM"}</div>
                       </div>
                     </div>
                   </section>
