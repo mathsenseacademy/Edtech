@@ -120,12 +120,12 @@ const Header = () => {
                   <span>+91 9147718572</span>
                 </a>
                 <a
-                  href="mailto:mathsenseacademy@gmail.com"
+                  href="mailto:info@mathsenseacademy.com"
                   className="flex items-center gap-2 hover:text-yellow-300 transition"
                   aria-label="Email MathSense Academy"
                 >
                   <Mail size={14} aria-hidden="true" /> 
-                  <span>mathsenseacademy@gmail.com</span>
+                  <span>info@mathsenseacademy.com</span>
                 </a>
               </div>
               <div className="flex items-center gap-4">
@@ -399,12 +399,12 @@ const Header = () => {
                     <span>+91 9147718572</span>
                   </a>
                   <a 
-                    href="mailto:mathsenseacademy@gmail.com" 
+                    href="mailto:info@mathsenseacademy.com" 
                     className="flex items-center gap-3 text-sm font-medium mt-2 hover:text-rose-600 transition"
-                    aria-label="Email mathsenseacademy@gmail.com"
+                    aria-label="Email info@mathsenseacademy.com"
                   >
                     <Mail size={16} aria-hidden="true" />
-                    <span>mathsenseacademy@gmail.com</span>
+                    <span>info@mathsenseacademy.com</span>
                   </a>
 
                   <div className="flex items-center gap-3 mt-3">

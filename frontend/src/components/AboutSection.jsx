@@ -258,7 +258,7 @@ export default function AboutSection() {
 
             <address className="not-italic space-y-3 text-center text-blue-800">
               <p>
-                Email: <a href="mailto:support@mathsenseacademy.com" className="font-semibold hover:text-teal-600 transition">mathsenseacademy@gmail.com</a>
+                Email: <a href="mailto:support@mathsenseacademy.com" className="font-semibold hover:text-teal-600 transition">info@mathsenseacademy.com</a>
               </p>
               <p>
                 Phone: <a href="tel:+919876543210" className="font-semibold hover:text-teal-600 transition">+91 91477 18572</a>
