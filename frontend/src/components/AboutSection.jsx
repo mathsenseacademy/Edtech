@@ -121,16 +121,16 @@ export default function AboutSection() {
         <meta name="geo.placename" content="Kolkata" />
       </Helmet>
 
-      <article className="w-full bg-gradient-to-br from-sky-50 via-orange-50 to-rose-50 px-6 py-20 font-sans">
+      <article className="w-full bg-gradient-to-br from-sky-50 via-orange-50 to-teal-50 px-6 py-20 font-sans">
         {/* Breadcrumb Navigation */}
         <nav aria-label="Breadcrumb" className="max-w-7xl mx-auto mb-8">
           <ol className="flex items-center gap-2 text-sm text-blue-800">
             <li>
-              <a href="/" className="hover:text-rose-600 transition">Home</a>
+              <a href="/" className="hover:text-teal-600 transition">Home</a>
             </li>
             <li aria-hidden="true">/</li>
             <li>
-              <span className="font-semibold text-rose-600" aria-current="page">About</span>
+              <span className="font-semibold text-teal-600" aria-current="page">About</span>
             </li>
           </ol>
         </nav>
@@ -142,7 +142,7 @@ export default function AboutSection() {
               {/* TEXT */}
               <div className="w-full lg:w-1/2">
                 <h1 id="about-heading" className="text-4xl font-bold text-blue-900 mb-6 leading-tight">
-                  About <span className="text-rose-600">MathSense Academy</span>
+                  About <span className="text-teal-600">MathSense Academy</span>
                 </h1>
 
                 <p className="leading-relaxed text-blue-800 mb-4">
@@ -258,13 +258,13 @@ export default function AboutSection() {
 
             <address className="not-italic space-y-3 text-center text-blue-800">
               <p>
-                Email: <a href="mailto:support@mathsenseacademy.com" className="font-semibold hover:text-rose-600 transition">support@mathsenseacademy.com</a>
+                Email: <a href="mailto:support@mathsenseacademy.com" className="font-semibold hover:text-teal-600 transition">mathsenseacademy@gmail.com</a>
               </p>
               <p>
-                Phone: <a href="tel:+919876543210" className="font-semibold hover:text-rose-600 transition">+91 98765 43210</a>
+                Phone: <a href="tel:+919876543210" className="font-semibold hover:text-teal-600 transition">+91 91477 18572</a>
               </p>
               <p>
-                Website: <a href="https://www.mathsenseacademy.com" className="font-semibold hover:text-rose-600 transition">www.mathsenseacademy.com</a>
+                Website: <a href="https://www.mathsenseacademy.com" className="font-semibold hover:text-teal-600 transition">www.mathsenseacademy.com</a>
               </p>
               <p className="font-semibold">Location: Kolkata, West Bengal, India</p>
             </address>

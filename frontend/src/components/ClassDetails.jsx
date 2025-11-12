@@ -45,11 +45,11 @@ export default function ClassDetails() {
   const staticFAQs = [
     {
       q: "What is the class size?",
-      a: "Typical batch size is 15–20 students. We keep groups small to ensure personalised attention."
+      a: "Typical batch size is less than 25 students. We keep groups small to ensure personalised attention."
     },
     {
       q: "Can my child switch batches if timing clashes?",
-      a: "Yes — we allow switching (subject to availability). Contact admin via Whatsapp or call."
+      a: "Yes — we allow switching (subject to availability). Contact us via Whatsapp or call."
     },
     {
       q: "Will I get recordings?",
@@ -57,7 +57,7 @@ export default function ClassDetails() {
     },
     {
       q: "What is the pricing?",
-      a: "There is different pricing for various courses in monthly structure. Contact admin for current offers."
+      a: "There is different pricing for various courses in monthly structure. Contact us for current offers."
     },
     {
       q: "How experienced are the instructors?",

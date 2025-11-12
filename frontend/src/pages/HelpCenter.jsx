@@ -31,9 +31,9 @@ export default function HelpCenter() {
           </p>
 
           <ul className="space-y-3 text-blue-900">
-            <li><strong>Email:</strong> support@mathsenseacademy.com</li>
-            <li><strong>Phone:</strong> +91 98765 43210</li>
-            <li><strong>Working Hours:</strong> Mon to Sat, 10 AM to 7 PM</li>
+            <li><strong>Email:</strong> mathsenseacademy@gmail.com</li>
+            <li><strong>Phone:</strong> +91 91477 18572</li>
+            <li><strong>Working Hours:</strong> Mon to Sat, 9 AM to 9 PM</li>
           </ul>
         </section>
 
