@@ -32,6 +32,8 @@ import BlogEditor from "./pages/BlogEditor";
 
 import useLocoScroll from "./hooks/useLocoScroll";
 
+import './styles/editor.css';
+
 function StudentLayout() {
   return (
     <>
