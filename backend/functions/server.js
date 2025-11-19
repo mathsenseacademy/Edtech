@@ -25,12 +25,12 @@ app.use(
 import studentRoutes from "./routes/StudentRoutes.js";
 import classRoutes from "./routes/ClassRoutes.js";
 import batchRoutes from "./routes/BatchRoutes.js";
-import BlogRoutes from "./routes/BlogRoutes.js";
+import blogRoutes from "./routes/BlogRoutes.js";
 
 app.use("/api/student", studentRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/batches", batchRoutes);
-app.use("/api/blogs", BlogRoutes);
+app.use("/api/blogs", blogRoutes);
 
 // ✅ Health route
 app.get("/health", (req, res) => {

@@ -5,22 +5,71 @@ import { db } from "../firebase/firebaseAdmin.js";
 
 const blogsCollection = db.collection("blogs");
 
+// ----------------------------------------------
+// Helper: Create a URL-friendly slug from text
+// ----------------------------------------------
+function slugify(text) {
+  if (!text) return "";
+  return text
+    .toString()
+    .normalize("NFKD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// ----------------------------------------------
+// Helper: Ensure slug uniqueness
+// ----------------------------------------------
+async function ensureUniqueSlug(baseSlug, excludeId = null) {
+  let candidate = baseSlug || "blog";
+  let suffix = "";
+
+  while (true) {
+    const testSlug = suffix ? `${candidate}-${suffix}` : candidate;
+
+    const snapshot = await blogsCollection
+      .where("slug", "==", testSlug)
+      .get();
+
+    const docs = snapshot.docs.filter(d =>
+      excludeId ? d.id !== excludeId : true
+    );
+
+    if (docs.length === 0) return testSlug;
+
+    // Append timestamp-based collision suffix
+    suffix = Date.now().toString(36);
+  }
+}
+
 export const BlogModel = {
-  // ✅ Create new blog
+  // =========================================================
+  // CREATE
+  // =========================================================
   async create(blogData) {
     try {
       const docRef = blogsCollection.doc();
+
+      const titleSource =
+        blogData.title || blogData.heading || blogData.slug || "blog";
+
+      const baseSlug = slugify(titleSource);
+      const uniqueSlug = await ensureUniqueSlug(baseSlug);
+
       const newBlog = {
         ...blogData,
-        // Ensure blog_image exists as empty string if not provided
+        slug: uniqueSlug,
         blog_image: blogData.blog_image || "",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
 
       await docRef.set(newBlog);
-
       const createdDoc = await docRef.get();
+
       return { id: createdDoc.id, ...createdDoc.data() };
     } catch (error) {
       console.error("🔥 Error creating blog:", error);
@@ -28,43 +77,70 @@ export const BlogModel = {
     }
   },
 
-  // ✅ Get all blogs (newest first)
+  // =========================================================
+  // GET ALL
+  // =========================================================
   async getAll() {
     try {
-      const snapshot = await blogsCollection.orderBy("created_at", "desc").get();
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const snapshot = await blogsCollection
+        .orderBy("created_at", "desc")
+        .get();
+
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
     } catch (error) {
       console.error("🔥 Error getting all blogs:", error);
       throw error;
     }
   },
 
-  // ✅ Get single blog by ID
+  // =========================================================
+  // GET BY ID
+  // =========================================================
   async getById(id) {
     try {
-      const docSnap = await blogsCollection.doc(id).get();
-      return docSnap.exists ? { id: docSnap.id, ...docSnap.data() } : null;
+      const snap = await blogsCollection.doc(id).get();
+      return snap.exists ? { id: snap.id, ...snap.data() } : null;
     } catch (error) {
       console.error("🔥 Error getting blog by ID:", error);
       throw error;
     }
   },
 
-  // ✅ Update blog
+  // =========================================================
+  // UPDATE
+  // =========================================================
   async update(id, updateData) {
     try {
+      const docRef = blogsCollection.doc(id);
+      const existingSnap = await docRef.get();
+
+      if (!existingSnap.exists) {
+        throw new Error(`Blog with id ${id} not found`);
+      }
+
+      const existing = existingSnap.data();
       const dataToUpdate = {
         ...updateData,
         updated_at: new Date().toISOString(),
       };
 
-      // Ensure we do not accidentally remove blog_image if not provided
-      if (!("blog_image" in dataToUpdate)) {
+      // Only regenerate slug if title changes
+      if (updateData.title && updateData.title !== existing.title) {
+        const baseSlug = slugify(updateData.title);
+        dataToUpdate.slug = await ensureUniqueSlug(baseSlug, id);
+      }
+
+      // Do NOT accidentally wipe blog_image if not included
+      if (!("blog_image" in updateData)) {
         delete dataToUpdate.blog_image;
       }
 
-      await blogsCollection.doc(id).update(dataToUpdate);
-      const updatedDoc = await blogsCollection.doc(id).get();
+      await docRef.update(dataToUpdate);
+      const updatedDoc = await docRef.get();
+
       return { id, ...updatedDoc.data() };
     } catch (error) {
       console.error("🔥 Error updating blog:", error);
@@ -72,7 +148,9 @@ export const BlogModel = {
     }
   },
 
-  // ✅ Delete blog (hard delete)
+  // =========================================================
+  // DELETE
+  // =========================================================
   async delete(id) {
     try {
       await blogsCollection.doc(id).delete();
@@ -83,31 +161,36 @@ export const BlogModel = {
     }
   },
 
-  // ✅ Find by criteria (Firestore-style query)
+  // =========================================================
+  // QUERY (FIND MANY)
+  // =========================================================
   async findMany(criteria = {}) {
     try {
       let query = blogsCollection;
+
       Object.keys(criteria).forEach(field => {
         if (criteria[field] !== undefined && criteria[field] !== null) {
           query = query.where(field, "==", criteria[field]);
         }
       });
+
       const snapshot = await query.get();
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
     } catch (error) {
       console.error("🔥 Error in findMany:", error);
       throw error;
     }
   },
 
-  // ✅ Exists check
+  // =========================================================
+  // EXISTS
+  // =========================================================
   async exists(criteria) {
-    try {
-      const result = await this.findMany(criteria);
-      return result.length > 0;
-    } catch (error) {
-      console.error("🔥 Error in exists check:", error);
-      throw error;
-    }
+    const result = await this.findMany(criteria);
+    return result.length > 0;
   },
 };
