@@ -40,6 +40,6 @@ export async function getCurrentUser() {
   });
 }
 
-export async function getUserRole() {
+export function getUserRole() {
   return localStorage.getItem("userType"); // "admin" / "student"
 }
