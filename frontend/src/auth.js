@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase/firebaseConfig";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 
 // Student / Guardian registration
@@ -27,4 +27,19 @@ export async function loginUser(email, password) {
   const role = snap.exists() ? snap.data().role : null;
 
   return { uid, role, user: cred.user };
+}
+
+
+export async function getCurrentUser() {
+  return new Promise((resolve) => {
+    const auth = getAuth();
+    const unsub = onAuthStateChanged(auth, (user) => {
+      unsub();
+      resolve(user);
+    });
+  });
+}
+
+export function getUserRole() {
+  return localStorage.getItem("userType"); // "admin" / "student"
 }

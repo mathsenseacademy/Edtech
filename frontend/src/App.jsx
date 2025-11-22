@@ -32,6 +32,8 @@ import BlogEditor from "./pages/BlogEditor";
 
 import useLocoScroll from "./hooks/useLocoScroll";
 
+import "./styles/editor.css";
+
 function StudentLayout() {
   return (
     <>
@@ -99,7 +101,9 @@ function App() {
               {/* 🏠 Home */}
               <Route
                 path="/"
-                element={<Home sentinelRef={sentinelRef} redirectToLogin={true} />}
+                element={
+                  <Home sentinelRef={sentinelRef} redirectToLogin={true} />
+                }
               />
               <Route path="/about" element={<About />} />
               <Route path="/helpCenter" element={<HelpCenter />} />
@@ -122,7 +126,10 @@ function App() {
               {/* 🧠 Programs / Classes */}
               <Route path="/classs" element={<ClassSection />} />
               <Route path="/class/:classNumber" element={<ClassDetails />} />
-              <Route path="/class/:classNumber/:courseId" element={<CourseDetail />} />
+              <Route
+                path="/class/:classNumber/:courseId"
+                element={<CourseDetail />}
+              />
 
               {/* 🧑‍💼 Admin routes */}
               <Route
@@ -133,14 +140,46 @@ function App() {
                   </ProtectedAdminRoute>
                 }
               />
-              <Route path="/admin/student/:uid" element={<AdminStudentProfile />} />
+              <Route
+                path="/admin/student/:uid"
+                element={<AdminStudentProfile />}
+              />
               <Route path="/admin/classes" element={<AdminClasses />} />
               <Route path="/admin/batches" element={<AdminBatches />} />
-              <Route path="/admin/blog/new" element={<BlogEditor />} />
 
-              {/* 📰 Blogs */}
+
+              {/* 📰 Blogs (Public) */}
               <Route path="/blogs" element={<BlogList />} />
+              <Route path="/blogs/slug/:slug" element={<BlogPost />} />
               <Route path="/blogs/:id" element={<BlogPost />} />
+
+              {/* 📝 Admin Blog Management */}
+              <Route
+                path="/admin/blogs"
+                element={
+                  <ProtectedAdminRoute>
+                    <BlogList isAdmin={true} />
+                  </ProtectedAdminRoute>
+                }
+              />
+
+              <Route
+                path="/admin/blog/new"
+                element={
+                  <ProtectedAdminRoute>
+                    <BlogEditor mode="create" />
+                  </ProtectedAdminRoute>
+                }
+              />
+
+              <Route
+                path="/admin/blog/:id/edit"
+                element={
+                  <ProtectedAdminRoute>
+                    <BlogEditor mode="edit" />
+                  </ProtectedAdminRoute>
+                }
+              />
 
               {/* 🚧 Coming soon */}
               <Route path="/coming-soon" element={<ComingSoonCourses />} />

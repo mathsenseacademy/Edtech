@@ -95,7 +95,7 @@ export const BlogModel = {
       const snapshot = await query.get();
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
-      console.error("🔥 Error in findMany:", error);
+      console.error("Error in findMany:", error);
       throw error;
     }
   },

@@ -1,0 +1,99 @@
+/* Editor.js base styles */
+.codex-editor__redactor {
+  padding-bottom: 100px !important;
+}
+
+.ce-block__content {
+  max-width: 100%;
+}
+
+.ce-toolbar__actions {
+   /* z-index: 50 !important; */
+  right: 100%;
+}
+
+/* Custom styling for editor */
+.codex-editor {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  min-height: 400px;
+  background: white;
+}
+
+.codex-editor__redactor {
+  padding: 1rem;
+}
+
+/* PDF viewer styling */
+.ce-attaches__file-icon {
+  display: none;
+}
+
+.ce-attaches__title {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.ce-attaches__size {
+  color: #6b7280;
+}
+
+/* Image styling */
+.image-tool__image {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.image-tool__caption {
+  margin-top: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* Code block styling */
+.ce-code__textarea {
+  background: #1f2937 !important;
+  color: #f9fafb !important;
+  font-family: 'Monaco', 'Courier New', monospace;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* Quote styling */
+.cdx-quote {
+  border-left: 4px solid #2563eb;
+  padding-left: 1rem;
+  font-style: italic;
+  color: #4b5563;
+}
+
+/* Warning box styling */
+.cdx-warning {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+/* Table styling */
+.tc-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.tc-table__cell {
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem;
+}
+
+/* Checklist styling */
+.cdx-checklist__item-checkbox {
+  margin-right: 0.5rem;
+}
+
+.cdx-checklist__item--checked .cdx-checklist__item-text {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
