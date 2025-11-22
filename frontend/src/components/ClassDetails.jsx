@@ -229,7 +229,7 @@ export default function ClassDetails() {
                         Enroll Now
                       </button>
                       <button
-                        onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}
+                        onClick={() => document.querySelector("footer")?.scrollIntoView({ behavior: "smooth" })}
                         className="px-4 py-2 rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
                       >
                        <a href="tel:+919147718572"> Contact Us </a>

@@ -214,17 +214,17 @@ export default function LoginStudent() {
         )}
 
         {/* Divider */}
-        <div className="relative mb-6">
+        {/* <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300"></div>
           </div>
           <div className="relative flex justify-center text-sm">
             <span className="px-2 bg-white text-gray-500">Or continue with email</span>
           </div>
-        </div>
+        </div> */}
 
         {/* Email/Password Auth Form */}
-        <form onSubmit={handleEmailPasswordAuth} className="space-y-4">
+        {/* <form onSubmit={handleEmailPasswordAuth} className="space-y-4">
           <input
             type="email"
             placeholder="Email"
@@ -232,27 +232,27 @@ export default function LoginStudent() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-          />
+          /> */}
 
-          <input
+          {/* <input
             type="password"
             placeholder="Password"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-          />
+          /> */}
 
-          <button
+          {/* <button
             type="submit"
             disabled={loading}
             className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
           >
             {loading ? "Please wait..." : isNewUser ? "Sign Up with Email" : "Login with Email"}
           </button>
-        </form>
+        </form> */}
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        {/* <p className="mt-6 text-center text-sm text-gray-600">
           {isNewUser ? "Already have an account?" : "New here?"}{" "}
           <span
             onClick={() => setIsNewUser(!isNewUser)}
@@ -260,7 +260,7 @@ export default function LoginStudent() {
           >
             {isNewUser ? "Login" : "Sign Up"}
           </span>
-        </p>
+        </p> */}
 
         {/* Info Box */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -271,7 +271,7 @@ export default function LoginStudent() {
             <div>
               <h4 className="text-sm font-medium text-blue-800 mb-1">How it works</h4>
               <p className="text-xs text-blue-700">
-                Login with your Google account or email. New students will be redirected to complete registration. Existing students will go directly to their dashboard.
+                Login with your Google account. New students will be redirected to complete registration. Existing students will go directly to their dashboard.
               </p>
             </div>
           </div>

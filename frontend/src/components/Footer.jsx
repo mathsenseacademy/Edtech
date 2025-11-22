@@ -8,7 +8,7 @@ import logo from "../assets/logoWith_Name.svg";
 
 export default function Footer() {
   return (
-    <footer className="font-poppins text-[#1a1a1a] bg-gradient-to-r bg-gray-800">
+    <footer data-scroll-section className="font-poppins text-[#1a1a1a] bg-gradient-to-r bg-gray-800">
       {/* ── Brand Collabs ── */}
       <div className="flex flex-wrap justify-center gap-8 px-6 pt-6">
         {[brand1, brand2, brand3, brand4].map((src, i) => (
