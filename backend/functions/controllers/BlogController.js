@@ -1,6 +1,6 @@
 // functions/controllers/blogController.js
 import { BlogModel } from "../models/BlogModel.js";
-import { db } from "../config/firebase.js"; // ✅ ensure db is imported
+import { db } from "../firebase/firebaseAdmin.js";
 
 export const BlogController = {
   // Create blog
