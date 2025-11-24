@@ -94,7 +94,7 @@ const BlogEditorPage = () => {
 
     try {
       const blogData = {
-        id: docRef.id,
+        // id: docRef.id,
         title,
         slug: generateSlug(title),
         content,
@@ -120,7 +120,7 @@ const BlogEditorPage = () => {
       const savedBlog = response.data;
 
       alert(id ? 'Blog updated successfully!' : 'Blog created successfully!');
-      navigate(`/blogs/${savedBlog.slug}`);
+      navigate(`/blogs/${savedBlog.id}`);
     } catch (err) {
       console.error('Save error:', err);
       alert('Failed to save blog.');

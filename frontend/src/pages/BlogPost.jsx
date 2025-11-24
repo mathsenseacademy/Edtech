@@ -198,8 +198,8 @@ const BlogPostPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-10">
         <div
           className="inline-flex items-center gap-2 text-slate-600 mb-8 font-medium cursor-pointer"
           onClick={() => navigate("/blogs")}
@@ -209,7 +209,7 @@ const BlogPostPage = () => {
         </div>
 
         {/* MAIN CARD */}
-        <article className="bg-white rounded-2xl shadow-lg border border-slate-200/60 overflow-hidden mb-8">
+        <article className="bg-gradient-to-br from-[#fefefe] via-[#f4f5f7] to-[#c0d0ed] rounded-2xl shadow-lg border border-slate-200/60 overflow-hidden mb-8">
           {blog.blog_image && (
             <div className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[28rem] overflow-hidden">
               <img
@@ -229,7 +229,7 @@ const BlogPostPage = () => {
 
               {role === "admin" && (
                 <button
-                  onClick={() => navigate(`/blogs/edit/${blog.id}`)}
+                  onClick={() => navigate(`admin/blog/edit/${blog.id}`)}
                   className="self-start bg-blue-900 hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 transition-colors duration-200 shadow-sm hover:shadow-md font-medium text-sm"
                 >
                   <Edit size={16} />
