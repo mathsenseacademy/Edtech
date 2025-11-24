@@ -1,7 +1,6 @@
+// functions/server.js
 import express from "express";
 import cors from "cors";
-import { StudentModel } from "./models/StudentModel.js";
-import { db } from "./firebase/firebaseAdmin.js";
 
 const app = express();
 app.use(express.json({ limit: "10mb" }));
