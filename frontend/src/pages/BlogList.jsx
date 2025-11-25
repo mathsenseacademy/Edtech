@@ -20,7 +20,12 @@ const BlogListPage = () => {
   const loadBlogs = async () => {
     setLoading(true);
     try {
-      const params = filter !== "all" ? `?status=${filter}` : "";
+      let params = "";
+      if (role === "admin") {
+        params = filter !== "all" ? `?status=${filter}` : "";
+      } else {
+        params = "?status=published";
+      }
       const response = await api.get(`/api/blogs${params}`);
 
       setBlogs(response.data);
@@ -81,7 +86,8 @@ const BlogListPage = () => {
               />
             </div>
 
-            <select
+            {role === "admin" && (
+              <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -90,6 +96,7 @@ const BlogListPage = () => {
               <option value="published">Published</option>
               <option value="draft">Drafts</option>
             </select>
+            )}
 
             {role === "admin" && (
               <button

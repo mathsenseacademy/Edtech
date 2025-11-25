@@ -4,6 +4,7 @@ import {
   Calendar,
   Edit,
   ArrowLeft,
+  Trash2,
   MessageCircle,
   Send,
 } from "lucide-react";
@@ -18,7 +19,6 @@ const BlogPostPage = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const role = getUserRole();
-
 
   useEffect(() => {
     if (!id) return;
@@ -49,6 +49,23 @@ const BlogPostPage = () => {
       day: "numeric",
     });
   };
+
+  const handleDelete = async (blogId) => {
+      try {
+        const confirmDelete = window.confirm(
+          "Are you sure you want to delete this blog?"
+        );
+        if (!confirmDelete) return;
+
+        await api.delete(`/api/blogs/${blogId}`);
+
+        alert("Blog deleted successfully!");
+        navigate("/blogs"); // Reload list page
+      } catch (err) {
+        console.error("DELETE ERROR:", err);
+        alert("Failed to delete blog");
+      }
+    };
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
@@ -82,10 +99,7 @@ const BlogPostPage = () => {
             6: "text-base font-semibold mt-3 mb-2 text-slate-800",
           };
           return (
-            <HeadingTag
-              key={index}
-              className={headerStyles[block.data.level]}
-            >
+            <HeadingTag key={index} className={headerStyles[block.data.level]}>
               {block.data.text}
             </HeadingTag>
           );
@@ -93,7 +107,10 @@ const BlogPostPage = () => {
 
         case "paragraph":
           return (
-            <p key={index} className="text-slate-700 text-lg leading-relaxed mb-5">
+            <p
+              key={index}
+              className="text-slate-700 text-lg leading-relaxed mb-5"
+            >
               {block.data.text}
             </p>
           );
@@ -109,7 +126,9 @@ const BlogPostPage = () => {
               className={`${listClass} list-inside text-slate-700 text-lg mb-5 space-y-2 ml-4`}
             >
               {block.data.items.map((item, i) => (
-                <li key={i} className="leading-relaxed">{item}</li>
+                <li key={i} className="leading-relaxed">
+                  {item}
+                </li>
               ))}
             </ListTag>
           );
@@ -228,20 +247,31 @@ const BlogPostPage = () => {
               </h1>
 
               {role === "admin" && (
-                <button
-                  onClick={() => navigate(`admin/blog/edit/${blog.id}`)}
-                  className="self-start bg-blue-900 hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 transition-colors duration-200 shadow-sm hover:shadow-md font-medium text-sm"
-                >
-                  <Edit size={16} />
-                  Edit
-                </button>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
+                  <button
+                    onClick={() => navigate(`/admin/blog/edit/${blog.id}`)}
+                    className="self-start bg-blue-900 hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 transition-colors duration-200 shadow-sm hover:shadow-md font-medium text-sm"
+                  >
+                    <Edit size={16} />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(blog.id)}
+                    className="self-start bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 transition-colors duration-200 shadow-sm hover:shadow-md font-medium text-sm"
+                  >
+                    <Trash2 size={16} />
+                    Delete
+                  </button>
+                </div>
               )}
             </div>
 
             <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-8 pb-6 border-b border-slate-200">
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <Calendar size={18} className="text-slate-400" />
-                <span className="font-medium">{formatDate(blog.created_at)}</span>
+                <span className="font-medium">
+                  {formatDate(blog.created_at)}
+                </span>
               </div>
             </div>
 

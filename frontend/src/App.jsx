@@ -173,7 +173,7 @@ function App() {
               />
 
               <Route
-                path="/admin/blog/:id"
+                path="/admin/blog/edit/:id"
                 element={
                   <ProtectedAdminRoute>
                     <BlogEditor mode="edit" />

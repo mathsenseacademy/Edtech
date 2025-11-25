@@ -1,4 +1,8 @@
 import { BlogModel } from "../models/BlogModel.js";
+import admin from "firebase-admin";
+
+const db = admin.firestore();
+const bucket = admin.storage().bucket();
 
 export const BlogController = {
   // Create blog
@@ -158,17 +162,75 @@ export const BlogController = {
   // Delete blog
   async remove(req, res) {
     try {
-      const { id } = req.params;
-      const success = await BlogModel.delete(id);
+      const blogId = req.params.id;
 
-      if (success) {
-        return res.status(200).json({ message: "Blog deleted" });
+      const blogRef = db.collection("blogs").doc(blogId);
+      const blogSnap = await blogRef.get();
+
+      if (!blogSnap.exists) {
+        return res.status(404).json({ error: "Blog not found" });
       }
 
-      return res.status(404).json({ error: "Blog not found" });
-    } catch (error) {
-      console.error("🔥 Error deleting blog:", error);
-      return res.status(500).json({ error: "Internal Server Error" });
+      const blog = blogSnap.data();
+
+      // -------------------------------------------
+      // Collect all storage paths to delete
+      // -------------------------------------------
+      const pathsToDelete = [];
+
+      // 1. Blog cover image
+      // if (blog.blog_image) {
+      //   const match = decodeURIComponent(blog.blog_image).match(/o\/(.+?)\?/);
+      //   if (match && match[1]) pathsToDelete.push(match[1]);
+      // }
+      const url = decodeURIComponent(blog.blog_image);
+      const start = url.indexOf("/o/") + 3;
+      const end = url.indexOf("?");
+
+      if (start > 2 && end > start) {
+        const extractedPath = url.substring(start, end);
+        pathsToDelete.push(extractedPath);
+      }
+
+      // 2. EditorJS block files
+      if (blog.content?.blocks) {
+        blog.content.blocks.forEach((block) => {
+          if (block.data?.file?.path) {
+            pathsToDelete.push(block.data.file.path);
+          }
+        });
+      }
+
+      // Remove duplicates
+      const uniquePaths = [...new Set(pathsToDelete)];
+
+      // -------------------------------------------
+      // Delete files from Firebase Storage
+      // -------------------------------------------
+      await Promise.all(
+        uniquePaths.map(async (path) => {
+          try {
+            await bucket.file(path).delete();
+            console.log("Deleted:", path);
+          } catch (err) {
+            console.log("Skip missing file:", path);
+          }
+        })
+      );
+
+      // -------------------------------------------
+      // Delete the Firestore document
+      // -------------------------------------------
+      await blogRef.delete();
+
+      return res.json({
+        success: true,
+        deletedFiles: uniquePaths,
+        message: "Blog and its media deleted successfully.",
+      });
+    } catch (err) {
+      console.error("DELETE ERROR:", err);
+      return res.status(500).json({ error: err.message });
     }
   },
 };
