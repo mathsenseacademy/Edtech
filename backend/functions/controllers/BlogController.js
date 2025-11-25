@@ -1,6 +1,5 @@
-// functions/controllers/blogController.js
+// /controllers/blogController.js
 import { BlogModel } from "../models/BlogModel.js";
-import { db } from "../firebase/firebaseAdmin.js";
 
 export const BlogController = {
   // Create blog
