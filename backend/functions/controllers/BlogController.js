@@ -1,4 +1,3 @@
-// /controllers/blogController.js
 import { BlogModel } from "../models/BlogModel.js";
 
 export const BlogController = {
@@ -22,7 +21,7 @@ export const BlogController = {
           .json({ error: "Title and content are required" });
       }
 
-      // ✅ Generate slug
+      // Generate slug
       const generateSlug = (title) =>
         title
           .toLowerCase()
@@ -35,7 +34,7 @@ export const BlogController = {
 
       const blogData = {
         title,
-        slug, // ✅ STORE SLUG
+        slug,
         content,
         blog_image: blog_image || "",
         files: files || [],
@@ -43,7 +42,7 @@ export const BlogController = {
         status: status || "draft",
         meta_description: meta_description || "",
         category: category || "",
-        created_at: new Date(), // ✅ ensure ordering works
+        created_at: new Date(),
       };
 
       const blog = await BlogModel.create(blogData);
@@ -54,23 +53,20 @@ export const BlogController = {
     }
   },
 
-  // Get all blogs
+  // ✅ FIXED: Get all blogs (Using BlogModel instead of direct db access)
   async getAll(req, res) {
     try {
-      const status = req.query.status;
+      const { status } = req.query;
+      let blogs;
 
-      let query = db.collection("blogs");
-
+      // If filtering by status (draft/published)
       if (status && (status === "draft" || status === "published")) {
-        query = query.where("status", "==", status);
+        // Use the findMany method inside BlogModel
+        blogs = await BlogModel.findMany({ status });
+      } else {
+        // Use the getAll method inside BlogModel
+        blogs = await BlogModel.getAll();
       }
-
-      const snapshot = await query.orderBy("created_at", "desc").get();
-
-      const blogs = snapshot.docs.map(doc => ({
-        id: doc.id, // Firebase doc ID
-        ...doc.data(),
-      }));
 
       res.json(blogs);
     } catch (err) {
@@ -81,7 +77,7 @@ export const BlogController = {
 
   // Get single blog by ID
   async getById(req, res) {
-    console.log ("Getting blog by ID:", req.params.id);
+    console.log("Getting blog by ID:", req.params.id);
     try {
       const { id } = req.params;
       const blog = await BlogModel.getById(id);
@@ -95,24 +91,20 @@ export const BlogController = {
     }
   },
 
-  // Get a blog by slug
+  // ✅ FIXED: Get a blog by slug (Using BlogModel)
   async getBySlug(req, res) {
     console.log("Getting blog by slug:", req.params.slug);
     try {
       const { slug } = req.params;
 
-      const snapshot = await db
-        .collection("blogs")
-        .where("slug", "==", slug)
-        .limit(1)
-        .get();
+      // Use findMany because slugs are stored as fields
+      const results = await BlogModel.findMany({ slug });
 
-      if (snapshot.empty) {
+      if (results.length === 0) {
         return res.status(404).json({ error: "Blog not found" });
       }
 
-      const doc = snapshot.docs[0];
-      res.json({ id: doc.id, ...doc.data() });
+      res.json(results[0]);
     } catch (err) {
       console.error("🔥 Error fetching blog by slug:", err);
       res.status(500).json({ error: err.message });
