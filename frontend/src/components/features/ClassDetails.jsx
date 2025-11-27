@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import fallbackImg from "../assets/img10.png";
+import fallbackImg from "../../assets/img10.png";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { FaBookOpen, FaClock, FaUserTie, FaStar } from "react-icons/fa";
-import mentor from "../assets/teacher.png";
+import mentor from "../../assets/teacher.png";
 
 const API_URL = "https://api-bqojuh5xfq-uc.a.run.app/api/classes";
 

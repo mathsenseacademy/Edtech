@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUsers, FaFileAlt, FaUserCircle } from "react-icons/fa";
-import logo from "../assets/logo.png";
-import ProfileModal from "../components/ProfileModal";
+import logo from "../../assets/logo.jpg";
+import ProfileModal from "../../components/common/ProfileModal";
 
 const AdminHeader = () => {
   const navigate = useNavigate();

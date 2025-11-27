@@ -4,9 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Save, ArrowLeft, X, Image } from 'lucide-react';
 
-import EditorJsFirebase from '../components/EditorJSFirebase';
-import api from '../api/api'; 
-import { uploadToFirebase, generateSlug } from '../utils/firebaseStorage';
+import EditorJsFirebase from '../../components/features/EditorJSFirebase';
+import api from '../../api/api'; 
+import { uploadToFirebase, generateSlug } from '../../utils/firebaseStorage';
 
 const BlogEditorPage = () => {
   const { id } = useParams(); // undefined for new blog

@@ -1,11 +1,11 @@
 // src/pages/Home.jsx
 import React from "react";
 import { Helmet } from "react-helmet-async";
-import Hero from "../components/Hero";
-import Roles from "../components/Roles";
-import FeaturesSection from "../components/FeaturesSection";
-import ClassSection from "../components/ClassSection";
-import TestimonialSection from "../components/TestimonialSection";
+import Hero from "../../components/landing/Hero";
+import Roles from "../../components/common/Roles";
+import FeaturesSection from "../../components/landing/FeaturesSection";
+import ClassSection from "../../components/features/ClassSection";
+import TestimonialSection from "../../components/landing/TestimonialSection";
 
 const Home = ({ heroRef, sentinelRef }) => {
   return (
@@ -54,7 +54,7 @@ const Home = ({ heroRef, sentinelRef }) => {
       "@type": "EducationalOrganization",
       "name": "MathSense Academy",
       "url": "https://mathsenseacademy.com/",
-      "logo": "https://mathsenseacademy.com/logo.png",
+      "logo": "https://mathsenseacademy.com/logo.jpg",
       "sameAs": [
         "https://www.facebook.com/yourpage",
         "https://www.instagram.com/yourpage",

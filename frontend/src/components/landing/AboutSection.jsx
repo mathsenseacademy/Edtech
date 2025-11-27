@@ -1,9 +1,9 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
-import aboutUs from "../assets/aboutUs.png";
-import teacherImg from "../assets/teacher.png";
+import aboutUs from "../../assets/aboutUs.png";
+import teacherImg from "../../assets/teacher.png";
 // import devImg from "../assets/developer.png";
-import shapeMask from "../assets/aboulUsShape.png";
+import shapeMask from "../../assets/aboulUsShape.png";
 
 export default function AboutSection() {
   // Structured data for SEO
@@ -13,7 +13,7 @@ export default function AboutSection() {
     "name": "MathSense Academy",
     "description": "Premier online math learning platform offering classes from Class 1 to 12, JEE preparation, and Olympiad training in Kolkata, India.",
     "url": "https://www.mathsenseacademy.com",
-    "logo": "https://www.mathsenseacademy.com/logo.png",
+    "logo": "https://www.mathsenseacademy.com/logo.jpg",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Kolkata",

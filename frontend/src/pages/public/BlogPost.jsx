@@ -8,8 +8,8 @@ import {
   MessageCircle,
   Send,
 } from "lucide-react";
-import api from "../api/api";
-import { getCurrentUser, getUserRole } from "../auth";
+import api from "../../api/api";
+import { getCurrentUser, getUserRole } from "../../auth";
 
 const BlogPostPage = () => {
   const { id } = useParams();

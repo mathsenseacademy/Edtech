@@ -18,10 +18,10 @@ import Marker from "@editorjs/marker";
 import LinkTool from "@editorjs/link"; // Simple LinkTool
 
 // Firebase utils (must export uploadToFirebase & deleteFromFirebase)
-import { uploadToFirebase, deleteFromFirebase } from "../utils/firebaseStorage";
+import { uploadToFirebase, deleteFromFirebase } from "../../utils/uploadToFirebase";
 
 // Editor CSS (ensure your editor.css exists)
-import "../styles/editor.css";
+import "../../styles/editor.css";
 
 const EditorJsFirebase = ({ data, onChange, blogId, readOnly = false }) => {
   const editorHolderRef = useRef(null);

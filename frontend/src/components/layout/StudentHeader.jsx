@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import logo from '../assets/logoWith_Name.svg';
+import logo from '../../assets/logoWith_Name.svg';
 
 export default function StudentHeader() {
   const navigate = useNavigate();

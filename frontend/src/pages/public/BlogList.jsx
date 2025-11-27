@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Clock, Plus, Search } from "lucide-react";
-import api from "../api/api";
-import { getUserRole } from "../auth";
+import api from "../../api/api";
+import { getUserRole } from "../../auth";
 
 const BlogListPage = () => {
   const navigate = useNavigate();

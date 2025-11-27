@@ -12,8 +12,8 @@ import {
   FaLinkedinIn
 } from "react-icons/fa";
 import { Phone, Mail, Menu, X, ChevronDown } from "lucide-react";
-import logo from "../assets/logoWith_Name.svg";
-import StudentRegister from "../pages/StudentRegister";
+import logo from "../../assets/logoWith_Name.svg";
+import StudentRegister from "../../pages/auth/StudentRegister";
 
 const Header = () => {
   const [showStickyRegister, setShowStickyRegister] = useState(false);

@@ -6,9 +6,9 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 // Vite-friendly asset imports (avoid require)
-import anushka from "../assets/AnushkaDey.png";
-import susmita from "../assets/Susmita-Adhikary.png";
-import sourashis from "../assets/Sourashis-Banerjee.png";
+import anushka from "../../assets/AnushkaDey.png";
+import susmita from "../../assets/Susmita-Adhikary.png";
+import sourashis from "../../assets/Sourashis-Banerjee.png";
 
 export default function TestimonialSection() {
   const testimonials = useMemo(

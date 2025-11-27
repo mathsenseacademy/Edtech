@@ -2,12 +2,12 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 
-import gradIcon from "../assets/hatIcon.png";
-import bookIcon from "../assets/bookIcon.png";
-import clockIcon from "../assets/watchIcon.png";
-import graphIcon from "../assets/graphIcon.png";
-import logo from "../assets/logoWithName.png";
-import mentor from "../assets/teacher.png";
+import gradIcon from "../../assets/hatIcon.png";
+import bookIcon from "../../assets/bookIcon.png";
+import clockIcon from "../../assets/watchIcon.png";
+import graphIcon from "../../assets/graphIcon.png";
+import logo from "../../assets/logoWithName.png";
+import mentor from "../../assets/teacher.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },

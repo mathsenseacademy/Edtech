@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import brand1 from "../assets/imo.png";
-import brand2 from "../assets/kangaroo.png";
-import brand3 from "../assets/vvm.png";
-import brand4 from "../assets/silver.png";
-import logo from "../assets/logoWith_Name.svg";
+import brand1 from "../../assets/imo.png";
+import brand2 from "../../assets/kangaroo.png";
+import brand3 from "../../assets/vvm.png";
+import brand4 from "../../assets/silver.png";
+import logo from "../../assets/logoWith_Name.svg";
 
 export default function Footer() {
   return (

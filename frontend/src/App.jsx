@@ -4,40 +4,45 @@ import { Routes, Route, useLocation, Outlet, Navigate } from "react-router-dom";
 import { LayoutGroup } from "framer-motion";
 import { HelmetProvider } from "react-helmet-async";
 
-import Header from "./components/Header";
-import AdminHeader from "./pages/AdminHeader";
-import Footer from "./components/Footer";
-import Loader from "./components/Loader/Loader";
-import HelpCenter from "./pages/HelpCenter";
+import Header from "./components/layout/Header";
+import AdminHeader from "./components/layout/AdminHeader";
+import StudentHeader from "./components/layout/StudentHeader";
+import Footer from "./components/layout/Footer";
 
-import Home from "./pages/Home";
-import StudentRegister from "./pages/StudentRegister";
-import AdminDashboard from "./pages/AdminDashboard";
-import SdHome from "./pages/Dashboard/SdHome";
-import Roles from "./components/Roles";
-import LoginStudent from "./pages/login/LoginStudent";
-import AdminClasses from "./pages/AdminClasses";
-import AdminBatches from "./pages/AdminBatches";
-import AdminStudentProfile from "./pages/AdminStudentProfile";
-import ComingSoonCourses from "./pages/ComingSoonCourses";
-import About from "./pages/About";
+import Loader from "./components/common/Loader";
+import Roles from "./components/common/Roles";
 
-import ClassSection from "./components/ClassSection";
-import ClassDetails from "./components/ClassDetails";
-import CourseDetail from "./components/CourseDetail";
+import Home from "./pages/public/Home";
+import About from "./pages/public/About";
+import HelpCenter from "./pages/public/HelpCenter";
+import ComingSoonCourses from "./pages/public/ComingSoonCourses";
+import BlogList from "./pages/public/BlogList";
+import BlogPost from "./pages/public/BlogPost";
 
-import BlogList from "./pages/BlogList";
-import BlogPost from "./pages/BlogPost";
-import BlogEditor from "./pages/BlogEditor";
+import LoginStudent from "./pages/auth/LoginStudent";
+import StudentRegister from "./pages/auth/StudentRegister";
+
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminClasses from "./pages/admin/Classes";
+import AdminBatches from "./pages/admin/Batches";
+import AdminStudentProfile from "./pages/admin/StudentProfile";
+import BlogEditor from "./pages/admin/BlogEditor";
+
+import SdHome from "./pages/student/Dashboard";
+
+import ClassSection from "./components/features/ClassSection";
+import ClassDetails from "./components/features/ClassDetails";
+import CourseDetail from "./components/features/CourseDetail";
 
 import useLocoScroll from "./hooks/useLocoScroll";
 
 import "./styles/editor.css";
 
+// Layout for student dashboard pages
 function StudentLayout() {
   return (
     <>
-      <Header showDashboardBtn={false} />
+      <StudentHeader />
       <main className="min-h-[80vh] pt-[80px]">
         <Outlet />
       </main>
@@ -45,6 +50,7 @@ function StudentLayout() {
   );
 }
 
+// Simple admin route guard
 function ProtectedAdminRoute({ children }) {
   const userType = localStorage.getItem("userType");
   return userType === "admin" ? children : <Navigate to="/" />;
@@ -56,20 +62,19 @@ function App() {
   const { scrollRef } = useLocoScroll(!loading);
   const sentinelRef = useRef(null);
 
+  // Loader animation timing
   useEffect(() => {
-    // Wait for loader animation before showing main site
     const timer = setTimeout(() => setLoading(false), 6200);
     return () => clearTimeout(timer);
   }, []);
 
+  // Scroll to top on route change
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
-    if (scrollRef.current?.scrollTo) scrollRef.current.scrollTo(0, 0);
-    else window.scrollTo(0, 0);
+    if (scrollRef.current?.scrollTo) {
+      scrollRef.current.scrollTo(0, 0);
+    } else {
+      window.scrollTo(0, 0);
+    }
   }, [location.pathname, scrollRef]);
 
   const path = location.pathname;
@@ -94,11 +99,11 @@ function App() {
       <LayoutGroup>
         {HeaderComponent}
 
-        {/* Main content area with scroll */}
+        {/* Main content area with smooth scroll */}
         <div data-scroll-container ref={scrollRef}>
           <div data-scroll-section className="min-h-screen pt-[80px]">
             <Routes>
-              {/* 🏠 Home */}
+              {/* 🏠 Public pages */}
               <Route
                 path="/"
                 element={
@@ -111,14 +116,12 @@ function App() {
               {/* 👥 Roles */}
               <Route path="/roles" element={<Roles />} />
 
-              {/* 🔐 Logins */}
+              {/* 🔐 Auth */}
               <Route path="/login/student" element={<LoginStudent />} />
               <Route path="/student/login" element={<LoginStudent />} />
-
-              {/* 🧾 Student registration */}
               <Route path="/student/register" element={<StudentRegister />} />
 
-              {/* 🎓 Student Dashboard */}
+              {/* 🎓 Student area */}
               <Route path="/student" element={<StudentLayout />}>
                 <Route path="dashboard" element={<SdHome />} />
               </Route>
@@ -142,11 +145,28 @@ function App() {
               />
               <Route
                 path="/admin/student/:uid"
-                element={<AdminStudentProfile />}
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminStudentProfile />
+                  </ProtectedAdminRoute>
+                }
               />
-              <Route path="/admin/classes" element={<AdminClasses />} />
-              <Route path="/admin/batches" element={<AdminBatches />} />
-
+              <Route
+                path="/admin/classes"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminClasses />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin/batches"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminBatches />
+                  </ProtectedAdminRoute>
+                }
+              />
 
               {/* 📰 Blogs (Public) */}
               <Route path="/blogs" element={<BlogList />} />
@@ -162,7 +182,6 @@ function App() {
                   </ProtectedAdminRoute>
                 }
               />
-
               <Route
                 path="/admin/blog/new"
                 element={
@@ -171,7 +190,6 @@ function App() {
                   </ProtectedAdminRoute>
                 }
               />
-
               <Route
                 path="/admin/blog/edit/:id"
                 element={

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
-import api from "../api/api";
+import api from "../../api/api";
 import { useNavigate } from "react-router-dom";
-import { uploadToFirebase } from "../utils/uploadToFirebase";
+import { uploadToFirebase } from "../../utils/uploadToFirebase";
 
 export default function StudentRegister({ onClose, googleAuthData = null }) {
   const navigate = useNavigate();
