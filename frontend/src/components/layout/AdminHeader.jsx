@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaUsers, FaFileAlt, FaUserCircle } from "react-icons/fa";
+import {
+  FaUsers,            // Students
+  FaChalkboardTeacher, // Classes
+  FaLayerGroup,        // Batches
+  FaBlog,              // Blogs
+  FaClipboardList,     // Exams
+  FaUserCircle,        // Profile (if you later add button)
+} from "react-icons/fa";
 import logo from "../../assets/logo.jpg";
 import ProfileModal from "../../components/common/ProfileModal";
 
@@ -31,6 +38,10 @@ const AdminHeader = () => {
   }, []);
 
   const openProfile = () => {
+    if (!profileBtnRef.current) {
+      setShowProfile(true);
+      return;
+    }
     const rect = profileBtnRef.current.getBoundingClientRect();
     setAnchor({ top: rect.bottom + 8, left: rect.right });
     setShowProfile(true);
@@ -55,7 +66,7 @@ const AdminHeader = () => {
             <motion.img
               layoutId="shared-logo"
               src={logo}
-              alt="Math Senseacademy"
+              alt="Math Sense Academy"
               className="w-14"
             />
           </Link>
@@ -70,30 +81,53 @@ const AdminHeader = () => {
                 <FaUsers /> <span>Students</span>
               </Link>
             </li>
+
             <li>
               <Link
                 to="/admin/classes"
                 className="flex items-center gap-2 hover:-translate-y-0.5 transition"
               >
-                <FaFileAlt /> <span>Classes</span>
+                <FaChalkboardTeacher /> <span>Classes</span>
               </Link>
             </li>
+
             <li>
               <Link
                 to="/admin/batches"
                 className="flex items-center gap-2 hover:-translate-y-0.5 transition"
               >
-                <FaFileAlt /> <span>Batches</span>
+                <FaLayerGroup /> <span>Batches</span>
               </Link>
             </li>
+
             <li>
               <Link
                 to="/admin/blog/new"
                 className="flex items-center gap-2 hover:-translate-y-0.5 transition"
               >
-                <FaFileAlt /> <span>Blogs</span>
+                <FaBlog /> <span>Blogs</span>
               </Link>
             </li>
+
+            <li>
+              <Link
+                to="/admin/exams"
+                className="flex items-center gap-2 hover:-translate-y-0.5 transition"
+              >
+                <FaClipboardList /> <span>Exams</span>
+              </Link>
+            </li>
+
+            {/* Optional profile icon/button if you want to open ProfileModal from header */}
+            {/* <li>
+              <button
+                ref={profileBtnRef}
+                onClick={openProfile}
+                className="flex items-center gap-2 hover:-translate-y-0.5 transition"
+              >
+                <FaUserCircle /> <span>Profile</span>
+              </button>
+            </li> */}
           </ul>
         </div>
       </nav>

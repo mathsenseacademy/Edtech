@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { startExam, getExamQuestions, submitExam } from "../api/examApi";
 
 export default function ExamPlayer({
   examId,
   studentId,
-  apiBase = "",        // e.g. "https://your-cloud-run-url" (no trailing slash)
-  randomize = false,   // if true, uses ?randomize=true on startExam
+  randomize = false, // if true, uses ?randomize=true on startExam
 }) {
   const [attemptId, setAttemptId] = useState(null);
 
@@ -51,16 +51,7 @@ export default function ExamPlayer({
         setStarting(true);
 
         // Start exam → get attemptId, questionOrder, timeLimitMinutes
-        const startRes = await fetch(
-          `${apiBase}/api/exams/${examId}/start${randomize ? "?randomize=true" : ""}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ studentId }),
-          }
-        );
-        const startData = await startRes.json();
-        if (!startRes.ok) throw new Error(startData.error || "Failed to start exam");
+        const startData = await startExam(examId, studentId, randomize);
 
         setAttemptId(startData.attemptId);
         if (Array.isArray(startData.questionOrder)) {
@@ -77,10 +68,7 @@ export default function ExamPlayer({
         }
 
         // Load questions (hides correct answers)
-        const qRes = await fetch(`${apiBase}/api/exams/${examId}/questions`);
-        const qData = await qRes.json();
-        if (!qRes.ok) throw new Error(qData.error || "Failed to load questions");
-
+        const qData = await getExamQuestions(examId);
         setQuestions(qData.questions || []);
         setCurrentIndex(0);
       } catch (err) {
@@ -95,7 +83,7 @@ export default function ExamPlayer({
     if (examId && studentId) {
       initExam();
     }
-  }, [examId, studentId, apiBase, randomize]);
+  }, [examId, studentId, randomize]);
 
   // 2) Countdown timer effect
   useEffect(() => {
@@ -122,20 +110,16 @@ export default function ExamPlayer({
       if (submitting || result) return; // avoid double submit
 
       if (!autoSubmit) {
-        const ok = window.confirm("Submit exam? You won't be able to change answers.");
+        const ok = window.confirm(
+          "Submit exam? You won't be able to change answers."
+        );
         if (!ok) return;
       }
 
       setSubmitting(true);
       try {
         const body = { studentId, attemptId, answers };
-        const res = await fetch(`${apiBase}/api/exams/${examId}/submit`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Submit failed");
+        const data = await submitExam(examId, body);
 
         if (autoSubmit) {
           alert("Time is up! Your answers have been auto-submitted.");
@@ -148,7 +132,7 @@ export default function ExamPlayer({
         setSubmitting(false);
       }
     },
-    [answers, attemptId, examId, apiBase, studentId, submitting, result]
+    [answers, attemptId, examId, studentId, submitting, result]
   );
 
   // 4) Auto-submit when timer hits 0

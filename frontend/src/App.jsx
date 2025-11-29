@@ -27,6 +27,7 @@ import AdminClasses from "./pages/admin/Classes";
 import AdminBatches from "./pages/admin/Batches";
 import AdminStudentProfile from "./pages/admin/StudentProfile";
 import BlogEditor from "./pages/admin/BlogEditor";
+import Exam from "./pages/admin/Exam";
 
 import SdHome from "./pages/student/Dashboard";
 
@@ -164,6 +165,14 @@ function App() {
                 element={
                   <ProtectedAdminRoute>
                     <AdminBatches />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin/exams"
+                element={
+                  <ProtectedAdminRoute>
+                    <Exam />
                   </ProtectedAdminRoute>
                 }
               />
