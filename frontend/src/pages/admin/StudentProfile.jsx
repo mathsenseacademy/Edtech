@@ -64,13 +64,13 @@ const AdminStudentProfile = () => {
   };
 
   const handleBatchAssign = async () => {
+    if (!selectedBatch) {
+      alert("Please select a batch first");
+      return;
+    }
+
     try {
       setUpdating(true);
-      if (!selectedBatch) {
-        alert("Please select a batch first");
-        return;
-      }
-
       await axios.post(`${API_BASE}/batches/${selectedBatch}/assign`, {
         studentUid: uid,
       });
@@ -89,6 +89,53 @@ const AdminStudentProfile = () => {
 
   if (!student)
     return <div className="p-6 text-red-500">Student not found.</div>;
+
+  // ---------- helpers ----------
+
+  const getStudentPhotoUrl = (studentObj) => {
+    if (!studentObj) return "/placeholder.png";
+
+    // Use only the uploaded student photo (ignore google_photo_url)
+    const spp = studentObj.student_photo_path;
+    if (!spp) return "/placeholder.png";
+
+    // Old data: string URL
+    if (typeof spp === "string") return spp;
+
+    // New data: object with .url
+    if (typeof spp === "object" && spp.url) return spp.url;
+
+    return "/placeholder.png";
+  };
+
+  const formatFieldValue = (key, value) => {
+    if (value === null || value === undefined || value === "") return "-";
+
+    // Special handling for student_photo_path
+    if (key === "student_photo_path") {
+      if (typeof value === "string") {
+        return value;
+      }
+      if (typeof value === "object" && value.url) {
+        return value.url;
+      }
+    }
+
+    if (Array.isArray(value)) {
+      return value
+        .map((item) =>
+          typeof item === "object" ? JSON.stringify(item) : String(item)
+        )
+        .join(", ");
+    }
+
+    if (typeof value === "object") {
+      // Fallback: stringify object
+      return JSON.stringify(value);
+    }
+
+    return String(value);
+  };
 
   // Find current batch name (if assigned)
   const assignedBatchNames =
@@ -116,13 +163,9 @@ const AdminStudentProfile = () => {
           {/* Student Info */}
           <div className="flex flex-col items-center text-center md:items-start md:text-left">
             <img
-              src={
-                // student.google_photo_url ||
-                student.student_photo_path ||
-                "/placeholder.png"
-              }
+              src={getStudentPhotoUrl(student)}
               alt="Student"
-              className="w-32 h-32 rounded-full border-4 border-blue-300 shadow-md mb-3"
+              className="w-32 h-32 rounded-full border-4 border-blue-300 shadow-md mb-3 object-cover"
             />
             <h2 className="text-xl font-semibold text-gray-800">
               {student.first_name} {student.last_name}
@@ -131,7 +174,7 @@ const AdminStudentProfile = () => {
               Class: {student.student_class || "N/A"}
             </p>
 
-            {/* 👇 Added batch info display */}
+            {/* Batch info display */}
             <p className="text-gray-600 text-sm mt-1">
               <strong>Batch:</strong>{" "}
               {assignedBatchNames !== "Not Assigned" ? (
@@ -146,62 +189,66 @@ const AdminStudentProfile = () => {
 
           {/* Batch Assignment */}
           <div className="bg-blue-50 p-4 rounded-lg shadow-sm w-full md:w-1/2">
-  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-    Batch Assignment
-  </h3>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              Batch Assignment
+            </h3>
 
-  <select
-    value={selectedBatch}
-    onChange={(e) => setSelectedBatch(e.target.value)}
-    className="w-full border rounded-lg p-2 mb-3"
-  >
-    <option value="">No Batch</option>
-    {batches
-      .filter(
-        (b) =>
-          Number(b.classNumber) ===
-          Number(student.student_class || student.classNumber)
-      )
-      .map((b) => (
-        <option key={b.id} value={b.id}>
-          {b.name} (Class {b.classNumber})
-        </option>
-      ))}
-  </select>
+            <select
+              value={selectedBatch}
+              onChange={(e) => setSelectedBatch(e.target.value)}
+              className="w-full border rounded-lg p-2 mb-3"
+            >
+              <option value="">No Batch</option>
+              {batches
+                .filter(
+                  (b) =>
+                    Number(b.classNumber) ===
+                    Number(student.student_class || student.classNumber)
+                )
+                .map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} (Class {b.classNumber})
+                  </option>
+                ))}
+            </select>
 
-  <div className="flex gap-2">
-    <button
-      onClick={handleBatchAssign}
-      disabled={updating}
-      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-    >
-      {updating ? "Updating..." : "Save Batch"}
-    </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleBatchAssign}
+                disabled={updating}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                {updating ? "Updating..." : "Save Batch"}
+              </button>
 
-    <button
-      onClick={async () => {
-        if (!selectedBatch) return alert("No batch selected to unassign.");
-        try {
-          setUpdating(true);
-          await axios.post(`${API_BASE}/batches/${selectedBatch}/unassign`, {
-            studentUid: uid,
-          });
-          alert("✅ Student unassigned from batch successfully!");
-          setSelectedBatch("");
-        } catch (err) {
-          console.error("Error unassigning batch:", err);
-          alert("❌ Failed to unassign batch");
-        } finally {
-          setUpdating(false);
-        }
-      }}
-      disabled={updating}
-      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-    >
-      {updating ? "Updating..." : "Unassign Batch"}
-    </button>
-  </div>
-</div>
+              <button
+                onClick={async () => {
+                  if (!selectedBatch)
+                    return alert("No batch selected to unassign.");
+                  try {
+                    setUpdating(true);
+                    await axios.post(
+                      `${API_BASE}/batches/${selectedBatch}/unassign`,
+                      {
+                        studentUid: uid,
+                      }
+                    );
+                    alert("✅ Student unassigned from batch successfully!");
+                    setSelectedBatch("");
+                  } catch (err) {
+                    console.error("Error unassigning batch:", err);
+                    alert("❌ Failed to unassign batch");
+                  } finally {
+                    setUpdating(false);
+                  }
+                }}
+                disabled={updating}
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+              >
+                {updating ? "Updating..." : "Unassign Batch"}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Student Details */}
@@ -212,19 +259,24 @@ const AdminStudentProfile = () => {
 
           {editing ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.keys(formData).map((field) => (
-                <div key={field}>
-                  <label className="block text-sm text-gray-500 capitalize mb-1">
-                    {field.replaceAll("_", " ")}
-                  </label>
-                  <input
-                    name={field}
-                    value={formData[field] || ""}
-                    onChange={handleChange}
-                    className="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"
-                  />
-                </div>
-              ))}
+              {Object.entries(formData).map(([field, value]) => {
+                // Skip complex fields in generic editor
+                if (value && typeof value === "object") return null;
+
+                return (
+                  <div key={field}>
+                    <label className="block text-sm text-gray-500 capitalize mb-1">
+                      {field.replaceAll("_", " ")}
+                    </label>
+                    <input
+                      name={field}
+                      value={value || ""}
+                      onChange={handleChange}
+                      className="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"
+                    />
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -233,7 +285,28 @@ const AdminStudentProfile = () => {
                   <p className="text-sm text-gray-500 capitalize">
                     {key.replaceAll("_", " ")}
                   </p>
-                  <p className="font-medium text-gray-800">{val || "-"}</p>
+                  {key === "student_photo_path" ? (
+                    (() => {
+                      const url =
+                        typeof val === "string" ? val : val?.url || null;
+                      return url ? (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 underline break-words"
+                        >
+                          View Photo
+                        </a>
+                      ) : (
+                        <p className="font-medium text-gray-800">-</p>
+                      );
+                    })()
+                  ) : (
+                    <p className="font-medium text-gray-800 break-words">
+                      {formatFieldValue(key, val)}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

@@ -187,6 +187,22 @@ export default function SdHome() {
     ? new Date(student.registered_at).toLocaleString()
     : "-";
 
+  // ✅ Helper: get uploaded student photo URL (string or object)
+  const getStudentPhotoUrl = (studentObj) => {
+    if (!studentObj) return placeholder;
+
+    const spp = studentObj.student_photo_path;
+    if (!spp) return placeholder;
+
+    // Old data: string URL
+    if (typeof spp === "string") return spp;
+
+    // New data: object with .url
+    if (typeof spp === "object" && spp.url) return spp.url;
+
+    return placeholder;
+  };
+
   // Loading / Error states
   if (loading) {
     return (
@@ -230,7 +246,9 @@ export default function SdHome() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
-    name: `${student.first_name || ""} ${student.last_name || ""}`.trim() || "MathSense Student",
+    name:
+      `${student.first_name || ""} ${student.last_name || ""}`.trim() ||
+      "MathSense Student",
     description: pageDesc,
     email: student.email || undefined,
   };
@@ -259,10 +277,13 @@ export default function SdHome() {
       <section className="mb-8 bg-white rounded-xl shadow p-6 grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 items-center">
         <div>
           <img
-            src={student.student_photo_path || placeholder}
+            src={getStudentPhotoUrl(student)}
             alt="Student"
             className="w-28 h-28 rounded-full border-4 border-blue-100 object-cover"
-            onError={(e) => (e.target.src = placeholder)}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = placeholder;
+            }}
           />
         </div>
 
@@ -272,9 +293,15 @@ export default function SdHome() {
           </h1>
 
           <div className="mt-3 text-sm text-gray-700 space-y-1">
-            <p><strong>Student ID:</strong> {student.student_id || "-"}</p>
-            <p><strong>Class:</strong> {student.student_class || "-"}</p>
-            <p><strong>Email:</strong> {student.email || "-"}</p>
+            <p>
+              <strong>Student ID:</strong> {student.student_id || "-"}
+            </p>
+            <p>
+              <strong>Class:</strong> {student.student_class || "-"}
+            </p>
+            <p>
+              <strong>Email:</strong> {student.email || "-"}
+            </p>
           </div>
 
           {/* ✅ Batch + Day/Time Display */}
@@ -288,13 +315,17 @@ export default function SdHome() {
                   </p>
                   {b.day && b.time ? (
                     <p>
-                      <span className="font-semibold text-gray-700">Day & Time:</span>{" "}
+                      <span className="font-semibold text-gray-700">
+                        Day & Time:
+                      </span>{" "}
                       {b.day} – {formatTime12Hour(b.time)}
                     </p>
                   ) : null}
                   {b.day2 && b.time2 ? (
                     <p>
-                      <span className="font-semibold text-gray-700">2nd Day & Time:</span>{" "}
+                      <span className="font-semibold text-gray-700">
+                        2nd Day & Time:
+                      </span>{" "}
                       {b.day2} – {formatTime12Hour(b.time2)}
                     </p>
                   ) : null}
@@ -313,7 +344,8 @@ export default function SdHome() {
                 : "text-red-500"
             }`}
           >
-            💰 Fees: {student.fees_status || (student.feesPaid ? "Paid" : "Not Paid")}
+            💰 Fees:{" "}
+            {student.fees_status || (student.feesPaid ? "Paid" : "Not Paid")}
           </p>
 
           <div className="mt-4">
@@ -330,7 +362,9 @@ export default function SdHome() {
       {/* Editable Form */}
       {editing ? (
         <section className="mb-8 bg-gray-50 p-6 rounded-lg shadow-inner">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Update Your Details</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Update Your Details
+          </h2>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -355,7 +389,10 @@ export default function SdHome() {
               { name: "notes", label: "Notes" },
             ].map((field) => (
               <div key={field.name}>
-                <label htmlFor={field.name} className="text-sm text-gray-600 mb-1 block">
+                <label
+                  htmlFor={field.name}
+                  className="text-sm text-gray-600 mb-1 block"
+                >
                   {field.label}
                 </label>
                 <input
@@ -391,7 +428,9 @@ export default function SdHome() {
         </section>
       ) : (
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Details</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Your Details
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               { label: "First name", value: student.first_name },
@@ -405,14 +444,25 @@ export default function SdHome() {
               { label: "District", value: student.district },
               { label: "State", value: student.state },
               { label: "PIN", value: student.pin },
-              { label: "School / College", value: student.school_or_college_name },
-              { label: "Board / University", value: student.board_or_university_name },
+              {
+                label: "School / College",
+                value: student.school_or_college_name,
+              },
+              {
+                label: "Board / University",
+                value: student.board_or_university_name,
+              },
               { label: "Notes", value: student.notes },
               { label: "Registered at", value: formattedDate },
             ].map((item, idx) => (
-              <div key={idx} className="p-4 border rounded-lg bg-white shadow-sm">
+              <div
+                key={idx}
+                className="p-4 border rounded-lg bg-white shadow-sm"
+              >
                 <p className="text-sm text-gray-500">{item.label}</p>
-                <p className="text-lg font-medium text-gray-800">{item.value || "-"}</p>
+                <p className="text-lg font-medium text-gray-800">
+                  {item.value || "-"}
+                </p>
               </div>
             ))}
           </div>

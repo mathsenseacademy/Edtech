@@ -11,8 +11,8 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [selectedClass, setSelectedClass] = useState(null); // <-- new
-  const [searchQuery, setSearchQuery] = useState(""); // <-- new
+  const [selectedClass, setSelectedClass] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchStudents = async () => {
     try {
@@ -22,6 +22,7 @@ const AdminDashboard = () => {
       setStudents(data);
       setError("");
     } catch (err) {
+      console.error("Error loading students:", err);
       setError("Failed to load student data.");
     } finally {
       setLoading(false);
@@ -32,16 +33,28 @@ const AdminDashboard = () => {
     fetchStudents();
   }, []);
 
-  // -------------------------
+  // Helper: get uploaded student photo URL (string or object)
+  const getStudentPhotoUrl = (student) => {
+    if (!student) return "/placeholder.png";
+
+    const spp = student.student_photo_path;
+    if (!spp) return "/placeholder.png";
+
+    // Old: string URL
+    if (typeof spp === "string") return spp;
+
+    // New: object with .url
+    if (typeof spp === "object" && spp.url) return spp.url;
+
+    return "/placeholder.png";
+  };
+
   // Filter by selected class
-  // -------------------------
   const filteredByClass = selectedClass
     ? students.filter((s) => s.student_class === selectedClass)
     : [];
 
-  // -------------------------
   // Search inside the class students
-  // -------------------------
   const searchedStudents = filteredByClass.filter((s) => {
     const fullName = `${s.first_name} ${s.last_name}`.toLowerCase();
     return fullName.includes(searchQuery.toLowerCase());
@@ -56,6 +69,10 @@ const AdminDashboard = () => {
       <h1 className="text-3xl font-bold text-[#4b2e05] mb-6">
         🎓 Admin Dashboard
       </h1>
+
+      {error && (
+        <p className="mb-4 text-red-600 bg-red-50 p-2 rounded-lg">{error}</p>
+      )}
 
       {/* ==============================
           PART 1 → Class List View
@@ -110,6 +127,10 @@ const AdminDashboard = () => {
             className="border p-2 rounded-md mb-4 w-full max-w-md"
           />
 
+          {loading && (
+            <p className="text-gray-500 mt-4">Loading students...</p>
+          )}
+
           {!loading && searchedStudents.length === 0 && (
             <p className="text-gray-500 mt-10">No students found.</p>
           )}
@@ -129,19 +150,19 @@ const AdminDashboard = () => {
 
                 <tbody>
                   {searchedStudents.map((s) => {
-                    const photo =
-                      s.student_photo_path || "https://via.placeholder.com/80";
+                    const photo = getStudentPhotoUrl(s);
 
                     return (
                       <tr
-                        key={s.id}
+                        key={s.uid || s.id}
                         className="hover:bg-[#fff8e1] cursor-pointer"
                         onClick={() => goToStudentProfile(s.uid)}
                       >
                         <td className="border p-3 text-center">
                           <img
                             src={photo}
-                            className="w-14 h-14 rounded-full mx-auto border"
+                            alt={`${s.first_name} ${s.last_name}`}
+                            className="w-14 h-14 rounded-full mx-auto border object-cover"
                           />
                         </td>
 
