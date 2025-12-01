@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = "http://localhost:5000/api/student";
+const API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api/student";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
