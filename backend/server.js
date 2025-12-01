@@ -13,10 +13,7 @@ import studentRoutes from "./routes/StudentRoutes.js";
 import classRoutes from "./routes/ClassRoutes.js";
 import batchRoutes from "./routes/BatchRoutes.js";
 import BlogRoutes from "./routes/BlogRoutes.js";
-
-// ✅ Import Swagger
-import swaggerJsDoc from "swagger-jsdoc";
-import swaggerUi from "swagger-ui-express";
+import Exam from "./routes/ExamRoutes.js";
 
 const app = express();
 
