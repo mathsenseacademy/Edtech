@@ -53,6 +53,8 @@ const AdminDashboard = () => {
     return full.includes(searchQuery.toLowerCase());
   });
 
+    const totalStudentsInClass = filteredByClass.length;
+
   // Mark Paid
   const markPaid = async (student) => {
     try {
@@ -155,9 +157,12 @@ const AdminDashboard = () => {
             🔙 Back to Classes
           </button>
 
-          <h2 className="text-2xl font-bold text-[#4b2e05] mb-4">
-            Students of Class {selectedClass}
-          </h2>
+          <h2 className="text-2xl font-bold text-[#4b2e05] mb-2">
+  Students of Class {selectedClass}{" "}
+  <span className="text-3xl font-bold text-amber-800">
+    : {totalStudentsInClass}
+  </span>
+</h2>
 
           {/* Search */}
           <input
