@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api/student";
+const API_BASE = "http://localhost:5000/api/student";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -14,12 +14,12 @@ const AdminDashboard = () => {
   const [selectedClass, setSelectedClass] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Load students
   const fetchStudents = async () => {
     try {
       setLoading(true);
       const res = await axios.get(`${API_BASE}/`);
-      const data = Array.isArray(res.data) ? res.data : [];
-      setStudents(data);
+      setStudents(Array.isArray(res.data) ? res.data : []);
       setError("");
     } catch (err) {
       console.error("Error loading students:", err);
@@ -33,50 +33,95 @@ const AdminDashboard = () => {
     fetchStudents();
   }, []);
 
-  // Helper: get uploaded student photo URL (string or object)
+  // Return correct photo URL
   const getStudentPhotoUrl = (student) => {
     if (!student) return "/placeholder.png";
-
-    const spp = student.student_photo_path;
-    if (!spp) return "/placeholder.png";
-
-    // Old: string URL
-    if (typeof spp === "string") return spp;
-
-    // New: object with .url
-    if (typeof spp === "object" && spp.url) return spp.url;
-
+    const p = student.student_photo_path;
+    if (!p) return "/placeholder.png";
+    if (typeof p === "string") return p;
+    if (typeof p === "object" && p.url) return p.url;
     return "/placeholder.png";
   };
 
-  // Filter by selected class
+  // Filter & search
   const filteredByClass = selectedClass
     ? students.filter((s) => s.student_class === selectedClass)
     : [];
 
-  // Search inside the class students
   const searchedStudents = filteredByClass.filter((s) => {
-    const fullName = `${s.first_name} ${s.last_name}`.toLowerCase();
-    return fullName.includes(searchQuery.toLowerCase());
+    const full = `${s.first_name} ${s.last_name}`.toLowerCase();
+    return full.includes(searchQuery.toLowerCase());
   });
 
-  const goToStudentProfile = (uid) => {
-    navigate(`/admin/student/${uid}`);
+  // Mark Paid
+  const markPaid = async (student) => {
+    try {
+      console.log("Full student object received by markPaid:", student);
+
+      // 1️⃣ Update fees status in backend
+      await axios.put(`${API_BASE}/${student.uid}/fees`, {
+        status: "Yes",
+      });
+
+      // 2️⃣ Send email (no fees amount, only month info)
+      const month = new Date().toLocaleString("default", { month: "long" });
+
+      await axios.post(`${API_BASE}/send-fees-email`, {
+        email: student.email,
+        name: `${student.first_name} ${student.last_name}`,
+        month,
+      });
+
+      alert("Fees marked as paid & email sent!");
+
+      // 3️⃣ Refresh students list
+      fetchStudents();
+    } catch (err) {
+      console.error("❌ Error in markPaid:", err);
+      alert("Error marking fees paid.");
+    }
+  };
+
+  // Reset all fees
+  const resetFees = async () => {
+    try {
+      const ok = window.confirm("Reset all students' fees to 'No'?");
+
+      if (!ok) return;
+
+      await axios.post(`${API_BASE}/reset-fees`);
+      alert("All student fees reset!");
+
+      fetchStudents();
+    } catch (err) {
+      console.error(err);
+      alert("Error resetting fees.");
+    }
   };
 
   return (
     <div className="p-6 bg-[#fff9ed] min-h-screen">
-      <h1 className="text-3xl font-bold text-[#4b2e05] mb-6">
-        🎓 Admin Dashboard
-      </h1>
+      {/* Header + Reset Fees button */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-[#4b2e05]">
+          🎓 Admin Dashboard
+        </h1>
+
+        {selectedClass && (
+          <button
+            onClick={resetFees}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            🔄 Reset Fees
+          </button>
+        )}
+      </div>
 
       {error && (
         <p className="mb-4 text-red-600 bg-red-50 p-2 rounded-lg">{error}</p>
       )}
 
-      {/* ==============================
-          PART 1 → Class List View
-      =============================== */}
+      {/* CLASS SELECTION */}
       {!selectedClass && (
         <div>
           <h2 className="text-xl font-semibold text-[#4b2e05] mb-4">
@@ -100,12 +145,9 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* ==============================
-          PART 2 → Students List View
-      =============================== */}
+      {/* STUDENTS LIST */}
       {selectedClass && (
         <div>
-          {/* Back button */}
           <button
             onClick={() => setSelectedClass(null)}
             className="px-4 py-2 mb-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
@@ -113,7 +155,6 @@ const AdminDashboard = () => {
             🔙 Back to Classes
           </button>
 
-          {/* Class heading */}
           <h2 className="text-2xl font-bold text-[#4b2e05] mb-4">
             Students of Class {selectedClass}
           </h2>
@@ -135,7 +176,7 @@ const AdminDashboard = () => {
             <p className="text-gray-500 mt-10">No students found.</p>
           )}
 
-          {/* Students Table */}
+          {/* TABLE */}
           {!loading && searchedStudents.length > 0 && (
             <div className="overflow-x-auto rounded-xl border shadow bg-white">
               <table className="w-full text-sm md:text-base">
@@ -143,45 +184,49 @@ const AdminDashboard = () => {
                   <tr>
                     <th className="border p-3">Photo</th>
                     <th className="border p-3">Name</th>
-                    <th className="border p-3">Class</th>
-                    <th className="border p-3">Fees</th>
+                    <th className="border p-3">Mark Paid</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {searchedStudents.map((s) => {
                     const photo = getStudentPhotoUrl(s);
+                    console.log("Sample student object:", s);
 
                     return (
-                      <tr
-                        key={s.uid || s.id}
-                        className="hover:bg-[#fff8e1] cursor-pointer"
-                        onClick={() => goToStudentProfile(s.uid)}
-                      >
+                      <tr key={s.uid || s.id} className="hover:bg-[#fff8e1]">
+                        {/* PHOTO */}
                         <td className="border p-3 text-center">
                           <img
                             src={photo}
                             alt={`${s.first_name} ${s.last_name}`}
-                            className="w-14 h-14 rounded-full mx-auto border object-cover"
+                            className="w-14 h-14 rounded-full mx-auto border object-cover cursor-pointer"
+                            onClick={() => navigate(`/admin/student/${s.uid}`)}
                           />
                         </td>
 
-                        <td className="border p-3 capitalize font-medium">
+                        {/* NAME */}
+                        <td
+                          className="border p-3 capitalize font-medium cursor-pointer"
+                          onClick={() => navigate(`/admin/student/${s.uid}`)}
+                        >
                           {s.first_name} {s.last_name}
                         </td>
 
+                        {/* FEES BUTTON */}
                         <td className="border p-3 text-center">
-                          {s.student_class}
-                        </td>
-
-                        <td
-                          className={`border p-3 text-center font-semibold ${
-                            s.fees_status === "Yes"
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {s.fees_status}
+                          {s.fees_status === "Yes" ? (
+                            <span className="text-green-700 font-semibold">
+                              ✔ Paid
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => markPaid(s)}
+                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                            >
+                              Mark Paid
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );

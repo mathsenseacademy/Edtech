@@ -3,6 +3,8 @@
 // =============================================
 
 import { StudentModel } from "../models/StudentModel.js";
+import nodemailer from "nodemailer";
+
 
 export const StudentController = {
   // =============================================
@@ -291,4 +293,54 @@ async getByClass(req, res) {
       return res.status(500).json({ message: "Server error while resetting fees." });
     }
   },
+
+// =============================================
+// Send Fees Email to Student
+// =============================================
+async sendFeesEmail(req, res) {
+  try {
+    const { email, name, month } = req.body;
+
+    if (!email || !name || !month) {
+      return res.status(400).json({
+        message: "Missing required fields: email, name, month",
+      });
+    }
+
+    // ⚠️ TEMP: Hardcoded Gmail for local/dev
+    // Replace with your Gmail + App Password
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "mathsenseacademy@gmail.com",       // <- put your Gmail here
+        pass: "qgas xpgr vbed knpa",             // <- 16-char Gmail App Password
+      },
+    });
+
+    const mailOptions = {
+      from: `"MathSense Academy" <YOUR_GMAIL_ADDRESS@gmail.com>`,
+      to: email,
+      subject: `Fees Received for ${month}`,
+      html: `
+        <h2>Hello ${name},</h2>
+        <p>Your fees has been successfully received for the month of <strong>${month}</strong>.</p>
+        <p>Thank you for staying connected with MathSense Academy.</p>
+        <br/>
+        <p> Warm Regards,<br/>MathSense Academy Team</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.status(200).json({
+      message: "📩 Fees email sent successfully!",
+    });
+  } catch (error) {
+    console.error("❌ Error sending fees email:", error);
+    return res.status(500).json({
+      message: "Failed to send email.",
+      error: error.message,
+    });
+  }
+},
 };

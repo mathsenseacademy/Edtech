@@ -33,4 +33,7 @@ router.put("/:uid/fees", StudentController.toggleFees);
 // Reset monthly fees for all students
 router.post("/reset-fees", StudentController.resetMonthlyFees);
 
+router.post("/send-fees-email", StudentController.sendFeesEmail);
+
+
 export default router;
