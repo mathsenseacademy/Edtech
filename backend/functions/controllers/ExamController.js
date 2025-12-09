@@ -1,4 +1,4 @@
-// controllers/examController.js
+// controllers/ExamController.js
 import XLSX from "xlsx";
 import { db, admin } from "../firebase/firebaseAdmin.js";
 import ExamModel from "../models/ExamModel.js";
@@ -155,7 +155,7 @@ export async function createExamFromQuestionBank(req, res) {
 
     // 1) Load all questions for this class (and topics if provided)
     let query = db
-      .collection("questionBank")
+      .collection("QuestionBank")
       .where("classId", "==", classNum);
 
     const snap = await query.get();

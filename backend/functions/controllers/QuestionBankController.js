@@ -1,4 +1,4 @@
-// controllers/questionBankController.js
+// controllers/QuestionBankController.js
 import XLSX from "xlsx";
 import { db, admin } from "../firebase/firebaseAdmin.js";
 
@@ -75,7 +75,7 @@ export async function uploadQuestionBankFromExcel(req, res) {
     const classNum = Number(classId);
 
     const batch = db.batch();
-    const qColl = db.collection("questionBank");
+    const qColl = db.collection("QuestionBank");
 
     rows.forEach((r) => {
       const qData = normalizeRowToBankQuestion(r);
@@ -117,7 +117,7 @@ export async function getTopicsForClass(req, res) {
     const classNum = Number(classId);
 
     const snap = await db
-      .collection("questionBank")
+      .collection("QuestionBank")
       .where("classId", "==", classNum)
       .get();
 
@@ -161,7 +161,7 @@ export async function getQuestionsForClassTopics(req, res) {
       : [];
 
     let query = db
-      .collection("questionBank")
+      .collection("QuestionBank")
       .where("classId", "==", classNum);
 
     // If topics specified, filter in memory (Firestore can't do IN on large arrays easily)

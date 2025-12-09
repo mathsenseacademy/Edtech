@@ -1,4 +1,4 @@
-// models/examModel.js
+// models/ExamModel.js
 import { db, admin } from "../firebase/firebaseAdmin.js";
 
 /**

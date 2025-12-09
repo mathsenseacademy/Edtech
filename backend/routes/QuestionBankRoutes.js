@@ -1,4 +1,4 @@
-// routes/questionBankRoutes.js
+// routes/QuestionBankRoutes.js
 import express from "express";
 import multer from "multer";
 import QuestionBankController from "../controllers/questionBankController.js";

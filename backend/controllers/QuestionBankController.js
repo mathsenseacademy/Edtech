@@ -1,4 +1,4 @@
-// controllers/questionBankController.js
+// controllers/QuestionBankController.js
 import XLSX from "xlsx";
 import { db, admin } from "../firebase/firebaseAdmin.js";
 

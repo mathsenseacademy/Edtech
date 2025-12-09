@@ -1,4 +1,4 @@
-// routes/examRoutes.js
+// routes/ExamRoutes.js
 import express from "express";
 import multer from "multer";
 import ExamController from "../controllers/ExamController.js";

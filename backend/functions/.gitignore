@@ -2,3 +2,9 @@ node_modules/
 *.local
 
 firebase/serviceAccountKey.json
+
+# Logs
+logs  
+.env
+/functions/.env
+*.log 
