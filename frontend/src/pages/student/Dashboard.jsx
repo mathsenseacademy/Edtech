@@ -10,7 +10,7 @@ const API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api/student";
 const BATCH_API = "https://api-bqojuh5xfq-uc.a.run.app/api/batches";
 
 // 👉 Exam APIs are on the main /api (where examRoutes.js is mounted)
-const EXAM_API_BASE = "http://localhost:5000/api"; // change to your deployed URL when needed
+const EXAM_API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api"; // change to your deployed URL when needed
 
 const placeholder = "/placeholder.png"; // keep this file in public or adjust path
 

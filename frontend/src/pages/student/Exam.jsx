@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api";
 
 const StudentExam = () => {
   const { examId } = useParams(); // URL: /student/exam/:examId

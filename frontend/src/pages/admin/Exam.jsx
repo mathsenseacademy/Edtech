@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import AdminHeader from "../../components/layout/AdminHeader";
 import axios from "axios";
 
-const API_BASE = "http://localhost:5000/api"; // Update to your backend URL
+const API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api"; // Update to your backend URL
 
 const Exam = () => {
   const [title, setTitle] = useState("");

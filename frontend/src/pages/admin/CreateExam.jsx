@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import AdminHeader from "../../components/layout/AdminHeader";
 
 // Adjust when you deploy
-const EXAM_API_BASE = "http://localhost:5000/api";
+const EXAM_API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api";
 // This is your existing batches API on Cloud Run
 const BATCH_API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api/batches";
 

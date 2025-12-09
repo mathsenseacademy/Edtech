@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import AdminHeader from "../../components/layout/AdminHeader";
 
 // 👇 change to your deployed backend URL when needed
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api";
 
 const AdminQuestionBankUpload = () => {
   const [classId, setClassId] = useState("");
