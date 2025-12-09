@@ -1,3 +1,4 @@
+// src/components/layout/AdminHeader.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -7,7 +8,7 @@ import {
   FaLayerGroup,        // Batches
   FaBlog,              // Blogs
   FaClipboardList,     // Exams
-  FaUserCircle,        // Profile (if you later add button)
+  FaUserCircle,        // Profile
 } from "react-icons/fa";
 import logo from "../../assets/logo.jpg";
 import ProfileModal from "../../components/common/ProfileModal";
@@ -20,7 +21,6 @@ const AdminHeader = () => {
   const [adminUser, setAdminUser] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // ✅ Load admin info (from localStorage or any other state)
   useEffect(() => {
     const storedAdmin = localStorage.getItem("adminUser");
     if (storedAdmin) {
@@ -30,7 +30,6 @@ const AdminHeader = () => {
     }
   }, []);
 
-  // ✅ Add shadow when scrolling
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
@@ -109,6 +108,7 @@ const AdminHeader = () => {
               </Link>
             </li>
 
+            {/* Exams main list */}
             <li>
               <Link
                 to="/admin/exams"
@@ -118,7 +118,27 @@ const AdminHeader = () => {
               </Link>
             </li>
 
-            {/* Optional profile icon/button if you want to open ProfileModal from header */}
+            {/* 🔹 Question Bank upload */}
+            <li>
+              <Link
+                to="/admin/question-bank/upload"
+                className="flex items-center gap-2 hover:-translate-y-0.5 transition"
+              >
+                <span>Question Bank</span>
+              </Link>
+            </li>
+
+            {/* 🔹 Create Exam from Bank */}
+            <li>
+              <Link
+                to="/admin/exams/create-from-bank"
+                className="flex items-center gap-2 hover:-translate-y-0.5 transition"
+              >
+                <span>Create Exam</span>
+              </Link>
+            </li>
+
+            {/* Optional profile button */}
             {/* <li>
               <button
                 ref={profileBtnRef}

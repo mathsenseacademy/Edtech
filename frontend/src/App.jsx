@@ -6,7 +6,6 @@ import { HelmetProvider } from "react-helmet-async";
 
 import Header from "./components/layout/Header";
 import AdminHeader from "./components/layout/AdminHeader";
-import StudentHeader from "./components/layout/StudentHeader";
 import Footer from "./components/layout/Footer";
 
 import Loader from "./components/common/Loader";
@@ -28,8 +27,12 @@ import AdminBatches from "./pages/admin/Batches";
 import AdminStudentProfile from "./pages/admin/StudentProfile";
 import BlogEditor from "./pages/admin/BlogEditor";
 import Exam from "./pages/admin/Exam";
+import AdminQuestionBankUpload from "./pages/admin/QuestionBankUpload";
+import CreateExamFromBank from "./pages/admin/CreateExam";
+import ExamList from "./pages/admin/ExamList";
 
 import SdHome from "./pages/student/Dashboard";
+import StudentExam from "./pages/student/Exam";
 
 import ClassSection from "./components/features/ClassSection";
 import ClassDetails from "./components/features/ClassDetails";
@@ -43,7 +46,6 @@ import "./styles/editor.css";
 function StudentLayout() {
   return (
     <>
-      <StudentHeader />
       <main className="min-h-[80vh] pt-[80px]">
         <Outlet />
       </main>
@@ -125,6 +127,8 @@ function App() {
               {/* 🎓 Student area */}
               <Route path="/student" element={<StudentLayout />}>
                 <Route path="dashboard" element={<SdHome />} />
+                <Route path="exam" element={<StudentExam />} />
+                <Route path="/student/exam/:examId" element={<StudentExam />} />
               </Route>
 
               {/* 🧠 Programs / Classes */}
@@ -173,6 +177,30 @@ function App() {
                 element={
                   <ProtectedAdminRoute>
                     <Exam />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin/question-bank/upload"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminQuestionBankUpload />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin/exams/create-from-bank"
+                element={     
+              <ProtectedAdminRoute>
+                    <CreateExamFromBank />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/admin/exams"
+                element={
+                  <ProtectedAdminRoute>
+                    <ExamList />
                   </ProtectedAdminRoute>
                 }
               />

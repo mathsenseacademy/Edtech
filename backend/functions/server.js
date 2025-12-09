@@ -25,11 +25,15 @@ import studentRoutes from "./routes/StudentRoutes.js";
 import classRoutes from "./routes/ClassRoutes.js";
 import batchRoutes from "./routes/BatchRoutes.js";
 import blogRoutes from "./routes/BlogRoutes.js";
+import ExamRoutes from "./routes/ExamRoutes.js";
+import QuestionBankRoutes from "./routes/QuestionBankRoutes.js";
 
 app.use("/api/student", studentRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/batches", batchRoutes);
 app.use("/api/blogs", blogRoutes);
+app.use("/api", ExamRoutes);
+app.use("/api", QuestionBankRoutes);
 
 // ✅ Health route
 app.get("/health", (req, res) => {

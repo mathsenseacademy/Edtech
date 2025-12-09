@@ -4,13 +4,18 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api/student";
 const BATCH_API = "https://api-bqojuh5xfq-uc.a.run.app/api/batches";
 
+// 👉 Exam APIs are on the main /api (where examRoutes.js is mounted)
+const EXAM_API_BASE = "http://localhost:5000/api"; // change to your deployed URL when needed
+
 const placeholder = "/placeholder.png"; // keep this file in public or adjust path
 
 export default function SdHome() {
+  const navigate = useNavigate();
   const [student, setStudent] = useState(null);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -19,6 +24,13 @@ export default function SdHome() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState(null);
   const mountedRef = useRef(true);
+
+  // 🔹 Exam button state
+  const [examError, setExamError] = useState("");
+  const [examLoading, setExamLoading] = useState(false);
+
+  // 🔹 Separate state to store **resolved batch details** (so we don't mutate student in effect)
+  const [displayBatches, setDisplayBatches] = useState([]);
 
   // Helper to show temporary toast messages
   const showToast = (type, message, ms = 3500) => {
@@ -62,6 +74,8 @@ export default function SdHome() {
       setStudent(studentData);
       setFormData(studentData);
       setError("");
+      // reset displayBatches; effect below will refetch nicely
+      setDisplayBatches([]);
     } catch (err) {
       console.error("Failed to load student profile:", err);
       setError("Failed to fetch profile. Check your connection and try again.");
@@ -82,7 +96,7 @@ export default function SdHome() {
     };
   }, []);
 
-  // ✅ Enhanced batch fetch logic (with day2/time2)
+  // ✅ Batch fetch logic (with day2/time2), using **displayBatches** instead of mutating student
   useEffect(() => {
     const fetchBatchNames = async () => {
       if (!student) return;
@@ -92,26 +106,26 @@ export default function SdHome() {
         try {
           const res = await axios.get(`${BATCH_API}/${student.batch}`);
           if (res.data?.name) {
-            setStudent((prev) => ({
-              ...prev,
-              batches: [
-                {
-                  name: res.data.name,
-                  day: res.data.day || "",
-                  time: res.data.time || "",
-                  day2: res.data.day2 || "",
-                  time2: res.data.time2 || "",
-                },
-              ],
-            }));
+            setDisplayBatches([
+              {
+                name: res.data.name,
+                day: res.data.day || "",
+                time: res.data.time || "",
+                day2: res.data.day2 || "",
+                time2: res.data.time2 || "",
+              },
+            ]);
+          } else {
+            setDisplayBatches([]);
           }
         } catch (err) {
           console.error("Error fetching single batch:", err);
+          setDisplayBatches([]);
         }
         return;
       }
 
-      // Multiple batches (array)
+      // Multiple batches (array of IDs or objects)
       if (Array.isArray(student.batches) && student.batches.length > 0) {
         const batchList = [];
 
@@ -140,14 +154,16 @@ export default function SdHome() {
           }
         }
 
-        if (batchList.length > 0) {
-          setStudent((prev) => ({ ...prev, batches: batchList }));
-        }
+        setDisplayBatches(batchList);
+        return;
       }
+
+      // No batch assigned
+      setDisplayBatches([]);
     };
 
     fetchBatchNames();
-  }, [student?.batch, student?.batches]);
+  }, [student]); // ✅ depends on student, but does NOT call setStudent → no infinite loop
 
   // Handle profile edits
   const handleChange = (e) => {
@@ -179,6 +195,45 @@ export default function SdHome() {
       showToast("error", "Failed to update profile. Please try later.");
     } finally {
       setUpdating(false);
+    }
+  };
+
+  // ✅ Start Exam using class + batch
+  const handleStartExam = async () => {
+    if (!student?.student_class) {
+      setExamError("Your class information is missing. Please contact admin.");
+      return;
+    }
+
+    try {
+      setExamError("");
+      setExamLoading(true);
+
+      const params = new URLSearchParams({
+        classId: String(student.student_class),
+      });
+
+      // Use the raw batch ID if present (single batch)
+      if (student.batch && typeof student.batch === "string") {
+        params.append("batchId", student.batch);
+      }
+
+      const res = await fetch(
+        `${EXAM_API_BASE}/student/exams/current?${params.toString()}`
+      );
+      const data = await res.json();
+
+      console.log("Current exam response:", data);
+
+      if (!res.ok) throw new Error(data.error || "No exam available.");
+
+      // Navigate to student exam page with the examId returned
+      navigate(`/student/exam/${data.examId}`);
+    } catch (err) {
+      console.error(err);
+      setExamError(err.message);
+    } finally {
+      setExamLoading(false);
     }
   };
 
@@ -304,14 +359,16 @@ export default function SdHome() {
             </p>
           </div>
 
-          {/* ✅ Batch + Day/Time Display */}
+          {/* ✅ Batch + Day/Time Display using displayBatches */}
           <div className="mt-4 text-sm space-y-3">
-            {student?.batches?.length > 0 ? (
-              student.batches.map((b, i) => (
+            {displayBatches.length > 0 ? (
+              displayBatches.map((b, i) => (
                 <div key={i} className="space-y-1">
                   <p>
                     <span className="font-semibold text-gray-700">Batch:</span>{" "}
-                    <span className="text-blue-700 font-semibold">{b.name}</span>
+                    <span className="text-blue-700 font-semibold">
+                      {b.name}
+                    </span>
                   </p>
                   {b.day && b.time ? (
                     <p>
@@ -348,13 +405,33 @@ export default function SdHome() {
             {student.fees_status || (student.feesPaid ? "Paid" : "Not Paid")}
           </p>
 
-          <div className="mt-4">
+          <div className="mt-4 flex flex-col gap-3">
             <button
               onClick={() => setEditing((prev) => !prev)}
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
             >
               {editing ? "Cancel" : "Edit Profile"}
             </button>
+
+            {/* ✅ Start Exam Block */}
+            <div className="max-w-md bg-gray-50 border rounded p-4">
+              <h3 className="text-lg font-semibold mb-2">Start Exam</h3>
+              <p className="text-sm text-gray-600 mb-2">
+                Click below to start the latest exam assigned to{" "}
+                <strong>Class {student.student_class}</strong>
+                {student.batch ? ` (your batch)` : ""}.
+              </p>
+              {examError && (
+                <p className="text-sm text-red-600 mb-2">{examError}</p>
+              )}
+              <button
+                className="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700 disabled:opacity-60"
+                onClick={handleStartExam}
+                disabled={examLoading}
+              >
+                {examLoading ? "Checking exam..." : "Start Exam"}
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -384,8 +461,14 @@ export default function SdHome() {
               { name: "district", label: "District" },
               { name: "state", label: "State" },
               { name: "pin", label: "PIN" },
-              { name: "school_or_college_name", label: "School / College" },
-              { name: "board_or_university_name", label: "Board / University" },
+              {
+                name: "school_or_college_name",
+                label: "School / College",
+              },
+              {
+                name: "board_or_university_name",
+                label: "Board / University",
+              },
               { name: "notes", label: "Notes" },
             ].map((field) => (
               <div key={field.name}>

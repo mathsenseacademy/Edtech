@@ -13,7 +13,8 @@ import studentRoutes from "./routes/StudentRoutes.js";
 import classRoutes from "./routes/ClassRoutes.js";
 import batchRoutes from "./routes/BatchRoutes.js";
 import BlogRoutes from "./routes/BlogRoutes.js";
-import Exam from "./routes/ExamRoutes.js";
+import ExamRoutes from "./routes/ExamRoutes.js";
+import QuestionBankRoutes from "./routes/QuestionBankRoutes.js";
 
 const app = express();
 
@@ -47,11 +48,11 @@ app.use(
       "www.mathsenseacademy.com",
       "https://mathsenseacademy-55f13.web.app",
       "https://mathsenseacademy-55f13.firebaseapp.com",
-      "https://mathsenseacademy.com"
+      "https://mathsenseacademy.com",
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
 
@@ -62,102 +63,37 @@ app.use((req, res, next) => {
 });
 
 /* -----------------------------------------
- ✅ SWAGGER SETUP
------------------------------------------ */
-const swaggerOptions = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "EdTech Platform API",
-      version: "1.0.0",
-      description: `
-        API documentation for EdTech platform.
-
-        ## 🔄 Data Flow Format Used:
-        Each endpoint will show:
-        - **Input** (what data is sent)
-        - **Processing** (which service or Firebase logic runs)
-        - **Output** (what is returned)
-
-        ### Example Diagram:
-        \`\`\`mermaid
-        flowchart LR
-          A[Client Request] --> B[Validation]
-          B --> C[Service Layer]
-          C --> D[(Firestore Database)]
-          D --> E[Response Sent]
-        \`\`\`
-      `
-    },
-    servers: [{ url: "http://localhost:5000" }]
-  },
-  apis: ["./server.js", "./routes/*.js"] // ✅ Auto-scan docs in these files
-};
-
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-console.log("📘 Swagger Docs available at http://localhost:5000/api-docs");
-
-/* -----------------------------------------
  ✅ HEALTH CHECK ROUTE
 ----------------------------------------- */
-/**
- * @openapi
- * /health:
- *   get:
- *     summary: Server health status
- *     description: Returns API status and uptime information.
- *     responses:
- *       200:
- *         description: API is healthy
- */
 app.get("/health", (req, res) => {
   res.json({
     status: "healthy",
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
   });
 });
 
 /* -----------------------------------------
  ✅ TEST ROUTE
 ----------------------------------------- */
-/**
- * @openapi
- * /test:
- *   get:
- *     summary: Test Firestore Connectivity
- *     description: |
- *       ### 🔄 Data Flow
- *       \`\`\`mermaid
- *       flowchart LR
- *         A[Client Request] --> B[Firestore: GET students]
- *         B --> C[Limit results for testing]
- *         C --> D[Return masked response]
- *       \`\`\`
- *     responses:
- *       200:
- *         description: Firestore working
- */
 app.get("/test", async (req, res) => {
   try {
     const snapshot = await db.collection("students").limit(5).get();
     const students = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-      google_uid: doc.data().google_uid ? "***hidden***" : null
+      google_uid: doc.data().google_uid ? "***hidden***" : null,
     }));
     res.json({
       message: "Test successful",
       count: students.length,
-      students
+      students,
     });
   } catch (err) {
     console.error("Test route error:", err);
     res.status(500).json({
       error: err.message,
-      message: "Test failed - check Firestore connection"
+      message: "Test failed - check Firestore connection",
     });
   }
 });
@@ -170,20 +106,12 @@ app.use("/student", studentRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/batches", batchRoutes);
 app.use("/api/blogs", BlogRoutes);
+app.use("/api", ExamRoutes);
+app.use("/api", QuestionBankRoutes);
 
 /* -----------------------------------------
  ✅ ROOT ROUTE
 ----------------------------------------- */
-/**
- * @openapi
- * /:
- *   get:
- *     summary: API Root
- *     description: Lists available endpoints.
- *     responses:
- *       200:
- *         description: API root response
- */
 app.get("/", (req, res) => {
   res.json({
     message: "EdTech Backend API is running",
@@ -193,8 +121,11 @@ app.get("/", (req, res) => {
       health: "/health",
       test: "/test",
       students: "/api/student",
-      swagger: "/api-docs"
-    }
+      classes: "/api/classes",
+      batches: "/api/batches",
+      blogs: "/api/blogs",
+      exams: "/api/exams/:examId/... (see ExamRoutes)",
+    },
   });
 });
 
@@ -205,7 +136,7 @@ app.use((req, res) => {
   res.status(404).json({
     error: "Route not found",
     message: `${req.method} ${req.originalUrl} does not exist`,
-    availableRoutes: ["/", "/health", "/test", "/api/student", "/api-docs"]
+    availableRoutes: ["/", "/health", "/test", "/api/student"],
   });
 });
 
@@ -216,7 +147,7 @@ app.use((err, req, res, next) => {
   console.error("Global error:", err);
   res.status(500).json({
     error: "Internal server error",
-    message: process.env.NODE_ENV === "development" ? err.message : "Something went wrong"
+    message: process.env.NODE_ENV === "development" ? err.message : "Something went wrong",
   });
 });
 
@@ -227,7 +158,6 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📊 Swagger Docs: http://localhost:${PORT}/api-docs`);
 
   // Test Firestore connection on startup
   db.collection("students")

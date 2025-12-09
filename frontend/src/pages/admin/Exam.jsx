@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import AdminHeader from "../../components/layout/AdminHeader";
 import axios from "axios";
 
-const API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api";
+const API_BASE = "http://localhost:5000/api"; // Update to your backend URL
 
 const Exam = () => {
   const [title, setTitle] = useState("");
+  const [code, setCode] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   const [batches, setBatches] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState("");
@@ -45,7 +46,7 @@ const Exam = () => {
     setMessage("");
     setError("");
 
-    if (!title || !selectedClass || !selectedBatch || !file) {
+    if (!title || !code || !selectedClass || !selectedBatch || !file) {
       return setError("Please fill title, class, batch and upload file");
     }
 
@@ -55,6 +56,7 @@ const Exam = () => {
 
       formData.append("file", file);
       formData.append("title", title);
+      formData.append("code", code);
       formData.append("classId", selectedClass);
       formData.append("batchId", selectedBatch);
 
@@ -64,7 +66,7 @@ const Exam = () => {
 
       const token = localStorage.getItem("accessToken");
 
-      const res = await fetch(`${API_BASE}/api/admin/exams/upload`, {
+      const res = await fetch(`${API_BASE}/admin/exams/upload`, {
         method: "POST",
         headers: token
           ? {
@@ -109,6 +111,19 @@ const Exam = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Algebra Chapter 1 Test"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Exam Code *
+              </label>
+              <input
+                type="text"
+                className="w-full border rounded px-3 py-2"
+                placeholder="e.g. ALG-CH1"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
               />
             </div>
 
