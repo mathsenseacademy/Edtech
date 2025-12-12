@@ -1,179 +1,138 @@
-// controllers/QuestionBankController.js
-import XLSX from "xlsx";
 import { db, admin } from "../firebase/firebaseAdmin.js";
 
-/**
- * Parse excel buffer -> rows (array of objects)
- */
-function parseExcelBuffer(buffer) {
-  const workbook = XLSX.read(buffer, { type: "buffer" });
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-  return rows;
+const QUESTION_BANK_COLLECTION = "questionBank";
+const FIRESTORE_BATCH_SAFE_SIZE = 450;
+
+// Helper: Chunk array
+function chunkArray(arr, size) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
 }
 
-/**
- * Normalize a single row into question object for question bank
- * Excel expected columns (flexible names):
- *  - question / question_text
- *  - option_a / optionA
- *  - option_b / optionB
- *  - option_c / optionC (optional)
- *  - option_d / optionD (optional)
- *  - correct_option / correctOption / correct  (A/B/C/D)
- *  - type / question_type (default "MCQ")
- */
+// Helper: Normalize Data
 function normalizeRowToBankQuestion(row) {
   return {
-    text: String(row.question_text || row.question || ""),
+    text: String(row.question_text || row.question || "").trim(),
     type: row.question_type || row.type || "MCQ",
     options: {
-      A: String(row.option_a || row.optionA || ""),
-      B: String(row.option_b || row.optionB || ""),
-      C: String(row.option_c || row.optionC || ""),
-      D: String(row.option_d || row.optionD || ""),
+      A: String(row.option_a || row.optionA || "").trim(),
+      B: String(row.option_b || row.optionB || "").trim(),
+      C: String(row.option_c || row.optionC || "").trim(),
+      D: String(row.option_d || row.optionD || "").trim(),
     },
-    correctOptionKey: String(
-      row.correct_option || row.correctOption || row.correct || ""
-    ).toUpperCase(),
+    correctOptionKey: String(row.correct_option || row.correctOption || row.correct || "")
+      .toString().trim().toUpperCase(),
   };
 }
 
-/**
- * ADMIN: upload questions excel into question bank
- * multipart/form-data:
- *  - file
- *  - classId
- *  - topic
- *  - adminUid (optional)
- */
-export async function uploadQuestionBankFromExcel(req, res) {
+// --- MAIN FUNCTION ---
+// We renamed this to 'uploadQuestionBankJson' to be clear
+export async function uploadQuestionBankJson(req, res) {
   try {
-    const fileBuffer =
-      req.file && req.file.buffer
-        ? req.file.buffer
-        : req.body.fileBuffer
-        ? Buffer.from(req.body.fileBuffer, "base64")
-        : null;
+    console.log("=== uploadQuestionBankJson: START ===");
+    
+    // 1. EXTRACT DATA FROM BODY (No File!)
+    const { classId, topic, rows, adminUid } = req.body;
 
-    if (!fileBuffer) return res.status(400).json({ error: "Missing file" });
+    console.log("Received Body Keys:", Object.keys(req.body));
 
-    const { classId, topic, adminUid = null } = req.body;
-
+    // 2. VALIDATE
     if (!classId || !topic) {
-      return res
-        .status(400)
-        .json({ error: "Missing classId or topic for question bank upload" });
+      console.error("Missing classId or topic");
+      return res.status(400).json({ error: "Missing classId or topic" });
     }
 
-    const rows = parseExcelBuffer(fileBuffer);
-    if (!rows.length) {
-      return res.status(400).json({ error: "Excel file has no rows" });
+    // CHECK FOR ROWS (This is where the old code failed)
+    if (!rows || !Array.isArray(rows) || rows.length === 0) {
+      console.error("No rows found in request body");
+      return res.status(400).json({ error: "No question data received (rows is empty)." });
     }
 
     const classNum = Number(classId);
+    console.log(`Processing ${rows.length} questions for Class ${classNum}`);
 
-    const batch = db.batch();
-    const qColl = db.collection("questionBank");
+    // 3. SAVE TO FIRESTORE
+    const chunks = chunkArray(rows, FIRESTORE_BATCH_SAFE_SIZE);
+    let total = 0;
 
-    rows.forEach((r) => {
-      const qData = normalizeRowToBankQuestion(r);
-      const docRef = qColl.doc();
-      batch.set(docRef, {
-        ...qData,
-        classId: classNum,
-        topic: String(topic),
-        createdBy: adminUid,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    for (const chunk of chunks) {
+      const batch = db.batch();
+      chunk.forEach((r) => {
+        const qData = normalizeRowToBankQuestion(r);
+        const docRef = db.collection(QUESTION_BANK_COLLECTION).doc();
+        batch.set(docRef, {
+          ...qData,
+          classId: classNum,
+          topic: String(topic).trim(),
+          createdBy: adminUid || "admin",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
       });
-    });
+      await batch.commit();
+      total += chunk.length;
+      console.log(`Saved batch of ${chunk.length}`);
+    }
 
-    await batch.commit();
-
+    console.log("=== uploadQuestionBankJson: SUCCESS ===");
     return res.json({
-      message: "Question bank uploaded successfully",
-      count: rows.length,
+      message: "Upload successful",
+      count: total,
       classId: classNum,
-      topic,
+      topic
     });
+
   } catch (err) {
-    console.error("uploadQuestionBankFromExcel:", err);
-    return res.status(500).json({ error: err.message });
+    console.error("Controller Error:", err);
+    return res.status(500).json({ error: err.message || "Internal server error" });
   }
 }
 
-/**
- * ADMIN: get topics list for a class with counts
- * GET /api/admin/question-bank/topics?classId=9
- */
+// --- GET FUNCTIONS ---
 export async function getTopicsForClass(req, res) {
   try {
     const { classId } = req.query;
-    if (!classId) {
-      return res.status(400).json({ error: "Missing classId" });
-    }
+    if (!classId) return res.status(400).json({ error: "Missing classId" });
 
     const classNum = Number(classId);
+    if (Number.isNaN(classNum)) return res.status(400).json({ error: "classId must be a number" });
 
-    const snap = await db
-      .collection("questionBank")
-      .where("classId", "==", classNum)
-      .get();
+    const snap = await db.collection(QUESTION_BANK_COLLECTION).where("classId", "==", classNum).get();
+    if (snap.empty) return res.json({ classId: classNum, topics: [] });
 
-    if (snap.empty) {
-      return res.json({ classId: classNum, topics: [] });
-    }
-
-    const topicCounts = {};
+    const topicCounts = Object.create(null);
     snap.forEach((doc) => {
       const data = doc.data();
-      const topic = data.topic || "Untitled";
-      topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+      const topicName = (data.topic || "Untitled").toString().trim();
+      topicCounts[topicName] = (topicCounts[topicName] || 0) + 1;
     });
 
-    const topics = Object.entries(topicCounts).map(([topic, count]) => ({
-      topic,
-      count,
-    }));
+    const topics = Object.entries(topicCounts).map(([topic, count]) => ({ topic, count }));
+    topics.sort((a, b) => (b.count !== a.count ? b.count - a.count : a.topic.localeCompare(b.topic)));
 
     return res.json({ classId: classNum, topics });
   } catch (err) {
     console.error("getTopicsForClass:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 
-/**
- * ADMIN: get all questions for class + topic(s)
- * GET /api/admin/question-bank/questions?classId=9&topics=Trigo,Algebra
- */
 export async function getQuestionsForClassTopics(req, res) {
   try {
     const { classId, topics } = req.query;
-    if (!classId) {
-      return res.status(400).json({ error: "Missing classId" });
-    }
+    if (!classId) return res.status(400).json({ error: "Missing classId" });
 
     const classNum = Number(classId);
-    const topicsArray = topics
-      ? topics.split(",").map((t) => t.trim())
-      : [];
+    if (Number.isNaN(classNum)) return res.status(400).json({ error: "classId must be a number" });
 
-    let query = db
-      .collection("questionBank")
-      .where("classId", "==", classNum);
+    const topicsArray = topics ? topics.split(",").map((t) => t.trim()).filter(Boolean) : [];
 
-    // If topics specified, filter in memory (Firestore can't do IN on large arrays easily)
-    const snap = await query.get();
-
+    const snap = await db.collection(QUESTION_BANK_COLLECTION).where("classId", "==", classNum).get();
     const questions = [];
     snap.forEach((doc) => {
       const data = doc.data();
-      if (
-        !topicsArray.length ||
-        topicsArray.includes(data.topic || "")
-      ) {
+      const docTopic = (data.topic || "").toString().trim();
+      if (!topicsArray.length || topicsArray.includes(docTopic)) {
         questions.push({ id: doc.id, ...data });
       }
     });
@@ -181,14 +140,6 @@ export async function getQuestionsForClassTopics(req, res) {
     return res.json({ classId: classNum, questions });
   } catch (err) {
     console.error("getQuestionsForClassTopics:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
-
-const QuestionBankController = {
-  uploadQuestionBankFromExcel,
-  getTopicsForClass,
-  getQuestionsForClassTopics,
-};
-
-export default QuestionBankController;

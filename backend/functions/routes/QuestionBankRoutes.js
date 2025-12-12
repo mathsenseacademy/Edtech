@@ -1,31 +1,14 @@
-// routes/QuestionBankRoutes.js
+// backend/functions/routes/QuestionBankRoutes.js
 import express from "express";
-import multer from "multer";
-import QuestionBankController from "../controllers/QuestionBankController.js";
+import { 
+  uploadQuestionBankJson, // <--- MAKE SURE THIS IS CORRECT
+  getTopicsForClass, 
+  getQuestionsForClassTopics 
+} from "../controllers/QuestionBankController.js";
 
 const router = express.Router();
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 },
-});
-
-// Upload question bank Excel
-router.post(
-  "/admin/question-bank/upload",
-  upload.single("file"),
-  QuestionBankController.uploadQuestionBankFromExcel
-);
-
-// Topics for a class
-router.get(
-  "/admin/question-bank/topics",
-  QuestionBankController.getTopicsForClass
-);
-
-// Questions for class + topics
-router.get(
-  "/admin/question-bank/questions",
-  QuestionBankController.getQuestionsForClassTopics
-);
+router.post("/upload", uploadQuestionBankJson);
+router.get("/topics", getTopicsForClass);
+router.get("/questions", getQuestionsForClassTopics);
 
 export default router;

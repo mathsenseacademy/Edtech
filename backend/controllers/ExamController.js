@@ -3,6 +3,9 @@ import XLSX from "xlsx";
 import { db, admin } from "../firebase/firebaseAdmin.js";
 import ExamModel from "../models/ExamModel.js";
 
+/** Constants */
+const QUESTION_BANK_COLLECTION = "questionBank";
+
 /**
  * Parse excel buffer -> rows (array of objects)
  */
@@ -18,24 +21,25 @@ function parseExcelBuffer(buffer) {
  * Normalize a single row into question object expected by model
  */
 function normalizeRowToQuestion(row, idx) {
-  const questionNo =
-    row.question_no ??
-    row.questionNo ??
-    (row.questionNo ? Number(row.questionNo) : idx + 1);
+  const rawNo = row.question_no ?? row.questionNo ?? row.questionNo;
+  const questionNo = Number.isFinite(Number(rawNo)) ? Number(rawNo) : idx + 1;
 
   return {
     questionNo,
-    text: String(row.question_text || row.question || ""),
+    text: String(row.question_text || row.question || "").trim(),
     type: row.question_type || row.type || "MCQ",
     options: {
-      A: String(row.option_a || row.optionA || ""),
-      B: String(row.option_b || row.optionB || ""),
-      C: String(row.option_c || row.optionC || ""),
-      D: String(row.option_d || row.optionD || ""),
+      A: String(row.option_a || row.optionA || "").trim(),
+      B: String(row.option_b || row.optionB || "").trim(),
+      C: String(row.option_c || row.optionC || "").trim(),
+      D: String(row.option_d || row.optionD || "").trim(),
     },
     correctOptionKey: String(
       row.correct_option || row.correctOption || row.correct || ""
-    ).toUpperCase(),
+    )
+      .toString()
+      .trim()
+      .toUpperCase(),
   };
 }
 
@@ -151,11 +155,17 @@ export async function createExamFromQuestionBank(req, res) {
     }
 
     const classNum = Number(classId);
-    const topicsArray = Array.isArray(topics) ? topics : [];
+    if (Number.isNaN(classNum)) {
+      return res.status(400).json({ error: "classId must be a number" });
+    }
+
+    const topicsArray = Array.isArray(topics)
+      ? topics.map((t) => String(t).trim()).filter(Boolean)
+      : [];
 
     // 1) Load all questions for this class (and topics if provided)
     let query = db
-      .collection("QuestionBank")
+      .collection(QUESTION_BANK_COLLECTION)
       .where("classId", "==", classNum);
 
     const snap = await query.get();
@@ -169,7 +179,8 @@ export async function createExamFromQuestionBank(req, res) {
     const all = [];
     snap.forEach((doc) => {
       const data = doc.data();
-      if (!topicsArray.length || topicsArray.includes(data.topic || "")) {
+      const docTopic = (data.topic || "").toString().trim();
+      if (!topicsArray.length || topicsArray.includes(docTopic)) {
         all.push({ id: doc.id, ...data });
       }
     });
@@ -180,7 +191,7 @@ export async function createExamFromQuestionBank(req, res) {
         .json({ error: "No questions match selected topics" });
     }
 
-    const desiredCount = Number(totalQuestions) || all.length;
+    const desiredCount = Number(totalQuestions) > 0 ? Number(totalQuestions) : all.length;
     const selected = shuffleArray(all).slice(0, desiredCount);
 
     // 2) Create exam doc
@@ -636,7 +647,7 @@ export async function getAttemptsForExam(req, res) {
         wrongCount: data.wrongCount ?? null,
         timedOut: data.timedOut ?? false,
         startedAt: data.startedAt || null,
-        submittedAt: data.submittedAt || null,
+        submittedAt: data.submittedAt ?? null,
       });
     });
 

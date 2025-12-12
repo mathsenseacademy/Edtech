@@ -11,6 +11,14 @@ import { db, admin } from "../firebase/firebaseAdmin.js";
 const examsCol = () => db.collection("exams");
 const attemptsCol = () => db.collection("attempts");
 
+function chunkArray(arr, size) {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
 export async function createExam(examId, examData) {
   const ref = examsCol().doc(examId || undefined);
   await ref.set({
@@ -25,14 +33,27 @@ export async function getExamById(examId) {
   return doc.exists ? { id: doc.id, ...doc.data() } : null;
 }
 
+/**
+ * Add potentially large arrays of questions to exam subcollection.
+ * Uses chunked batches to avoid Firestore 500 write limit.
+ * questionsArray: array of plain question objects
+ */
 export async function addQuestionsToExam(examId, questionsArray) {
+  if (!Array.isArray(questionsArray) || !questionsArray.length) return true;
+
   const qColl = examsCol().doc(examId).collection("questions");
-  const batch = db.batch();
-  questionsArray.forEach((q) => {
-    const qRef = qColl.doc();
-    batch.set(qRef, q);
-  });
-  await batch.commit();
+  // safe batch size: keep under 500 (use 450)
+  const chunks = chunkArray(questionsArray, 450);
+
+  for (const chunk of chunks) {
+    const batch = db.batch();
+    chunk.forEach((q) => {
+      const qRef = qColl.doc();
+      batch.set(qRef, q);
+    });
+    await batch.commit();
+  }
+
   return true;
 }
 
@@ -56,7 +77,6 @@ export async function getQuestionsForExam(
   snapshot.forEach((doc) => {
     const data = doc.data();
     if (hideCorrect) {
-      // don't include correctOptionKey
       const { correctOptionKey, ...rest } = data;
       list.push({ questionId: doc.id, ...rest });
     } else {
@@ -121,13 +141,31 @@ export async function saveAttemptAnswers(attemptId, answersObj) {
 /**
  * Finalize an attempt with score + result details
  * resultObj: { score, totalQuestions, correctCount, wrongCount, perQuestionResult, timedOut? }
+ *
+ * Uses update() normally, but falls back to set(..., { merge: true }) if update fails
+ * because the attempt doc doesn't exist (defensive).
  */
 export async function finalizeAttempt(attemptId, resultObj) {
   const attemptRef = attemptsCol().doc(attemptId);
-  await attemptRef.update({
-    ...resultObj,
-    submittedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  try {
+    await attemptRef.update({
+      ...resultObj,
+      submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (err) {
+    // if the document does not exist, use merge set as a fallback
+    if (err.code === 5 || /not-found/i.test(err.message)) {
+      await attemptRef.set(
+        {
+          ...resultObj,
+          submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    } else {
+      throw err;
+    }
+  }
   return true;
 }
 

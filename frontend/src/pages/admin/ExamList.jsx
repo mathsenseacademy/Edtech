@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import AdminHeader from "../../components/layout/AdminHeader";
 
 // Adjust base URL when deployed
-const EXAM_API_BASE = "https://api-bqojuh5xfq-uc.a.run.app/api";
+const EXAM_API_BASE = "http://localhost:5000/api";
 
 const AdminExamList = () => {
   const [exams, setExams] = useState([]);

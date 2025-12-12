@@ -19,7 +19,53 @@ import QuestionBankRoutes from "./routes/QuestionBankRoutes.js";
 const app = express();
 
 /* -----------------------------------------
- ✅ CRON JOB – Monthly Reset Example
+   ✅ 1. CORS (ALWAYS FIRST)
+----------------------------------------- */
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "www.mathsenseacademy.com",
+      "https://mathsenseacademy-55f13.web.app",
+      "https://mathsenseacademy-55f13.firebaseapp.com",
+      "https://mathsenseacademy.com",
+    ],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  })
+);
+
+/* -----------------------------------------
+   ✅ 2. GLOBAL BODY PARSERS (MOVED UP!)
+   This MUST run before your routes so req.body is not undefined.
+----------------------------------------- */
+app.use(express.json({ limit: "50mb" })); // Increased limit for large Question Banks
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+/* -----------------------------------------
+   ✅ 3. REQUEST LOGGER
+----------------------------------------- */
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`, req.query);
+  next();
+});
+
+/* -----------------------------------------
+   ✅ 4. API ROUTES (NOW ALL GO HERE)
+----------------------------------------- */
+// Mount Question Bank Routes HERE (After the JSON parser)
+app.use("/api/admin/question-bank", QuestionBankRoutes);
+
+app.use("/api/student", studentRoutes);
+app.use("/student", studentRoutes);
+app.use("/api/classes", classRoutes);
+app.use("/api/batches", batchRoutes);
+app.use("/api/blogs", BlogRoutes);
+app.use("/api", ExamRoutes);
+
+/* -----------------------------------------
+   ✅ 5. CRON JOB
 ----------------------------------------- */
 cron.schedule(
   "1 0 1 * *",
@@ -36,34 +82,7 @@ cron.schedule(
 );
 
 /* -----------------------------------------
- ✅ MIDDLEWARE
------------------------------------------ */
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "www.mathsenseacademy.com",
-      "https://mathsenseacademy-55f13.web.app",
-      "https://mathsenseacademy-55f13.firebaseapp.com",
-      "https://mathsenseacademy.com",
-    ],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  })
-);
-
-// Request Logger
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`, req.query);
-  next();
-});
-
-/* -----------------------------------------
- ✅ HEALTH CHECK ROUTE
+   ✅ 6. HEALTH & TEST ROUTES
 ----------------------------------------- */
 app.get("/health", (req, res) => {
   res.json({
@@ -73,9 +92,6 @@ app.get("/health", (req, res) => {
   });
 });
 
-/* -----------------------------------------
- ✅ TEST ROUTE
------------------------------------------ */
 app.get("/test", async (req, res) => {
   try {
     const snapshot = await db.collection("students").limit(5).get();
@@ -99,50 +115,23 @@ app.get("/test", async (req, res) => {
 });
 
 /* -----------------------------------------
- ✅ API ROUTES
------------------------------------------ */
-app.use("/api/student", studentRoutes);
-app.use("/student", studentRoutes);
-app.use("/api/classes", classRoutes);
-app.use("/api/batches", batchRoutes);
-app.use("/api/blogs", BlogRoutes);
-app.use("/api", ExamRoutes);
-app.use("/api", QuestionBankRoutes);
-
-/* -----------------------------------------
- ✅ ROOT ROUTE
+   ✅ 7. ROOT ROUTE & ERROR HANDLERS
 ----------------------------------------- */
 app.get("/", (req, res) => {
   res.json({
     message: "EdTech Backend API is running",
     version: "1.0.0",
     timestamp: new Date().toISOString(),
-    endpoints: {
-      health: "/health",
-      test: "/test",
-      students: "/api/student",
-      classes: "/api/classes",
-      batches: "/api/batches",
-      blogs: "/api/blogs",
-      exams: "/api/exams/:examId/... (see ExamRoutes)",
-    },
   });
 });
 
-/* -----------------------------------------
- ❌ 404 HANDLER
------------------------------------------ */
 app.use((req, res) => {
   res.status(404).json({
     error: "Route not found",
     message: `${req.method} ${req.originalUrl} does not exist`,
-    availableRoutes: ["/", "/health", "/test", "/api/student"],
   });
 });
 
-/* -----------------------------------------
- 🔥 GLOBAL ERROR HANDLER
------------------------------------------ */
 app.use((err, req, res, next) => {
   console.error("Global error:", err);
   res.status(500).json({
@@ -152,14 +141,12 @@ app.use((err, req, res, next) => {
 });
 
 /* -----------------------------------------
- 🚀 START SERVER
+   🚀 START SERVER
 ----------------------------------------- */
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
-
-  // Test Firestore connection on startup
   db.collection("students")
     .limit(1)
     .get()
